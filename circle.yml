@@ -9,6 +9,24 @@
 
 # Use http://yaml-online-parser.appspot.com to confirm that this file has the right format
 
-machine:
-  node:
-    version: 10.4.0
+version: 2
+jobs:
+  test:
+    machine:
+      node:
+        version: 10.4.0
+    steps:
+      - checkout
+      - run:
+          name: Run tests
+          command: |
+            export NVM_DIR="/opt/circleci/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+            nvm install 10.4.0 && nvm alias default 10.4.0
+            npm install
+            npm test
+workflows:
+  version: 2
+  testsonly:
+    jobs:
+      - test
