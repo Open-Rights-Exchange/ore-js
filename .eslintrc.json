@@ -1,0 +1,20 @@
+{
+    "extends": "airbnb-base",
+    "env": {
+        "browser": true,
+        "node": true,
+        "jest": true
+    },
+    "rules": {
+        "no-new": [0],
+        "no-unused-vars": "off",
+        "no-shadow": "off",
+        "no-continue": "off",
+        "max-len": [2, {
+            "code": 600
+        }]
+    },
+    "globals": {
+        "Web3": false
+    }
+}

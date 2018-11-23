@@ -1,0 +1,8 @@
+.env
+node_modules
+examples/node_modules
+examples/package-lock.json
+examples/dist
+examples/.env
+tmp
+.DS_Store
