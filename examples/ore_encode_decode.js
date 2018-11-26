@@ -1,7 +1,7 @@
 const fs = require('fs');
 const { crypto, walletPassword, salt } = require('./index');
 
-const USER = 'test2.apim';
+const USER = 'test2.acnt';
 (async function () {
   const account = process.env.ORE_OWNER_ACCOUNT_NAME;
   const privateKey = process.env.ORE_OWNER_ACCOUNT_KEY;

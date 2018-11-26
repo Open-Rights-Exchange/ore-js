@@ -71,7 +71,7 @@ function approveTransfer(fromAccountName, toAccountName, tokenAmount, contractNa
   }]);
 }
 
-// cleos get table token.ore test1.apim allowances
+// cleos get table token.ore test1.acnt allowances
 async function getApprovedAccount(accountName, contractName) {
   // Returns all the accounts approved by the approving account
   const approvedAccounts = await this.eos.rpc.get_table_rows({
@@ -97,7 +97,7 @@ async function getApprovedAmount(fromAccount, toAccount, tokenSymbol, contractNa
   return this.getAmount(approvedAmount, tokenSymbol);
 }
 
-// cleos get currency balance cpu.ore test1.apim CPU
+// cleos get currency balance cpu.ore test1.acnt CPU
 async function getBalance(accountName, tokenSymbol, contractName) {
   const balance = await this.eos.rpc.get_currency_balance(contractName, accountName, tokenSymbol);
   if (balance && balance[0]) {
@@ -121,7 +121,7 @@ function retireToken(ownerAccountName, tokenAmount, contractName, memo = '', per
   }]);
 }
 
-// cleos push action cpu.ore transfer '["test1.apim", "test2.apim", "10.0000 CPU", "memo"]' -p test1.apim
+// cleos push action cpu.ore transfer '["test1.acnt", "test2.acnt", "10.0000 CPU", "memo"]' -p test1.acnt
 function transferToken(fromAccountName, toAccountName, tokenAmount, contractName, memo = '', permission = 'active') {
   return this.transact([{
     account: contractName,
@@ -139,7 +139,7 @@ function transferToken(fromAccountName, toAccountName, tokenAmount, contractName
   }]);
 }
 
-// cleos push action cpu.ore transferFrom '["app.apim", "test1.apim", "test2.apim", "10.0000 CPU"]' -p app.apim
+// cleos push action cpu.ore transferFrom '["app.acnt", "test1.acnt", "test2.acnt", "10.0000 CPU"]' -p app.acnt
 function transferFrom(approvedAccountName, fromAccountName, toAccountName, tokenAmount, contractName, memo = '', permission = 'active') {
   // Standard token transfer
   return this.transact([{

@@ -37,7 +37,7 @@ describe('voucher', () => {
       mockGetInfo(orejs);
       mockGetBlock(orejs);
       await orejs.createVoucherInstrument(ORE_OWNER_ACCOUNT_NAME, ORE_TESTA_ACCOUNT_NAME, offerId);
-      expect(spyTransaction).toHaveBeenCalledWith({ actions: [mockAction({ account: 'manager.apim', name: 'licenseapi' })] }, mockOptions());
+      expect(spyTransaction).toHaveBeenCalledWith({ actions: [mockAction({ account: 'manager.acnt', name: 'licenseapi' })] }, mockOptions());
     });
   });
 

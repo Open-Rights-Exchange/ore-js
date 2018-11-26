@@ -1,4 +1,4 @@
-const APIM_CONTRACT_NAME = 'manager.apim';
+const APIM_CONTRACT_NAME = 'manager.acnt';
 
 async function createOfferInstrument(oreAccountName, offerData, confirm = false) {
   // Create an offer

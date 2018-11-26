@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/Open-Rights-Exchange/ore-js/tree/master.svg?style=svg&circle-token=70a414d0e86f8d125d1a16eca8ddc379aef6fd1c)](https://circleci.com/gh/Open-Rights-Exchange/ore-js/tree/master)
+[![CircleCI](https://circleci.com/gh/open-rights-exchange/ore-js/tree/master.svg?style=svg&circle-token=70a414d0e86f8d125d1a16eca8ddc379aef6fd1c)](https://circleci.com/gh/Open-Rights-Exchange/ore-js/tree/master)
 
 # OREJS Spec
 
@@ -26,9 +26,9 @@ node ore/account_create_random
 npm run lint
 ```
 
-You'll find more examples, and a *boot script*, inside of the examples directory. Check out the [examples/README.md](https://github.com/API-market/orejs/tree/master/examples/README.md) for more information.
+You'll find more examples, and a *boot script*, inside of the examples directory. Check out the [examples/README.md](https://github.com/open-rights-exchange/orejs/tree/master/examples/README.md) for more information.
 
 
-# Publish NPM Package
+# NPM Package
 
 Once published, package name will be: @open-rights-exchange/orejs@{version}

@@ -549,7 +549,7 @@ function mockInfo(info = {}) {
 
 function mockInstrument(instrument = {}) {
   const innerInstrument = {
-    issuer: 'aikon.apim',
+    issuer: 'company.acnt',
     instrument_class: 'apimarket.apiVoucher',
     description: 'process an image and returns the list of objects found',
     instrument_template: '',
@@ -568,8 +568,8 @@ function mockInstrument(instrument = {}) {
 
   return {
     id: 0,
-    owner: 'app.apim',
-    minted_by: 'app.apim',
+    owner: 'app.acnt',
+    minted_by: 'app.acnt',
     minted_at: Math.floor(Date.now() / 1000),
     revoked: 0,
     start_time: Math.floor(Date.now() / 1000) - 1,

@@ -23,7 +23,7 @@ async function connectAs(accountName, accountKey) {
     authorization: `${accountName}@active`,
   };
   cpuContract = await orejs.eos.getContract('token.ore', options);
-  instrContract = await orejs.eos.getContract('manager.apim', options);
+  instrContract = await orejs.eos.getContract('manager.acnt', options);
 }
 
 async function logBalances(account = undefined) {
