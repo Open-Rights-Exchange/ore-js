@@ -550,13 +550,13 @@ function mockInfo(info = {}) {
 function mockInstrument(instrument = {}) {
   const innerInstrument = {
     issuer: 'company.acnt',
-    instrument_class: 'apimarket.apiVoucher',
+    instrument_class: 'company.apiVoucher',
     description: 'process an image and returns the list of objects found',
     instrument_template: '',
     security_type: 'pass',
     rights: [{
-      right_name: 'apimarket.manager.licenseApi',
-      description: 'creates an api voucher to access cloud.hadron.contest-2018-07',
+      right_name: 'company.manager.licenseApi',
+      description: 'creates an api voucher to access com.company.right',
       price_in_cpu: '0',
       additional_url_params: [],
     }],
