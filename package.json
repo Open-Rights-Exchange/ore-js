@@ -29,7 +29,6 @@
     "typescript": "^2.9.2"
   },
   "dependencies": {
-    "bignumber.js": "^7.2.1",
     "dotenv": "^6.1.0",
     "eosjs": "^20.0.0-beta2",
     "eosjs-ecc": "^4.0.4",

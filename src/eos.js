@@ -1,5 +1,3 @@
-const BigNumber = require('bignumber.js');
-
 /* Public */
 
 function hasTransaction(block, transactionId) {
