@@ -1,6 +1,6 @@
 {
   "name": "@open-rights-exchange/orejs",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Orejs is a Javascript helper library to provide simple high-level access to the ore-protocol. Orejs uses eosJS as a wrapper to the EOS blockchain.",
   "main": "./dist/index.js",
   "scripts": {
@@ -11,13 +11,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/api-market/orejs.git"
+    "url": "git+https://github.com/open-rights-exchange/orejs.git"
   },
-  "author": "Aikon",
+  "author": "Open Rights Exchange",
   "bugs": {
-    "url": "https://github.com/api-market/orejs/issues"
+    "url": "https://github.com/open-rights-exchange/orejs/issues"
   },
-  "homepage": "https://github.com/api-market/orejs#readme",
+  "homepage": "https://github.com/open-rights-exchange/orejs#readme",
   "devDependencies": {
     "eslint": "^4.19.1",
     "eslint-config-airbnb": "^17.1.0",
@@ -29,7 +29,6 @@
     "typescript": "^2.9.2"
   },
   "dependencies": {
-    "bignumber.js": "^7.2.1",
     "dotenv": "^6.1.0",
     "eosjs": "^20.0.0-beta2",
     "eosjs-ecc": "^4.0.4",

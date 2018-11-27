@@ -549,14 +549,14 @@ function mockInfo(info = {}) {
 
 function mockInstrument(instrument = {}) {
   const innerInstrument = {
-    issuer: 'aikon.apim',
-    instrument_class: 'apimarket.apiVoucher',
+    issuer: 'company.acnt',
+    instrument_class: 'company.apiVoucher',
     description: 'process an image and returns the list of objects found',
     instrument_template: '',
     security_type: 'pass',
     rights: [{
-      right_name: 'apimarket.manager.licenseApi',
-      description: 'creates an api voucher to access cloud.hadron.contest-2018-07',
+      right_name: 'company.manager.licenseApi',
+      description: 'creates an api voucher to access com.company.right',
       price_in_cpu: '0',
       additional_url_params: [],
     }],
@@ -568,8 +568,8 @@ function mockInstrument(instrument = {}) {
 
   return {
     id: 0,
-    owner: 'app.apim',
-    minted_by: 'app.apim',
+    owner: 'app.acnt',
+    minted_by: 'app.acnt',
     minted_at: Math.floor(Date.now() / 1000),
     revoked: 0,
     start_time: Math.floor(Date.now() / 1000) - 1,

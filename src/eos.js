@@ -1,5 +1,3 @@
-const BigNumber = require('bignumber.js');
-
 /* Public */
 
 function hasTransaction(block, transactionId) {
@@ -71,7 +69,7 @@ async function getAllTableRows(params, key_field = 'id', json = true) {
 
 // check if the publickey belongs to the account provided
 async function checkPubKeytoAccount(account, publicKey) {
-  const keyaccounts = await this.eos.history_get_key_accounts(publicKey);
+  const keyaccounts = await this.eos.rpc.history_get_key_accounts(publicKey);
   const accounts = await keyaccounts.account_names;
 
   if (accounts.includes(account)) {
@@ -81,7 +79,9 @@ async function checkPubKeytoAccount(account, publicKey) {
 }
 
 function transact(actions, blocksBehind = 3, expireSeconds = 30) {
-  return this.eos.transact({ actions }, {
+  return this.eos.transact({
+    actions
+  }, {
     blocksBehind,
     expireSeconds,
   });
