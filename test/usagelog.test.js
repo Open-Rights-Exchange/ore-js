@@ -24,7 +24,7 @@ describe('usagelog', () => {
     let totalCount;
 
     beforeEach(() => {
-      rightName = 'cloud.hadron.contest-2018-07';
+      rightName = 'com.company.right';
       totalCpu = 10;
       totalCount = 20;
 
