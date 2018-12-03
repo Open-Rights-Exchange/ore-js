@@ -3,7 +3,6 @@ const hash = require("hash.js")
 
 // hash the parameter values to be sent to the verifier
 function hashParams(params) {
-
     let hashedParams = {}
     Object.keys(params).map(key => {
         hashedParams[key] = hash.sha256().update(params[key]).digest('hex')
