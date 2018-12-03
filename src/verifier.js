@@ -11,7 +11,7 @@ function hashParams(params) {
 }
 
 //Call the Verifier to verify the client request and return an ore-access-token to access a particular right
-async function getAccessTokenFromVerifier(verifierEndpoint, instrument, right, encryptedParams) {
+async function getAccessTokenFromVerifier(verifierEndpoint, instrument, right, hashedParams) {
     let errorMessage;
     let result;
     let signature;
@@ -25,7 +25,7 @@ async function getAccessTokenFromVerifier(verifierEndpoint, instrument, right, e
     const options = {
         method: 'POST',
         body: JSON.stringify({
-            requestParams: encryptedParams,
+            requestParams: hashedParams,
             rightName: right.right_name,
             signature,
             voucherId: instrument.id
