@@ -75,8 +75,30 @@ async function getRightStats(rightName, owner) {
   };
 }
 
+async function updateUsageLog(verifierEndpoint, instrumentId, rightName, oreAccessToken, instrumentCallCost) {
+  // Post the usage details for an instrument to the verifier usage log handler
+  // Verifier then updates the usage for the instrument on the ORE blockchain 
+  const signature = await this.signVoucher(instrumentId);
+  const options = {
+    method: 'POST',
+    body: JSON.stringify({
+      rightName,
+      oreAccessToken,
+      signature,
+      voucherId: instrumentId,
+      amount: instrumentCallCost
+    }),
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
+  await fetch(verifierEndpoint + "/update-usage", options);
+}
+
+
 module.exports = {
   getCallStats,
   getRightStats,
   getInstrumentsByRight,
+  updateUsageLog
 };
