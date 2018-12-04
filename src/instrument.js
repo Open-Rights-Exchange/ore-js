@@ -26,6 +26,16 @@ function sortByMintedAt(instruments) {
   return instruments[instruments.length - 1]
 }
 
+function sortByCheapestRight(instruments, rightName){
+  // sorts the instruments by the price for the right
+  instruments.sort((a, b) => {
+    const rightA = this.getRight(a, rightName)
+    const rightB = this.getRight(b, rightName)
+    return rightA.price_in_cpu - rightB.price_in_cpu
+  })
+  return instruments 
+}
+
 async function getInstruments(params) {
   // Returns instruments indexed by owner/instrumentTemplate/instrumentClass
   // Returns all instruments by default
@@ -133,12 +143,8 @@ function sortInstruments(instruments, rightName, sortOrder = "cheapestThenMostRe
   switch (sortOrder) {
     case sortTypes[1]:
     
-      sortedInstruments = instruments.sort((a, b) => {
-        const rightA = this.getRight(a, rightName)
-        const rightB = this.getRight(b, rightName)
-        return rightA.price_in_cpu - rightB.price_in_cpu
-      })
-
+      sortedInstruments = sortByCheapestRight.bind(this)(instruments, rightName)
+      
       cheapestInstrument = sortedInstruments[0]
       cheapestPrice = this.getRight(cheapestInstrument, rightName).price_in_cpu;
       cheapestInstruments = sortedInstruments.filter(instrument => this.getRight(instrument, rightName).price_in_cpu === cheapestPrice)
