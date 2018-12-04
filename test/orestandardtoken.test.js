@@ -4,23 +4,9 @@
 const ORE_TOKEN_CONTRACT = 'token.ore';
 const TOKEN_SYMBOL = 'LUME';
 
-const {
-  expectFetch,
-  mock,
-  mockInfo,
-} = require('./helpers/fetch');
-
-const {
-  mockAction,
-  mockOptions,
-} = require('./helpers/eos');
-
-const {
-  constructOrejs,
-  mockGetBlock,
-  mockGetInfo,
-  mockGetTransaction,
-} = require('./helpers/orejs');
+const { expectFetch, mock, mockInfo } = require('./helpers/fetch');
+const { mockAction, mockOptions } = require('./helpers/eos');
+const { constructOrejs, mockGetBlock, mockGetInfo, mockGetTransaction } = require('./helpers/orejs');
 
 describe('ore', () => {
   let orejs;

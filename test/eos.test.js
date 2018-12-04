@@ -1,17 +1,7 @@
 /* global ORE_TESTA_ACCOUNT_NAME:true */
 /* global ORE_NETWORK_URI:true */
-const {
-  mockBlock,
-  mockInfo,
-} = require('./helpers/fetch');
-const {
-  constructOrejs,
-  mockGetAccount,
-  mockGetInfo,
-  mockGetBlock,
-  mockGetBlockError,
-  mockGetTransaction,
-} = require('./helpers/orejs');
+const { mockBlock, mockInfo } = require('./helpers/fetch');
+const { constructOrejs, mockGetAccount, mockGetInfo, mockGetBlock, mockGetBlockError, mockGetTransaction } = require('./helpers/orejs');
 
 describe('eos', () => {
   let orejs;

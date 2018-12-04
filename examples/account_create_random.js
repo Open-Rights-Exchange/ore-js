@@ -5,9 +5,7 @@
 // Usage: $ node ore/account_create_random
 const BigNumber = require('bignumber.js');
 const ecc = require('eosjs-ecc');
-const {
-  crypto,
-} = require('./index');
+const { crypto } = require('./index');
 
 let options;
 let balance;

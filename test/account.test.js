@@ -4,19 +4,8 @@
 /* global ORE_NETWORK_URI:true */
 /* global ORE_PAYER_ACCOUNT_NAME:true */
 const ecc = require('eosjs-ecc');
-
-const {
-  mockAction,
-  mockOptions,
-} = require('./helpers/eos');
-
-const {
-  constructOrejs,
-  mockGetAccount,
-  mockGetInfo,
-  mockGetBlock,
-  mockGetTransaction,
-} = require('./helpers/orejs');
+const { mockAction, mockOptions } = require('./helpers/eos');
+const { constructOrejs, mockGetAccount, mockGetInfo, mockGetBlock, mockGetTransaction } = require('./helpers/orejs');
 
 describe('account', () => {
   let orejs;
