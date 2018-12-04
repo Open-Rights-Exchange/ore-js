@@ -1,6 +1,4 @@
-const {
-  Keygen,
-} = require('eosjs-keygen');
+const { Keygen } = require('eosjs-keygen');
 
 const ACCOUNT_NAME_MAX_LENGTH = 12;
 const BASE = 31; // Base 31 allows us to leave out '.', as it's used for account scope
@@ -123,10 +121,7 @@ async function getAccountPermissions(oreAccountName) {
 }
 
 function weightedKey(key, weight = 1) {
-  return {
-    key,
-    weight,
-  };
+  return { key, weight };
 }
 
 function weightedKeys(keys, weight = 1) {
@@ -175,7 +170,7 @@ async function addAuthPermission(oreAccountName, keys, permName, code, type) {
         parent,
         auth,
       },
-    }
+    };
   });
 
   actions.push({
@@ -210,10 +205,7 @@ async function createOreAccountWithKeys(activePublicKey, ownerPublicKey, orePaye
   } else {
     transaction = await newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, options);
   }
-  return {
-    oreAccountName,
-    transaction,
-  };
+  return { oreAccountName, transaction };
 }
 
 async function generateOreAccountAndKeys(ownerPublicKey, orePayerAccountName, options = {}) {
@@ -225,35 +217,23 @@ async function generateOreAccountAndKeys(ownerPublicKey, orePayerAccountName, op
     transaction,
   } = await createOreAccountWithKeys.bind(this)(keys.publicKeys.active, ownerPublicKey, orePayerAccountName, options, true);
 
-  return {
-    keys,
-    oreAccountName,
-    transaction,
-  };
+  return { keys, oreAccountName, transaction };
 }
 
 async function generateOreAccountAndEncryptedKeys(password, salt, ownerPublicKey, orePayerAccountName, options = {}) {
   const {
-    keys,
-    oreAccountName,
-    transaction,
+    keys, oreAccountName, transaction,
   } = await generateOreAccountAndKeys.bind(this)(ownerPublicKey, orePayerAccountName, options);
 
   const encryptedKeys = await encryptKeys.bind(this)(keys, password, salt);
-  return {
-    encryptedKeys,
-    oreAccountName,
-    transaction,
-  };
+  return { encryptedKeys, oreAccountName, transaction };
 }
 
 /* Public */
 
 async function createOreAccount(password, salt, ownerPublicKey, orePayerAccountName, options = {}) {
   const {
-    encryptedKeys,
-    oreAccountName,
-    transaction,
+    encryptedKeys, oreAccountName, transaction,
   } = await generateOreAccountAndEncryptedKeys.bind(this)(password, salt, ownerPublicKey, orePayerAccountName, options);
   const verifierAuthKeys = await generateAuthKeys.bind(this)(oreAccountName, 'authverifier', 'token.ore', 'approve');
 

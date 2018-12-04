@@ -1,8 +1,5 @@
 const dotenv = require('dotenv');
-const {
-  Orejs,
-  crypto,
-} = require('../src');
+const { Orejs, crypto } = require('../src');
 
 dotenv.config();
 

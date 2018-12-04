@@ -2,18 +2,8 @@
 /* global ORE_OWNER_ACCOUNT_KEY:true */
 /* global ORE_PAYER_ACCOUNT_NAME:true */
 
-const {
-  Orejs,
-} = require('../../src');
-const {
-  mockAccount,
-  mockAbi,
-  mockBlock,
-  mockCode,
-  mockError,
-  mockInfo,
-  mockTransaction,
-} = require('./fetch');
+const { Orejs } = require('../../src');
+const { mockAccount, mockAbi, mockBlock, mockCode, mockError, mockInfo, mockTransaction } = require('./fetch');
 
 function constructOrejs(config) {
   const orejs = new Orejs({
