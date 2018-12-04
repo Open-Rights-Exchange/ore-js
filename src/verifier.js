@@ -18,7 +18,7 @@ function hashParams(params) {
 
 //Call the Verifier to verify the client request and return an ore-access-token to access a particular right
 async function getAccessTokenFromVerifier(verifierEndpoint, instrument, right, hashedParams) {
-    let errorMessage;
+    let errorTitle = "Orejs Access Token Verification Error";
     let result;
     let signature;
 
@@ -46,8 +46,7 @@ async function getAccessTokenFromVerifier(verifierEndpoint, instrument, right, h
             throw new Error(error.message);
         }
     } catch (error) {
-        errorMessage = "Internal Server Error";
-        throw new Error(`${errorMessage}:${error.message}`);
+        throw new Error(`${errorTitle}: ${error.message}`);
     }
 
     const {
@@ -61,12 +60,12 @@ async function getAccessTokenFromVerifier(verifierEndpoint, instrument, right, h
 
     if (!oreAccessToken) {
         errorMessage = "Verifier is unable to return an ORE access token. Make sure a valid instrument is passed to the verifier."
-        throw new Error(`${errorMessage}`);
+        throw new Error(`${errorTitle}: ${errorMessage}`);
     }
 
     if (!endpoint) {
         errorMessage = "Verifier is unable to find the Api endpoint. Make sure to pass in the correct right name you want to access."
-        throw new Error(`${errorMessage}`);
+        throw new Error(`${errorTitle}: ${errorMessage}`);
     }
 
     return {
