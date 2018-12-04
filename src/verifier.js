@@ -22,11 +22,7 @@ async function getAccessTokenFromVerifier(verifierEndpoint, instrument, right, h
     let result;
     let signature;
 
-    try {
-        signature = await this.sign(instrument.id);
-    } catch (error) {
-        throw new Error(`${error.message}`);
-    }
+    signature = await this.sign(instrument.id);
 
     const options = {
         method: 'POST',
@@ -64,7 +60,7 @@ async function getAccessTokenFromVerifier(verifierEndpoint, instrument, right, h
 
 
     if (!oreAccessToken) {
-        errorMessage = "Verifier is unable to return an ORE access token. Make sure a valid voucher is passed to the verifier."
+        errorMessage = "Verifier is unable to return an ORE access token. Make sure a valid instrument is passed to the verifier."
         throw new Error(`${errorMessage}`);
     }
 
