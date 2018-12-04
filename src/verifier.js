@@ -19,6 +19,7 @@ function hashParams(params) {
 //Call the Verifier to verify the client request and return an ore-access-token to access a particular right
 async function getAccessTokenFromVerifier(verifierEndpoint, instrument, right, hashedParams) {
     let errorTitle = "Orejs Access Token Verification Error";
+    let errorMessage;
     let result;
     let signature;
 
