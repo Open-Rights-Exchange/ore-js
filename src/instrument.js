@@ -142,9 +142,7 @@ function sortInstruments(instruments, rightName, sortOrder = "cheapestThenMostRe
 
   switch (sortOrder) {
     case sortTypes[1]:
-    
       sortedInstruments = sortByCheapestRight.bind(this)(instruments, rightName)
-      
       cheapestInstrument = sortedInstruments[0]
       cheapestPrice = this.getRight(cheapestInstrument, rightName).price_in_cpu;
       cheapestInstruments = sortedInstruments.filter(instrument => this.getRight(instrument, rightName).price_in_cpu === cheapestPrice)
@@ -153,11 +151,11 @@ function sortInstruments(instruments, rightName, sortOrder = "cheapestThenMostRe
       if (cheapestInstruments.length > 0) {
         return sortByMintedAt(cheapestInstruments)
       }
-      
+
       return cheapestInstrument
 
     case sortTypes[2]:    
-    return sortByMintedAt(instruments)
+      return sortByMintedAt(instruments)
   }
 }
 
