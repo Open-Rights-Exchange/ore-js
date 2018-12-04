@@ -1,5 +1,11 @@
 const fetch = require('node-fetch')
 const hash = require("hash.js")
+const ecc = require('eosjs-ecc')
+
+// sign the input data with the user keys
+async function sign(data) {
+    return ecc.sign(data.toString(), this.config.keyProvider[0]);
+}
 
 // hash the parameter values to be sent to the verifier
 function hashParams(params) {
@@ -17,7 +23,7 @@ async function getAccessTokenFromVerifier(verifierEndpoint, instrument, right, h
     let signature;
 
     try {
-        signature = await this.signVoucher(instrument.id);
+        signature = await this.sign(instrument.id);
     } catch (error) {
         throw new Error(`${error.message}`);
     }
@@ -57,12 +63,12 @@ async function getAccessTokenFromVerifier(verifierEndpoint, instrument, right, h
     } = await result.json();
 
 
-    if (!oreAccessToken || oreAccessToken === undefined) {
+    if (!oreAccessToken) {
         errorMessage = "Verifier is unable to return an ORE access token. Make sure a valid voucher is passed to the verifier."
         throw new Error(`${errorMessage}`);
     }
 
-    if (!endpoint || endpoint === undefined) {
+    if (!endpoint) {
         errorMessage = "Verifier is unable to find the Api endpoint. Make sure to pass in the correct right name you want to access."
         throw new Error(`${errorMessage}`);
     }
@@ -77,6 +83,7 @@ async function getAccessTokenFromVerifier(verifierEndpoint, instrument, right, h
 }
 
 module.exports = {
+    sign,
     getAccessTokenFromVerifier,
     hashParams,
 }
