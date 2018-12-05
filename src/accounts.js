@@ -1,13 +1,11 @@
-const {
-  Keygen,
-} = require('eosjs-keygen');
+const { Keygen } = require('eosjs-keygen');
 
 const ACCOUNT_NAME_MAX_LENGTH = 12;
 const BASE = 31; // Base 31 allows us to leave out '.', as it's used for account scope
 
 /* Private */
 
-function newAccountTransaction(name, ownerPublicKey, activePublicKey, options = {}) {
+function newAccountTransaction(name, ownerPublicKey, activePublicKey, orePayerAccountName, options = {}) {
   const option = {
     bytes: 8192,
     stakedNet: 1,
@@ -20,11 +18,11 @@ function newAccountTransaction(name, ownerPublicKey, activePublicKey, options = 
     account: 'eosio',
     name: 'newaccount',
     authorization: [{
-      actor: this.config.orePayerAccountName,
+      actor: orePayerAccountName,
       permission: 'active',
     }],
     data: {
-      creator: this.config.orePayerAccountName,
+      creator: orePayerAccountName,
       name,
       owner: {
         threshold: 1,
@@ -50,11 +48,11 @@ function newAccountTransaction(name, ownerPublicKey, activePublicKey, options = 
     account: 'eosio',
     name: 'buyrambytes',
     authorization: [{
-      actor: this.config.orePayerAccountName,
+      actor: orePayerAccountName,
       permission: 'active',
     }],
     data: {
-      payer: this.config.orePayerAccountName,
+      payer: orePayerAccountName,
       receiver: name,
       bytes: option.bytes,
     },
@@ -63,11 +61,11 @@ function newAccountTransaction(name, ownerPublicKey, activePublicKey, options = 
     account: 'eosio',
     name: 'delegatebw',
     authorization: [{
-      actor: this.config.orePayerAccountName,
+      actor: orePayerAccountName,
       permission: 'active',
     }],
     data: {
-      from: this.config.orePayerAccountName,
+      from: orePayerAccountName,
       receiver: name,
       stake_net_quantity: `${option.stakedNet}.0000 SYS`,
       stake_cpu_quantity: `${option.stakedCpu}.0000 SYS`,
@@ -123,10 +121,7 @@ async function getAccountPermissions(oreAccountName) {
 }
 
 function weightedKey(key, weight = 1) {
-  return {
-    key,
-    weight,
-  };
+  return { key, weight };
 }
 
 function weightedKeys(keys, weight = 1) {
@@ -175,7 +170,7 @@ async function addAuthPermission(oreAccountName, keys, permName, code, type) {
         parent,
         auth,
       },
-    }
+    };
   });
 
   actions.push({
@@ -202,59 +197,44 @@ async function generateAuthKeys(oreAccountName, permName, code, action) {
   return authKeys;
 }
 
-async function createOreAccountWithKeys(activePublicKey, ownerPublicKey, options = {}, confirm = false) {
+async function createOreAccountWithKeys(activePublicKey, ownerPublicKey, orePayerAccountName, options = {}, confirm = false) {
   const oreAccountName = options.oreAccountName || generateAccountName();
   let transaction;
   if (confirm) {
-    transaction = await this.awaitTransaction(() => newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, options));
+    transaction = await this.awaitTransaction(() => newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, options));
   } else {
-    transaction = await newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, options);
+    transaction = await newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, options);
   }
-  return {
-    oreAccountName,
-    transaction,
-  };
+  return { oreAccountName, transaction };
 }
 
-async function generateOreAccountAndKeys(ownerPublicKey, options = {}) {
+async function generateOreAccountAndKeys(ownerPublicKey, orePayerAccountName, options = {}) {
   const keys = await Keygen.generateMasterKeys();
 
   // TODO Check for existing wallets, for name collisions
   const {
     oreAccountName,
     transaction,
-  } = await createOreAccountWithKeys.bind(this)(keys.publicKeys.active, ownerPublicKey, options, true);
+  } = await createOreAccountWithKeys.bind(this)(keys.publicKeys.active, ownerPublicKey, orePayerAccountName, options, true);
 
-  return {
-    keys,
-    oreAccountName,
-    transaction,
-  };
+  return { keys, oreAccountName, transaction };
 }
 
-async function generateOreAccountAndEncryptedKeys(password, salt, ownerPublicKey, options = {}) {
+async function generateOreAccountAndEncryptedKeys(password, salt, ownerPublicKey, orePayerAccountName, options = {}) {
   const {
-    keys,
-    oreAccountName,
-    transaction,
-  } = await generateOreAccountAndKeys.bind(this)(ownerPublicKey, options);
+    keys, oreAccountName, transaction,
+  } = await generateOreAccountAndKeys.bind(this)(ownerPublicKey, orePayerAccountName, options);
 
   const encryptedKeys = await encryptKeys.bind(this)(keys, password, salt);
-  return {
-    encryptedKeys,
-    oreAccountName,
-    transaction,
-  };
+  return { encryptedKeys, oreAccountName, transaction };
 }
 
 /* Public */
 
-async function createOreAccount(password, salt, ownerPublicKey, options = {}) {
+async function createOreAccount(password, salt, ownerPublicKey, orePayerAccountName, options = {}) {
   const {
-    encryptedKeys,
-    oreAccountName,
-    transaction,
-  } = await generateOreAccountAndEncryptedKeys.bind(this)(password, salt, ownerPublicKey, options);
+    encryptedKeys, oreAccountName, transaction,
+  } = await generateOreAccountAndEncryptedKeys.bind(this)(password, salt, ownerPublicKey, orePayerAccountName, options);
   const verifierAuthKeys = await generateAuthKeys.bind(this)(oreAccountName, 'authverifier', 'token.ore', 'approve');
 
   return {

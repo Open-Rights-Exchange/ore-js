@@ -2,20 +2,10 @@
 /* global WALLET_PASSWORD:true */
 /* global ORE_OWNER_ACCOUNT_KEY:true */
 /* global ORE_NETWORK_URI:true */
+/* global ORE_PAYER_ACCOUNT_NAME:true */
 const ecc = require('eosjs-ecc');
-
-const {
-  mockAction,
-  mockOptions,
-} = require('./helpers/eos');
-
-const {
-  constructOrejs,
-  mockGetAccount,
-  mockGetInfo,
-  mockGetBlock,
-  mockGetTransaction,
-} = require('./helpers/orejs');
+const { mockAction, mockOptions } = require('./helpers/eos');
+const { constructOrejs, mockGetAccount, mockGetInfo, mockGetBlock, mockGetTransaction } = require('./helpers/orejs');
 
 describe('account', () => {
   let orejs;
@@ -45,7 +35,7 @@ describe('account', () => {
     });
 
     it('returns a new account', async () => {
-      const account = await orejs.createOreAccount(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, ORE_OWNER_ACCOUNT_KEY);
+      const account = await orejs.createOreAccount(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, ORE_OWNER_ACCOUNT_KEY, ORE_PAYER_ACCOUNT_NAME);
       expect(spyTransaction).toHaveBeenNthCalledWith(2, {
         actions: [
           mockAction({ account: 'eosio' }),
