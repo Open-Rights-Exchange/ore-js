@@ -281,31 +281,31 @@ function mockAbi() {
             "name": "issuer",
             "type": "name"
           },{
-            "name": "api_voucher_license_price_in_cpu",
+            "name": "api_instrument_license_price_in_cpu",
             "type": "string"
           },{
-            "name": "api_voucher_lifetime_in_seconds",
+            "name": "api_instrument_lifetime_in_seconds",
             "type": "string"
           },{
-            "name": "api_voucher_start_date",
+            "name": "api_instrument_start_date",
             "type": "string"
           },{
-            "name": "api_voucher_end_date",
+            "name": "api_instrument_end_date",
             "type": "string"
           },{
-            "name": "api_voucher_valid_forever",
+            "name": "api_instrument_valid_forever",
             "type": "uint8"
           },{
-            "name": "api_voucher_mutability",
+            "name": "api_instrument_mutability",
             "type": "uint8"
           },{
-            "name": "api_voucher_security_type",
+            "name": "api_instrument_security_type",
             "type": "string"
           },{
             "name": "right_params",
             "type": "offer_params[]"
           },{
-            "name": "api_voucher_parameter_rules",
+            "name": "api_instrument_parameter_rules",
             "type": "param_type[]"
           },{
             "name": "offer_mutability",
@@ -343,7 +343,7 @@ function mockAbi() {
             "name": "offer_template",
             "type": "string"
           },{
-            "name": "override_voucher_id",
+            "name": "override_instrument_id",
             "type": "uint64"
           }
         ]

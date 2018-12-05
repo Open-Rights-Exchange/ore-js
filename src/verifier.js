@@ -51,13 +51,7 @@ async function getAccessTokenFromVerifier(verifierEndpoint, instrument, right, h
         throw new Error(`${errorTitle}: ${error.message}`);
     }
 
-    const {
-        endpoint,
-        oreAccessToken,
-        method,
-        additionalParameters,
-        accessTokenTimeout
-    } = await result.json();
+    const { endpoint, oreAccessToken, method, additionalParameters, accessTokenTimeout } = await result.json();
 
 
     if (!oreAccessToken) {
@@ -72,13 +66,7 @@ async function getAccessTokenFromVerifier(verifierEndpoint, instrument, right, h
         throw new Error(`${errorTitle}: ${errorMessage}`);
     }
 
-    return {
-        endpoint,
-        oreAccessToken,
-        method,
-        additionalParameters,
-        accessTokenTimeout
-    };
+    return { endpoint, oreAccessToken, method, additionalParameters, accessTokenTimeout };
 }
 
 module.exports = {

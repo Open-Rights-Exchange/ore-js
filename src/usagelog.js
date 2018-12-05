@@ -44,7 +44,7 @@ async function getCallStats(instrumentId, rightName) {
 }
 
 async function getRightStats(rightName, owner) {
-  // Returns the total cpu and calls against a particular right across all the vouchers. If owner specified, then returns the total calls and cpu usage for the owner.
+  // Returns the total cpu and calls against a particular right across all the instruments. If owner specified, then returns the total calls and cpu usage for the owner.
   let instruments;
   let rightProperties;
 
@@ -77,8 +77,8 @@ async function getRightStats(rightName, owner) {
 
 async function updateUsageLog(verifierEndpoint, instrumentId, rightName, oreAccessToken, instrumentCallCost) {
   // Post the usage details for an instrument to the verifier usage log handler
-  // Verifier then updates the usage for the instrument on the ORE blockchain 
-  const signature = await this.signVoucher(instrumentId);
+  // Verifier then updates the usage for the instrument on the ORE blockchain
+  const signature = await this.sign(instrumentId);
   const options = {
     method: 'POST',
     body: JSON.stringify({
