@@ -6,7 +6,6 @@ const cpu = require('./tokens/cpu');
 const crypto = require('./modules/crypto');
 const eos = require('./eos');
 const instrument = require('./instrument');
-const offer = require('./apimarket/offer');
 const ore = require('./tokens/ore');
 const oreStandardToken = require('./orestandardtoken');
 const rightsRegistry = require('./rightsregistry');
@@ -22,7 +21,6 @@ class Orejs {
     Object.assign(this, crypto);
     Object.assign(this, eos);
     Object.assign(this, instrument);
-    Object.assign(this, offer);
     Object.assign(this, ore);
     Object.assign(this, oreStandardToken);
     Object.assign(this, rightsRegistry);
