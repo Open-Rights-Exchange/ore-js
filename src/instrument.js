@@ -17,6 +17,25 @@ function hasCategory(instrument, category) {
   return false;
 }
 
+function sortByMintedAt(instruments) {
+  // sorts the instruments by minted_at property
+  // minted_at represents the time when the instrument is either minted or updated
+  instruments.sort((a, b) => {
+    return a.instrument.minted_at - b.instrument.minted_at
+  });
+  return instruments;
+}
+
+function sortByCheapestRight(instruments, rightName){
+  // sorts the instruments by the price for the right
+  instruments.sort((a, b) => {
+    const rightA = this.getRight(a, rightName)
+    const rightB = this.getRight(b, rightName)
+    return rightA.price_in_cpu - rightB.price_in_cpu
+  });
+  return instruments;
+}
+
 async function getInstruments(params) {
   // Returns instruments indexed by owner/instrumentTemplate/instrumentClass
   // Returns all instruments by default
@@ -107,8 +126,38 @@ async function findInstruments(oreAccountName, activeOnly = true, category = und
   return instruments;
 }
 
+function sortInstruments(instruments, rightName, sortOrder = "cheapestThenMostRecent") {
+  // sorts the instruments depending on the search criteria : 
+  // cheapestThenMostRecent - returns the cheapest instrument for the right and if there are more than one with the same price, then returns the latest created/updated instrument
+  // mostRecent - returns the latest instrument created/updated for the right
+  let sortedInstruments;
+  let cheapestInstrument;
+  let cheapestPrice;
+  let cheapestInstruments;
+
+  const sortTypes = {
+    1: "cheapestThenMostRecent",
+    2: "mostRecent"
+  };
+
+  switch (sortOrder) {
+    case sortTypes[1]:
+      sortedInstruments = sortByCheapestRight.bind(this)(instruments, rightName);
+      cheapestInstrument = sortedInstruments[0];
+      cheapestPrice = this.getRight(cheapestInstrument, rightName).price_in_cpu;
+      cheapestInstruments = sortedInstruments.filter(instrument => this.getRight(instrument, rightName).price_in_cpu === cheapestPrice);
+
+      sortedInstruments = sortByMintedAt(cheapestInstruments);
+
+    case sortTypes[2]:    
+      sortedInstruments = sortByMintedAt(instruments);
+  }
+  return sortedInstruments[sortedInstruments.length - 1];
+}
+
 module.exports = {
   getRight,
   getAllInstruments,
   findInstruments,
+  sortInstruments
 };
