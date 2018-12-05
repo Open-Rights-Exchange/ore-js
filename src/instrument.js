@@ -23,7 +23,7 @@ function sortByMintedAt(instruments) {
   instruments.sort((a, b) => {
     return a.instrument.minted_at - b.instrument.minted_at
   })
-  return instruments[instruments.length - 1]
+  return instruments
 }
 
 function sortByCheapestRight(instruments, rightName){
@@ -149,13 +149,15 @@ function sortInstruments(instruments, rightName, sortOrder = "cheapestThenMostRe
 
       // if more than one instrument has the same price for the right, get the most recently updated
       if (cheapestInstruments.length > 0) {
-        return sortByMintedAt(cheapestInstruments)
+        sortedInstruments = sortByMintedAt(cheapestInstruments)
+        return sortedInstruments[sortedInstruments.length - 1]
       }
 
       return cheapestInstrument
 
     case sortTypes[2]:    
-      return sortByMintedAt(instruments)
+      sortedInstruments = sortByMintedAt(instruments)
+      return sortedInstruments[sortedInstruments.length - 1]
   }
 }
 
