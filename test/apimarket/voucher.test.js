@@ -1,14 +1,5 @@
-const {
-  mockAction,
-  mockOptions,
-} = require('../helpers/eos');
-
-const {
-  constructOrejs,
-  mockGetBlock,
-  mockGetInfo,
-  mockGetTransaction,
-} = require('../helpers/orejs');
+const { mockAction, mockOptions } = require('../helpers/eos');
+const { constructOrejs, mockGetBlock, mockGetInfo, mockGetTransaction } = require('../helpers/orejs');
 
 describe('voucher', () => {
   let orejs;

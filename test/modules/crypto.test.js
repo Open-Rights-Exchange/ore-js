@@ -2,9 +2,7 @@
 /* global WALLET_PASSWORD:true */
 /* global USER_ACCOUNT_ENCRYPTION_SALT:true */
 
-const {
-  crypto,
-} = require('../../src');
+const { crypto } = require('../../src');
 
 describe('encryption/decryption of private keys with wallet passwords', () => {
   let privateKey;

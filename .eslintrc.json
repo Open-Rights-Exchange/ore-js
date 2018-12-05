@@ -6,6 +6,7 @@
         "jest": true
     },
     "rules": {
+        "object-curly-newline": "off",
         "no-new": [0],
         "no-unused-vars": "off",
         "no-shadow": "off",
