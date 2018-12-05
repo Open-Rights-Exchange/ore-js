@@ -22,8 +22,8 @@ function sortByMintedAt(instruments) {
   // minted_at represents the time when the instrument is either minted or updated
   instruments.sort((a, b) => {
     return a.instrument.minted_at - b.instrument.minted_at
-  })
-  return instruments
+  });
+  return instruments;
 }
 
 function sortByCheapestRight(instruments, rightName){
@@ -32,8 +32,8 @@ function sortByCheapestRight(instruments, rightName){
     const rightA = this.getRight(a, rightName)
     const rightB = this.getRight(b, rightName)
     return rightA.price_in_cpu - rightB.price_in_cpu
-  })
-  return instruments 
+  });
+  return instruments;
 }
 
 async function getInstruments(params) {
@@ -138,21 +138,21 @@ function sortInstruments(instruments, rightName, sortOrder = "cheapestThenMostRe
   const sortTypes = {
     1: "cheapestThenMostRecent",
     2: "mostRecent"
-  }
+  };
 
   switch (sortOrder) {
     case sortTypes[1]:
-      sortedInstruments = sortByCheapestRight.bind(this)(instruments, rightName)
-      cheapestInstrument = sortedInstruments[0]
+      sortedInstruments = sortByCheapestRight.bind(this)(instruments, rightName);
+      cheapestInstrument = sortedInstruments[0];
       cheapestPrice = this.getRight(cheapestInstrument, rightName).price_in_cpu;
-      cheapestInstruments = sortedInstruments.filter(instrument => this.getRight(instrument, rightName).price_in_cpu === cheapestPrice)
-      
-      sortedInstruments = sortByMintedAt(cheapestInstruments)
+      cheapestInstruments = sortedInstruments.filter(instrument => this.getRight(instrument, rightName).price_in_cpu === cheapestPrice);
+
+      sortedInstruments = sortByMintedAt(cheapestInstruments);
 
     case sortTypes[2]:    
-      sortedInstruments = sortByMintedAt(instruments)
+      sortedInstruments = sortByMintedAt(instruments);
   }
-  return sortedInstruments[sortedInstruments.length - 1]
+  return sortedInstruments[sortedInstruments.length - 1];
 }
 
 module.exports = {
