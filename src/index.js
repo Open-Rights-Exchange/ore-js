@@ -10,6 +10,7 @@ const ore = require('./tokens/ore');
 const oreStandardToken = require('./orestandardtoken');
 const rightsRegistry = require('./rightsregistry');
 const usageLog = require('./usagelog');
+const verifier = require('./verifier');
 
 class Orejs {
   constructor(config = {}) {
@@ -25,6 +26,7 @@ class Orejs {
     Object.assign(this, oreStandardToken);
     Object.assign(this, rightsRegistry);
     Object.assign(this, usageLog);
+    Object.assign(this, verifier);
   }
 
   constructEos(config) {
