@@ -127,7 +127,7 @@ async function findInstruments(oreAccountName, activeOnly = true, category = und
 }
 
 function sortInstruments(instruments, rightName, sortOrder = "cheapestThenMostRecent") {
-  // sorts the instruments depending on the search criteria : 
+  // sorts the instruments depending on the search criteria :
   // cheapestThenMostRecent - returns the cheapest instrument for the right and if there are more than one with the same price, then returns the latest created/updated instrument
   // mostRecent - returns the latest instrument created/updated for the right
   let sortedInstruments;
@@ -135,13 +135,8 @@ function sortInstruments(instruments, rightName, sortOrder = "cheapestThenMostRe
   let cheapestPrice;
   let cheapestInstruments;
 
-  const sortTypes = {
-    1: "cheapestThenMostRecent",
-    2: "mostRecent"
-  };
-
   switch (sortOrder) {
-    case sortTypes[1]:
+    case "cheapestThenMostRecent":
       sortedInstruments = sortByCheapestRight.bind(this)(instruments, rightName);
       cheapestInstrument = sortedInstruments[0];
       cheapestPrice = this.getRight(cheapestInstrument, rightName).price_in_cpu;
@@ -149,7 +144,7 @@ function sortInstruments(instruments, rightName, sortOrder = "cheapestThenMostRe
 
       sortedInstruments = sortByMintedAt(cheapestInstruments);
 
-    case sortTypes[2]:    
+    case "mostRecent":
       sortedInstruments = sortByMintedAt(instruments);
   }
   return sortedInstruments[sortedInstruments.length - 1];
