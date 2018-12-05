@@ -2,15 +2,8 @@
 /* global ORE_TESTA_ACCOUNT_NAME:true */
 /* global ORE_NETWORK_URI:true */
 
-const {
-  expectFetch,
-  mock,
-  mockInstrument,
-  mockInstruments,
-} = require('./helpers/fetch');
-const {
-  constructOrejs,
-} = require('./helpers/orejs');
+const { expectFetch, mock, mockInstrument, mockInstruments } = require('./helpers/fetch');
+const { constructOrejs } = require('./helpers/orejs');
 
 describe('instrument', () => {
   let orejs;
