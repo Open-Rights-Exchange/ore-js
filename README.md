@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/API-market/archive-orejs.svg?style=svg)](https://circleci.com/gh/API-market/archive-orejs)
+[![CircleCI](https://circleci.com/gh/Open-Rights-Exchange/ore-js/tree/dev.svg?style=svg)](https://circleci.com/gh/Open-Rights-Exchange/ore-js/tree/dev)
 
 # OREJS Spec
 
