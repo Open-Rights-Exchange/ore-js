@@ -146,19 +146,13 @@ function sortInstruments(instruments, rightName, sortOrder = "cheapestThenMostRe
       cheapestInstrument = sortedInstruments[0]
       cheapestPrice = this.getRight(cheapestInstrument, rightName).price_in_cpu;
       cheapestInstruments = sortedInstruments.filter(instrument => this.getRight(instrument, rightName).price_in_cpu === cheapestPrice)
-
-      // if more than one instrument has the same price for the right, get the most recently updated
-      if (cheapestInstruments.length > 0) {
-        sortedInstruments = sortByMintedAt(cheapestInstruments)
-        return sortedInstruments[sortedInstruments.length - 1]
-      }
-
-      return cheapestInstrument
+      
+      sortedInstruments = sortByMintedAt(cheapestInstruments)
 
     case sortTypes[2]:    
       sortedInstruments = sortByMintedAt(instruments)
-      return sortedInstruments[sortedInstruments.length - 1]
   }
+  return sortedInstruments[sortedInstruments.length - 1]
 }
 
 module.exports = {
