@@ -23,7 +23,7 @@ function newAccountTransaction(name, ownerPublicKey, activePublicKey, orePayerAc
     }],
     data: {
       creator: orePayerAccountName,
-      name,
+      newact: name,
       owner: {
         threshold: 1,
         keys: [{
