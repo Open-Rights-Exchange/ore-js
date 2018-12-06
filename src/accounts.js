@@ -6,14 +6,13 @@ const BASE = 31; // Base 31 allows us to leave out '.', as it's used for account
 /* Private */
 
 function newAccountTransaction(name, ownerPublicKey, activePublicKey, orePayerAccountName, options = {}) {
-  const option = {
+  options = Object.assign({
     bytes: 8192,
     stakedNet: 1,
     stakedCpu: 1,
     transfer: false,
-    tokenSymbol: 'SYS',
-    ...options,
-  };
+    tokenSymbol: 'SYS'
+  }, options);
 
   let actions = [{
     account: 'eosio',
@@ -24,7 +23,7 @@ function newAccountTransaction(name, ownerPublicKey, activePublicKey, orePayerAc
     }],
     data: {
       creator: orePayerAccountName,
-      newact: name,
+      newact: name, // NOTE: This will need to be changed back, once the testnets update
       owner: {
         threshold: 1,
         keys: [{
@@ -55,7 +54,7 @@ function newAccountTransaction(name, ownerPublicKey, activePublicKey, orePayerAc
     data: {
       payer: orePayerAccountName,
       receiver: name,
-      bytes: option.bytes,
+      bytes: options.bytes,
     },
   },
   {
@@ -68,9 +67,9 @@ function newAccountTransaction(name, ownerPublicKey, activePublicKey, orePayerAc
     data: {
       from: orePayerAccountName,
       receiver: name,
-      stake_net_quantity: `${option.stakedNet}.0000 ${tokenSymbol}`,
-      stake_cpu_quantity: `${option.stakedCpu}.0000 ${tokenSymbol}`,
-      transfer: option.transfer,
+      stake_net_quantity: `${options.stakedNet}.0000 ${options.tokenSymbol}`,
+      stake_cpu_quantity: `${options.stakedCpu}.0000 ${options.tokenSymbol}`,
+      transfer: options.transfer,
     },
   }];
   return this.transact(actions);
