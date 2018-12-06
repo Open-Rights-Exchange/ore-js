@@ -11,6 +11,7 @@ function newAccountTransaction(name, ownerPublicKey, activePublicKey, orePayerAc
     stakedNet: 1,
     stakedCpu: 1,
     transfer: false,
+    tokenSymbol: 'SYS',
     ...options,
   };
 
@@ -67,8 +68,8 @@ function newAccountTransaction(name, ownerPublicKey, activePublicKey, orePayerAc
     data: {
       from: orePayerAccountName,
       receiver: name,
-      stake_net_quantity: `${option.stakedNet}.0000 SYS`,
-      stake_cpu_quantity: `${option.stakedCpu}.0000 SYS`,
+      stake_net_quantity: `${option.stakedNet}.0000 ${tokenSymbol}`,
+      stake_cpu_quantity: `${option.stakedCpu}.0000 ${tokenSymbol}`,
       transfer: option.transfer,
     },
   }];
@@ -198,6 +199,7 @@ async function generateAuthKeys(oreAccountName, permName, code, action) {
 }
 
 async function createOreAccountWithKeys(activePublicKey, ownerPublicKey, orePayerAccountName, options = {}, confirm = false) {
+  // TODO: Make sure the account name does not already exist!
   const oreAccountName = options.oreAccountName || generateAccountName();
   let transaction;
   if (confirm) {
@@ -247,7 +249,24 @@ async function createOreAccount(password, salt, ownerPublicKey, orePayerAccountN
   };
 }
 
+async function createEosAccount(password, salt, ownerPublicKey, orePayerAccountName, options = {}) {
+  // NOTE: Does not currently include the verifier auth keys
+  Object.assign(options, {tokenSymbol: 'EOS'});
+
+  const {
+    encryptedKeys, oreAccountName, transaction,
+  } = await generateOreAccountAndEncryptedKeys.bind(this)(password, salt, ownerPublicKey, orePayerAccountName, options);
+
+  return {
+    oreAccountName,
+    privateKey: encryptedKeys.privateKeys.active,
+    publicKey: encryptedKeys.publicKeys.active,
+    transaction,
+  };
+}
+
 module.exports = {
+  createEosAccount,
   createOreAccount,
   eosBase32,
 };
