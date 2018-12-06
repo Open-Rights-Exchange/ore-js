@@ -4,7 +4,12 @@ const ecc = require('eosjs-ecc')
 
 // sign the input data with the user keys
 async function sign(data) {
-    return ecc.sign(data.toString(), this.config.keyProvider[0]);
+    try {
+        return ecc.sign(data.toString(), this.config.privateKeys[0]);
+    } catch(error) {
+        errorTitle = "Orejs Verifier Sign Error";
+        throw new Error(`${errorTitle}: ${error.message}`);
+    }
 }
 
 // hash the parameter values to be sent to the verifier

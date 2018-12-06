@@ -31,9 +31,15 @@ class Orejs {
 
   constructEos(config) {
     this.config = config;
-    const rpc = new eosjs.JsonRpc(config.httpEndpoint, { fetch: config.fetch || fetch });
-    const signatureProvider = new eosjs.JsSignatureProvider(config.keyProvider || []);
-    this.eos = new eosjs.Api({ chainId: config.chainId, rpc, signatureProvider, textEncoder: new TextEncoder(), textDecoder: new TextDecoder() });
+    this.rpc = new eosjs.JsonRpc(config.httpEndpoint, { fetch: config.fetch || fetch });
+    this.signatureProvider = config.signatureProvider || new eosjs.JsSignatureProvider(config.privateKeys || []);
+    this.eos = new eosjs.Api({
+      chainId: config.chainId,
+      rpc: this.rpc,
+      signatureProvider: this.signatureProvider,
+      textEncoder: new TextEncoder(),
+      textDecoder: new TextDecoder()
+    });
   }
 }
 
