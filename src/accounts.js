@@ -72,7 +72,7 @@ function newAccountTransaction(name, ownerPublicKey, activePublicKey, orePayerAc
       transfer: options.transfer,
     },
   }];
-  return this.transact(actions);
+  return this.transact(actions, options.broadcast);
 }
 
 function eosBase32(base32String) {
@@ -153,7 +153,7 @@ async function appendPermission(oreAccountName, keys, permName, parent = 'active
   return perms;
 }
 
-async function addAuthPermission(oreAccountName, keys, permName, code, type) {
+async function addAuthPermission(oreAccountName, keys, permName, code, type, broadcast) {
   const perms = await appendPermission.bind(this)(oreAccountName, keys, permName);
   const actions = perms.map((perm) => {
     const { perm_name:permission, parent, required_auth:auth } = perm;
@@ -188,16 +188,18 @@ async function addAuthPermission(oreAccountName, keys, permName, code, type) {
     },
   });
 
-  return this.transact(actions);
+  return this.transact(actions, broadcast);
 }
 
-async function generateAuthKeys(oreAccountName, permName, code, action) {
+async function generateAuthKeys(oreAccountName, permName, code, action, broadcast) {
   const authKeys = await Keygen.generateMasterKeys();
-  await addAuthPermission.bind(this)(oreAccountName, [authKeys.publicKeys.active], permName, code, action);
+  await addAuthPermission.bind(this)(oreAccountName, [authKeys.publicKeys.active], permName, code, action, broadcast);
   return authKeys;
 }
 
-async function createOreAccountWithKeys(activePublicKey, ownerPublicKey, orePayerAccountName, options = {}, confirm = false) {
+async function createOreAccountWithKeys(activePublicKey, ownerPublicKey, orePayerAccountName, options = {}) {
+  options = Object.assign({confirm: true}, options);
+
   // TODO: Make sure the account name does not already exist!
   const oreAccountName = options.oreAccountName || generateAccountName();
   let transaction;
@@ -216,7 +218,7 @@ async function generateOreAccountAndKeys(ownerPublicKey, orePayerAccountName, op
   const {
     oreAccountName,
     transaction,
-  } = await createOreAccountWithKeys.bind(this)(keys.publicKeys.active, ownerPublicKey, orePayerAccountName, options, true);
+  } = await createOreAccountWithKeys.bind(this)(keys.publicKeys.active, ownerPublicKey, orePayerAccountName, options);
 
   return { keys, oreAccountName, transaction };
 }
@@ -233,10 +235,12 @@ async function generateOreAccountAndEncryptedKeys(password, salt, ownerPublicKey
 /* Public */
 
 async function createOreAccount(password, salt, ownerPublicKey, orePayerAccountName, options = {}) {
+  options = Object.assign({broadcast: true}, options);
+
   const {
     encryptedKeys, oreAccountName, transaction,
   } = await generateOreAccountAndEncryptedKeys.bind(this)(password, salt, ownerPublicKey, orePayerAccountName, options);
-  const verifierAuthKeys = await generateAuthKeys.bind(this)(oreAccountName, 'authverifier', 'token.ore', 'approve');
+  const verifierAuthKeys = await generateAuthKeys.bind(this)(oreAccountName, 'authverifier', 'token.ore', 'approve', options.broadcast);
 
   return {
     verifierAuthKey: verifierAuthKeys.privateKeys.active,
@@ -250,7 +254,7 @@ async function createOreAccount(password, salt, ownerPublicKey, orePayerAccountN
 
 async function createEosAccount(password, salt, ownerPublicKey, orePayerAccountName, options = {}) {
   // NOTE: Does not currently include the verifier auth keys
-  Object.assign(options, {tokenSymbol: 'EOS'});
+  Object.assign({tokenSymbol: 'EOS'}, options);
 
   const {
     encryptedKeys, oreAccountName, transaction,

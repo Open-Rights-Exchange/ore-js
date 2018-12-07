@@ -78,11 +78,12 @@ async function checkPubKeytoAccount(account, publicKey) {
   return false;
 }
 
-function transact(actions, blocksBehind = 3, expireSeconds = 30) {
+function transact(actions, broadcast = true, blocksBehind = 3, expireSeconds = 30) {
   return this.eos.transact({
     actions
   }, {
     blocksBehind,
+    broadcast,
     expireSeconds,
   });
 }

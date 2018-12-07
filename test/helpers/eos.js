@@ -18,8 +18,9 @@ function mockAction(_action = {}) {
 
 function mockOptions(_options = {}) {
   return {
-    blocksBehind: expect.any(Number),
-    expireSeconds: expect.any(Number),
+    blocksBehind: 3,
+    broadcast: true,
+    expireSeconds: 30,
     ..._options,
   };
 }
