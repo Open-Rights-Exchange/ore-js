@@ -102,9 +102,13 @@ function generateAccountNameString() {
   return (timestampEosBase32() + randomEosBase32()).substr(0, 12);
 }
 
-function nameDoesNotAlreadyExist(accountName) {
-  // TODO: Check chain for name
-  return false;
+async function nameAlreadyExists(accountName) {
+  try {
+    await this.eos.rpc.get_account(accountName);
+    return true;
+  } catch(e) {
+    return false;
+  }
 }
 
 // Recursively generates account names, until a uniq name is generated...
@@ -113,10 +117,10 @@ function generateAccountName() {
   // NOTE: account names can also contain only the following characters: a-z, 1-5, & '.' In regex: [a-z1-5\.]{12}
   // NOTE: account names are generated based on the current unix timestamp + some randomness, and cut to be 12 chars
   let accountName = generateAccountNameString();
-  if (nameDoesNotAlreadyExist(accountName)) {
-    return accountName;
-  } else {
+  if (nameAlreadyExists(accountName)) {
     return generateAccountName();
+  } else {
+    return accountName;
   }
 }
 
