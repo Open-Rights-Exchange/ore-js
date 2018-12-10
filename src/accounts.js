@@ -98,11 +98,26 @@ function randomEosBase32() {
   return eosBase32(Math.random().toString(BASE).substr(2));
 }
 
+function generateAccountNameString() {
+  return (timestampEosBase32() + randomEosBase32()).substr(0, 12);
+}
+
+function nameDoesNotAlreadyExist(accountName) {
+  // TODO: Check chain for name
+  return false;
+}
+
+// Recursively generates account names, until a uniq name is generated...
 function generateAccountName() {
   // NOTE: account names MUST be base32 encoded, and be 12 characters, in compliance with the EOS standard
   // NOTE: account names can also contain only the following characters: a-z, 1-5, & '.' In regex: [a-z1-5\.]{12}
   // NOTE: account names are generated based on the current unix timestamp + some randomness, and cut to be 12 chars
-  return (timestampEosBase32() + randomEosBase32()).substr(0, 12);
+  let accountName = generateAccountNameString();
+  if (nameDoesNotAlreadyExist(accountName)) {
+    return accountName;
+  } else {
+    return generateAccountName();
+  }
 }
 
 function encryptKeys(keys, password, salt) {
@@ -204,7 +219,6 @@ async function createOreAccountWithKeys(activePublicKey, ownerPublicKey, orePaye
   options = {confirm: true, ...options};
   let { oreAccountName } = options;
 
-  // TODO: Make sure the account name does not already exist!
   oreAccountName = oreAccountName || generateAccountName();
   let transaction;
   if (confirm) {
@@ -218,7 +232,6 @@ async function createOreAccountWithKeys(activePublicKey, ownerPublicKey, orePaye
 async function generateOreAccountAndKeys(ownerPublicKey, orePayerAccountName, options = {}) {
   const keys = await Keygen.generateMasterKeys();
 
-  // TODO Check for existing wallets, for name collisions
   const {
     oreAccountName,
     transaction,
@@ -238,36 +251,41 @@ async function generateOreAccountAndEncryptedKeys(password, salt, ownerPublicKey
 
 /* Public */
 
-async function createOreAccount(password, salt, ownerPublicKey, orePayerAccountName, options = {}) {
+// Creates an EOS account, without verifier auth keys
+async function createAccount(password, salt, ownerPublicKey, orePayerAccountName, options = {}) {
   options = {
     broadcast: true,
-    withVerifierKeys: true,
     ...options
   };
-  const { broadcast, withVerifierKeys } = options;
+  const { broadcast } = options;
 
   const {
     encryptedKeys, oreAccountName, transaction,
   } = await generateOreAccountAndEncryptedKeys.bind(this)(password, salt, ownerPublicKey, orePayerAccountName, options);
 
-  const returnInfo = {
+  return {
     oreAccountName,
     privateKey: encryptedKeys.privateKeys.active,
     publicKey: encryptedKeys.publicKeys.active,
     transaction,
   };
+}
 
-  if (withVerifierKeys) {
-    const verifierAuthKeys = await generateAuthKeys.bind(this)(oreAccountName, 'authverifier', 'token.ore', 'approve', broadcast);
+// Creates an EOS account, with verifier auth keys
+async function createOreAccount(password, salt, ownerPublicKey, orePayerAccountName, options = {}) {
+  const { broadcast } = options;
 
-    returnInfo.verifierAuthKey = verifierAuthKeys.privateKeys.active,
-    returnInfo.verifierAuthPublicKey = verifierAuthKeys.publicKeys.active,
-  }
+  const returnInfo = await createAccount(password, salt, ownerPublicKey, orePayerAccountName, options);
+  const verifierAuthKeys = await generateAuthKeys.bind(this)(returnInfo.oreAccountName, 'authverifier', 'token.ore', 'approve', broadcast);
+
+  returnInfo.verifierAuthKey = verifierAuthKeys.privateKeys.active,
+  returnInfo.verifierAuthPublicKey = verifierAuthKeys.publicKeys.active,
 
   return returnInfo;
 }
 
 module.exports = {
+  createAccount,
   createOreAccount,
   eosBase32,
 };
