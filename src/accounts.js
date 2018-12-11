@@ -8,10 +8,10 @@ const BASE = 31; // Base 31 allows us to leave out '.', as it's used for account
 function newAccountTransaction(name, ownerPublicKey, activePublicKey, orePayerAccountName, options = {}) {
   const { broadcast, bytes, permission, stakedCpu, stakedNet, transfer, tokenSymbol } = {
     broadcast: true,
-    bytes: 4096,
+    bytes: 2048,
     permission: 'active',
-    stakedCpu: 0.1,
-    stakedNet: 0.1,
+    stakedCpu: 0.1000,
+    stakedNet: 0.1000,
     transfer: false,
     ...options
   };
@@ -69,8 +69,8 @@ function newAccountTransaction(name, ownerPublicKey, activePublicKey, orePayerAc
     data: {
       from: orePayerAccountName,
       receiver: name,
-      stake_net_quantity: `${stakedNet}.0000 ${tokenSymbol}`,
-      stake_cpu_quantity: `${stakedCpu}.0000 ${tokenSymbol}`,
+      stake_net_quantity: `${stakedNet} ${tokenSymbol}`,
+      stake_cpu_quantity: `${stakedCpu} ${tokenSymbol}`,
       transfer: transfer,
     },
   }];
