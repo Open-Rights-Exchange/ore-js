@@ -9,7 +9,6 @@ function constructOrejs(config) {
   const orejs = new Orejs({
     httpEndpoint: ORE_NETWORK_URI,
     keyProvider: [ORE_OWNER_ACCOUNT_KEY],
-    sign: true,
     ...config,
   });
 

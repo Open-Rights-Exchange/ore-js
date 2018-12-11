@@ -31,6 +31,7 @@ class Orejs {
 
   constructEos(config) {
     this.config = config;
+    this.chainName = config.chainName || 'ore'; // ore || eos
     this.rpc = new eosjs.JsonRpc(config.httpEndpoint, { fetch: config.fetch || fetch });
     this.signatureProvider = config.signatureProvider || new eosjs.JsSignatureProvider(config.privateKeys || []);
     this.eos = new eosjs.Api({

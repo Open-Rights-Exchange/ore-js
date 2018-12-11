@@ -43,7 +43,13 @@ describe('account', () => {
         actions: [
           mockAction({ account: 'eosio', name: 'newaccount', authorization: { permission } }),
           mockAction({ account: 'eosio', name: 'buyrambytes', authorization: { permission } }),
-          mockAction({ account: 'eosio', name: 'delegatebw', authorization: { permission } }),
+          mockAction({ account: 'eosio', name: 'delegatebw', authorization: { permission }, data: {
+            from: ORE_PAYER_ACCOUNT_NAME,
+            receiver: expect.any(String),
+            stake_net_quantity: '0.1000 SYS',
+            stake_cpu_quantity: '0.1000 SYS',
+            transfer: false,
+          } }),
         ],
       }, mockOptions());
       expect(spyAccount).toHaveBeenCalledWith(expect.any(String));
@@ -59,7 +65,6 @@ describe('account', () => {
     });
 
     describe('when defining the accountName', () => {
-      let spyTransaction;
       let transaction;
       let info;
       let block;
@@ -82,6 +87,39 @@ describe('account', () => {
           publicKey: expect.any(String),
           transaction,
         });
+      });
+    });
+
+    describe('when defining an eos chain', () => {
+      let spyTransaction;
+      let transaction;
+      let info;
+      let block;
+
+      beforeEach(() => {
+        orejs = constructOrejs({ chainName: 'eos' });
+        mockGetAccount(orejs);
+        transaction = mockGetTransaction(orejs);
+        info = mockGetInfo(orejs);
+        block = mockGetBlock(orejs, { block_num: info.head_block_num, transactions: [{ trx: { id: transaction.transaction_id } }] });
+        spyTransaction = jest.spyOn(orejs.eos, 'transact');
+      });
+
+      it('returns a new account with the expected tokenSymbol', async () => {
+        const account = await orejs.createAccount(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, ORE_OWNER_ACCOUNT_KEY, ORE_PAYER_ACCOUNT_NAME);
+        expect(spyTransaction).toHaveBeenNthCalledWith(1, {
+          actions: [
+            mockAction({ account: 'eosio', name: 'newaccount' }),
+            mockAction({ account: 'eosio', name: 'buyrambytes' }),
+            mockAction({ account: 'eosio', name: 'delegatebw', data: {
+              from: ORE_PAYER_ACCOUNT_NAME,
+              receiver: expect.any(String),
+              stake_net_quantity: '0.1000 EOS',
+              stake_cpu_quantity: '0.1000 EOS',
+              transfer: false,
+            } }),
+          ],
+        }, mockOptions());
       });
     });
   });

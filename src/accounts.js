@@ -10,8 +10,9 @@ function newAccountTransaction(name, ownerPublicKey, activePublicKey, orePayerAc
     broadcast: true,
     bytes: 2048,
     permission: 'active',
-    stakedCpu: 0.1000,
-    stakedNet: 0.1000,
+    stakedCpu: '0.1000',
+    stakedNet: '0.1000',
+    tokenSymbol: this.chainName === 'ore' ? 'SYS' : 'EOS',
     transfer: false,
     ...options
   };
