@@ -26,7 +26,7 @@ function newAccountTransaction(name, ownerPublicKey, activePublicKey, orePayerAc
     }],
     data: {
       creator: orePayerAccountName,
-      newact: name, // NOTE: This will need to be changed back, once the testnets update
+      name,
       owner: {
         threshold: 1,
         keys: [{
@@ -75,6 +75,13 @@ function newAccountTransaction(name, ownerPublicKey, activePublicKey, orePayerAc
       transfer: transfer,
     },
   }];
+
+  // NOTE: Versions 1.4.0 & 1.5.0 changed the name parameter to newact...
+  if (this.chainInfo.server_version_string.match(/v1.[45].0/)) {
+    actions[0].data.newact = actions[0].data.name;
+    delete actions[0].data.name;
+  }
+
   return this.transact(actions, broadcast);
 }
 

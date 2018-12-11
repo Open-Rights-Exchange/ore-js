@@ -542,7 +542,8 @@ function mockInfo(info = {}) {
     virtual_block_cpu_limit: 200000000,
     virtual_block_net_limit: 1048576000,
     block_cpu_limit: 199900,
-    block_net_limit: 1048576,
+    lock_net_limit: 1048576,
+    server_version_string: "v1.4.2",
     ...info,
   }]);
 }
