@@ -21,7 +21,7 @@ function mockGetAbi(_orejs = undefined) {
 
   const getAbi = { code: mockCode(), abi: JSON.parse(mockAbi()) };
 
-  mockupAbi.mockReturnValue(getAbi);
+  mockupAbi.mockImplementationOnce(() => Promise.resolve(getAbi));
   const orejs = _orejs || constructOrejs();
   orejs.eos.rpc.get_raw_code_and_abi = mockupAbi;
 
@@ -33,7 +33,8 @@ function mockGetAccount(_orejs = undefined, _account = {}) {
 
   const getAccount = JSON.parse(mockAccount(_account)[0])[0];
 
-  mockupAccount.mockReturnValue(getAccount);
+  mockupAccount.mockImplementationOnce(() => Promise.reject(false));
+  mockupAccount.mockImplementationOnce(() => Promise.resolve(getAccount));
   const orejs = _orejs || constructOrejs();
   orejs.eos.rpc.get_account = mockupAccount;
 
@@ -45,7 +46,7 @@ function mockGetBlock(_orejs = undefined, _block = {}) {
 
   const getBlock = JSON.parse(mockBlock(_block)[0])[0];
 
-  mockupBlock.mockReturnValue(getBlock);
+  mockupBlock.mockImplementation(() => Promise.resolve(getBlock));
   const orejs = _orejs || constructOrejs();
   orejs.eos.rpc.get_block = mockupBlock;
 
@@ -57,7 +58,7 @@ function mockGetBlockError(_orejs = undefined) {
 
   const getBlock = mockError();
 
-  mockupBlock.mockImplementation(() => {
+  mockupBlock.mockImplementationOnce(() => {
     throw getBlock;
   });
   const orejs = _orejs || constructOrejs();
@@ -71,7 +72,7 @@ function mockGetCurrency(_orejs = undefined, _currency = '1.0000 CPU') {
 
   const getCurrency = _currency;
 
-  mockupCurrency.mockReturnValue(getCurrency);
+  mockupCurrency.mockImplementationOnce(() => Promise.resolve(getCurrency));
   const orejs = _orejs || constructOrejs();
   orejs.eos.rpc.get_currency_balance = mockupCurrency;
 
@@ -83,7 +84,7 @@ function mockGetInfo(_orejs = undefined, _info = {}) {
 
   const getInfo = JSON.parse(mockInfo(_info)[0])[0];
 
-  mockupInfo.mockReturnValue(getInfo);
+  mockupInfo.mockImplementationOnce(() => Promise.resolve(getInfo));
   const orejs = _orejs || constructOrejs();
   orejs.eos.rpc.get_info = mockupInfo;
 
@@ -95,7 +96,7 @@ function mockGetTransaction(_orejs = undefined, _transaction = {}) {
 
   const getTransaction = mockTransaction(_transaction);
 
-  mockupTransaction.mockReturnValue(getTransaction);
+  mockupTransaction.mockImplementationOnce(() => Promise.resolve(getTransaction));
   const orejs = _orejs || constructOrejs();
   orejs.eos.transact = mockupTransaction;
 
