@@ -293,4 +293,5 @@ module.exports = {
   createAccount,
   createOreAccount,
   eosBase32,
+  getNameAlreadyExists,
 };
