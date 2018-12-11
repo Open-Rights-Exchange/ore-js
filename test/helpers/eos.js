@@ -7,10 +7,12 @@ function mockAuthorization(_authorization = {}) {
 }
 
 function mockAction(_action = {}) {
+  const authorization = _action.authorization;
+  delete _action.authorization;
   return {
     account: expect.any(String),
     name: expect.any(String),
-    authorization: [mockAuthorization()],
+    authorization: [mockAuthorization(authorization)],
     data: expect.any(Object),
     ..._action,
   };

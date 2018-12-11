@@ -35,13 +35,22 @@ describe('account', () => {
     });
 
     it('returns a new account', async () => {
-      const account = await orejs.createOreAccount(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, ORE_OWNER_ACCOUNT_KEY, ORE_PAYER_ACCOUNT_NAME);
+      const permission = 'custom';
+      const options = { permission };
+      const account = await orejs.createOreAccount(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, ORE_OWNER_ACCOUNT_KEY, ORE_PAYER_ACCOUNT_NAME, options);
+      expect(spyTransaction).toHaveBeenNthCalledWith(1, {
+        actions: [
+          mockAction({ account: 'eosio', name: 'newaccount', authorization: { permission } }),
+          mockAction({ account: 'eosio', name: 'buyrambytes', authorization: { permission } }),
+          mockAction({ account: 'eosio', name: 'delegatebw', authorization: { permission } }),
+        ],
+      }, mockOptions());
       expect(spyTransaction).toHaveBeenNthCalledWith(2, {
         actions: [
-          mockAction({ account: 'eosio' }),
-          mockAction({ account: 'eosio' }),
-          mockAction({ account: 'eosio' }),
-          mockAction({ account: 'eosio' }),
+          mockAction({ account: 'eosio', name: 'updateauth' }),
+          mockAction({ account: 'eosio', name: 'updateauth' }),
+          mockAction({ account: 'eosio', name: 'updateauth' }),
+          mockAction({ account: 'eosio', name: 'linkauth' }),
         ],
       }, mockOptions());
       expect(spyAccount).toHaveBeenCalledWith(expect.any(String));
