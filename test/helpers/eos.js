@@ -9,6 +9,7 @@ function mockAuthorization(_authorization = {}) {
 function mockAction(_action = {}) {
   const authorization = _action.authorization;
   delete _action.authorization;
+
   return {
     account: expect.any(String),
     name: expect.any(String),

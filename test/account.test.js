@@ -57,6 +57,33 @@ describe('account', () => {
       });
       expect(ecc.privateToPublic(orejs.decrypt(account.privateKey, WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT))).toEqual(account.publicKey);
     });
+
+    describe('when defining the accountName', () => {
+      let spyTransaction;
+      let transaction;
+      let info;
+      let block;
+
+      beforeEach(() => {
+        mockGetAccount(orejs);
+        transaction = mockGetTransaction(orejs);
+        info = mockGetInfo(orejs);
+        block = mockGetBlock(orejs, { block_num: info.head_block_num, transactions: [{ trx: { id: transaction.transaction_id } }] });
+      });
+
+      it('returns a new account with the expected accountName', async () => {
+        const oreAccountName = 'thenameiwant';
+        const permission = 'custom';
+        const options = { permission, oreAccountName };
+        const account = await orejs.createAccount(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, ORE_OWNER_ACCOUNT_KEY, ORE_PAYER_ACCOUNT_NAME, options);
+        expect(account).toEqual({
+          oreAccountName,
+          privateKey: expect.any(String),
+          publicKey: expect.any(String),
+          transaction,
+        });
+      });
+    });
   });
 
   describe('createOreAccount', () => {
@@ -111,45 +138,6 @@ describe('account', () => {
       });
       expect(ecc.privateToPublic(orejs.decrypt(account.privateKey, WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT))).toEqual(account.publicKey);
       expect(ecc.privateToPublic(account.verifierAuthKey)).toEqual(account.verifierAuthPublicKey);
-    });
-
-    describe('when defining the accountName', () => {
-      let spyAccount;
-      let spyTransaction;
-      let transaction;
-      let info;
-      let block;
-
-      beforeEach(() => {
-        mockGetAccount(orejs);
-        transaction = mockGetTransaction(orejs);
-        info = mockGetInfo(orejs);
-        block = mockGetBlock(orejs, { block_num: info.head_block_num, transactions: [{ trx: { id: transaction.transaction_id } }] });
-        spyAccount = jest.spyOn(orejs.eos.rpc, 'get_account');
-        spyTransaction = jest.spyOn(orejs.eos, 'transact');
-      });
-
-      xit('returns a new account with the expected accountName', async () => {
-        const oreAccountName = 'thenameiwant';
-        const options = { oreAccountName };
-        const account = await orejs.createOreAccount(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, ORE_OWNER_ACCOUNT_KEY, ORE_PAYER_ACCOUNT_NAME, options);
-        expect(spyTransaction).toHaveBeenNthCalledWith(1, {
-          actions: [
-            mockAction({ account: 'eosio', name: 'newaccount', data: { newact: oreAccountName } }),
-            mockAction({ account: 'eosio', name: 'buyrambytes' }),
-            mockAction({ account: 'eosio', name: 'delegatebw' }),
-          ],
-        }, mockOptions());
-        expect(spyAccount).toHaveBeenCalledWith(expect.any(String));
-        expect(account).toEqual({
-          verifierAuthKey: expect.any(String),
-          verifierAuthPublicKey: expect.any(String),
-          oreAccountName: expect.stringMatching(/[a-z1-5]{12}/),
-          privateKey: expect.any(String),
-          publicKey: expect.any(String),
-          transaction,
-        });
-      });
     });
 
     describe('when the name already exists', () => {
