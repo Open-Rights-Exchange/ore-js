@@ -82,17 +82,28 @@ describe('ore', () => {
     let oreBalance;
     let spyTransaction;
     let transaction;
+    let memo;
+    let permission;
 
     beforeEach(() => {
       oreBalance = 10;
       transaction = mockGetTransaction(orejs);
       spyTransaction = jest.spyOn(orejs.eos, 'transact');
+      memo = 'some note';
+      permission = 'custom';
     });
 
     describe('when authorized', () => {
       it('returns', async () => {
-        const result = await orejs.transferToken(ORE_OWNER_ACCOUNT_NAME, ORE_TESTA_ACCOUNT_NAME, oreBalance, ORE_TOKEN_CONTRACT);
+        const result = await orejs.transferToken(ORE_OWNER_ACCOUNT_NAME, ORE_TESTA_ACCOUNT_NAME, oreBalance, ORE_TOKEN_CONTRACT, memo, permission);
         expect(spyTransaction).toHaveBeenCalledWith({ actions: [mockAction({ account: ORE_TOKEN_CONTRACT, name: 'transfer' })] }, mockOptions());
+      });
+    });
+
+    describe('when not broadcast', () => {
+      it('returns', async () => {
+        const result = await orejs.transferToken(ORE_OWNER_ACCOUNT_NAME, ORE_TESTA_ACCOUNT_NAME, oreBalance, ORE_TOKEN_CONTRACT, memo, permission, false);
+        expect(spyTransaction).toHaveBeenCalledWith({ actions: [mockAction({ account: ORE_TOKEN_CONTRACT, name: 'transfer' })] }, mockOptions({ broadcast: false }));
       });
     });
   });
