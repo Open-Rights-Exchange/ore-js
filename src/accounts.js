@@ -228,10 +228,12 @@ async function generateAuthKeys(oreAccountName, permName, code, action, broadcas
 }
 
 async function createOreAccountWithKeys(activePublicKey, ownerPublicKey, orePayerAccountName, options = {}) {
-  options = {confirm: true, ...options};
-  let { oreAccountName } = options;
+  options = {
+    confirm: true,
+    ...options
+  };
+  let oreAccountName = options.oreAccountName || await generateAccountName.bind(this)();
 
-  oreAccountName = oreAccountName || await generateAccountName.bind(this)();
   let transaction;
   if (confirm) {
     transaction = await this.awaitTransaction(() => newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, options));
@@ -261,9 +263,7 @@ async function generateOreAccountAndEncryptedKeys(password, salt, ownerPublicKey
   return { encryptedKeys, oreAccountName, transaction };
 }
 
-/* Public */
-
-// Creates an EOS account, without verifier auth keys
+// Creates an account, without verifier auth keys
 async function createAccount(password, salt, ownerPublicKey, orePayerAccountName, options = {}) {
   options = {
     broadcast: true,
@@ -283,22 +283,25 @@ async function createAccount(password, salt, ownerPublicKey, orePayerAccountName
   };
 }
 
-// Creates an EOS account, with verifier auth keys
+/* Public */
+
+// Creates an account, with verifier auth keys for ORE, and without for EOS
 async function createOreAccount(password, salt, ownerPublicKey, orePayerAccountName, options = {}) {
   const { broadcast } = options;
 
   const returnInfo = await createAccount.bind(this)(password, salt, ownerPublicKey, orePayerAccountName, options);
-  const verifierAuthKeys = await generateAuthKeys.bind(this)(returnInfo.oreAccountName, 'authverifier', 'token.ore', 'approve', broadcast);
 
-  returnInfo.verifierAuthKey = verifierAuthKeys.privateKeys.active;
-  returnInfo.verifierAuthPublicKey = verifierAuthKeys.publicKeys.active;
+  if (this.chainName === 'ore') {
+    const verifierAuthKeys = await generateAuthKeys.bind(this)(returnInfo.oreAccountName, 'authverifier', 'token.ore', 'approve', broadcast);
+
+    returnInfo.verifierAuthKey = verifierAuthKeys.privateKeys.active;
+    returnInfo.verifierAuthPublicKey = verifierAuthKeys.publicKeys.active;
+  }
 
   return returnInfo;
 }
 
 module.exports = {
-  createAccount,
   createOreAccount,
   eosBase32,
-  getNameAlreadyExists,
 };
