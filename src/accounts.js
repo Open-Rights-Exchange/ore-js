@@ -79,7 +79,7 @@ function newAccountTransaction(name, ownerPublicKey, activePublicKey, orePayerAc
   // NOTE: Versions 1.4.0 & 1.5.0 changed the name parameter to newact...
   if (this.chainInfo.server_version_string.match(/v1.[45].0/)) {
     actions[0].data.newact = actions[0].data.name;
-    delete actions[0].data.name;
+    //delete actions[0].data.name; // NOTE: Sending in the unused name parameters is okay
   }
 
   return this.transact(actions, broadcast);
@@ -235,7 +235,7 @@ async function createOreAccountWithKeys(activePublicKey, ownerPublicKey, orePaye
   let oreAccountName = options.oreAccountName || await generateAccountName.bind(this)();
 
   let transaction;
-  if (confirm) {
+  if (options.confirm) {
     transaction = await this.awaitTransaction(() => newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, options));
   } else {
     transaction = await newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, options);
