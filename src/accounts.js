@@ -178,7 +178,31 @@ async function appendPermission(oreAccountName, keys, permName, parent = 'active
   return perms;
 }
 
-async function addAuthPermission(oreAccountName, keys, permName, code, type, broadcast) {
+// TODO: Combine addAuthPermission & addAndLinkAuthPermission with a parameter function
+async function addAuthPermission(accountName, keys, permissionName) {
+  const perms = await appendPermission.bind(this)(accountName, keys, permissionName);
+  const actions = perms.map((perm) => {
+    const { perm_name:permission, parent, required_auth:auth } = perm;
+    return {
+      account: 'eosio',
+      name: 'updateauth',
+      authorization: [{
+        actor: accountName,
+        permission: 'owner',
+      }],
+      data: {
+        account: accountName,
+        permission,
+        parent,
+        auth,
+      },
+    };
+  });
+
+  return this.transact(actions);
+}
+
+async function addAndLinkAuthPermission(oreAccountName, keys, permName, code, type, broadcast) {
   const perms = await appendPermission.bind(this)(oreAccountName, keys, permName);
   const actions = perms.map((perm) => {
     const { perm_name:permission, parent, required_auth:auth } = perm;
@@ -218,7 +242,7 @@ async function addAuthPermission(oreAccountName, keys, permName, code, type, bro
 
 async function generateAuthKeys(oreAccountName, permName, code, action, broadcast) {
   const authKeys = await Keygen.generateMasterKeys();
-  await addAuthPermission.bind(this)(oreAccountName, [authKeys.publicKeys.active], permName, code, action, broadcast);
+  await addAndLinkAuthPermission.bind(this)(oreAccountName, [authKeys.publicKeys.active], permName, code, action, broadcast);
   return authKeys;
 }
 
@@ -280,6 +304,13 @@ async function createAccount(password, salt, ownerPublicKey, orePayerAccountName
 
 /* Public */
 
+async function createKeyPair(password, salt, accountName, permissionName, options = {}) {
+  const authKeys = await Keygen.generateMasterKeys();
+  await addAuthPermission.bind(this)(accountName, [authKeys.publicKeys.active], permissionName);
+  const encryptedKeys = await encryptKeys.bind(this)(keys, password, salt);
+  return encryptedKeys;
+}
+
 // Creates an account, with verifier auth keys for ORE, and without for EOS
 async function createOreAccount(password, salt, ownerPublicKey, orePayerAccountName, options = {}) {
   const { broadcast } = options;
@@ -297,6 +328,7 @@ async function createOreAccount(password, salt, ownerPublicKey, orePayerAccountN
 }
 
 module.exports = {
+  createKeyPair,
   createOreAccount,
   eosBase32,
 };
