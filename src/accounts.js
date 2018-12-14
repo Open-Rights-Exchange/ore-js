@@ -27,6 +27,7 @@ function newAccountTransaction(name, ownerPublicKey, activePublicKey, orePayerAc
     data: {
       creator: orePayerAccountName,
       name,
+      newact: name, // Some versions of the system contract are running a different version of the newaccount code
       owner: {
         threshold: 1,
         keys: [{
@@ -75,12 +76,6 @@ function newAccountTransaction(name, ownerPublicKey, activePublicKey, orePayerAc
       transfer: transfer,
     },
   }];
-
-  // NOTE: Versions 1.4.0 & 1.5.0 changed the name parameter to newact...
-  if (this.chainInfo.server_version_string.match(/v1.[45].0/)) {
-    actions[0].data.newact = actions[0].data.name;
-    //delete actions[0].data.name; // NOTE: Sending in the unused name parameters is okay
-  }
 
   return this.transact(actions, broadcast);
 }
