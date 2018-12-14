@@ -27,6 +27,7 @@ function newAccountTransaction(name, ownerPublicKey, activePublicKey, orePayerAc
     data: {
       creator: orePayerAccountName,
       name,
+      newact: name, // Some versions of the system contract are running a different version of the newaccount code
       owner: {
         threshold: 1,
         keys: [{
@@ -75,12 +76,6 @@ function newAccountTransaction(name, ownerPublicKey, activePublicKey, orePayerAc
       transfer: transfer,
     },
   }];
-
-  // NOTE: Versions 1.4.0 & 1.5.0 changed the name parameter to newact...
-  if (this.chainInfo.server_version_string.match(/v1.[45].0/)) {
-    actions[0].data.newact = actions[0].data.name;
-    delete actions[0].data.name;
-  }
 
   return this.transact(actions, broadcast);
 }
@@ -183,7 +178,31 @@ async function appendPermission(oreAccountName, keys, permName, parent = 'active
   return perms;
 }
 
-async function addAuthPermission(oreAccountName, keys, permName, code, type, broadcast) {
+// TODO: Combine addAuthPermission & addAndLinkAuthPermission with a parameter function
+async function addAuthPermission(accountName, keys, permissionName) {
+  const perms = await appendPermission.bind(this)(accountName, keys, permissionName);
+  const actions = perms.map((perm) => {
+    const { perm_name:permission, parent, required_auth:auth } = perm;
+    return {
+      account: 'eosio',
+      name: 'updateauth',
+      authorization: [{
+        actor: accountName,
+        permission: 'owner',
+      }],
+      data: {
+        account: accountName,
+        permission,
+        parent,
+        auth,
+      },
+    };
+  });
+
+  return this.transact(actions);
+}
+
+async function addAndLinkAuthPermission(oreAccountName, keys, permName, code, type, broadcast) {
   const perms = await appendPermission.bind(this)(oreAccountName, keys, permName);
   const actions = perms.map((perm) => {
     const { perm_name:permission, parent, required_auth:auth } = perm;
@@ -223,7 +242,7 @@ async function addAuthPermission(oreAccountName, keys, permName, code, type, bro
 
 async function generateAuthKeys(oreAccountName, permName, code, action, broadcast) {
   const authKeys = await Keygen.generateMasterKeys();
-  await addAuthPermission.bind(this)(oreAccountName, [authKeys.publicKeys.active], permName, code, action, broadcast);
+  await addAndLinkAuthPermission.bind(this)(oreAccountName, [authKeys.publicKeys.active], permName, code, action, broadcast);
   return authKeys;
 }
 
@@ -235,7 +254,7 @@ async function createOreAccountWithKeys(activePublicKey, ownerPublicKey, orePaye
   let oreAccountName = options.oreAccountName || await generateAccountName.bind(this)();
 
   let transaction;
-  if (confirm) {
+  if (options.confirm) {
     transaction = await this.awaitTransaction(() => newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, options));
   } else {
     transaction = await newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, options);
@@ -285,6 +304,13 @@ async function createAccount(password, salt, ownerPublicKey, orePayerAccountName
 
 /* Public */
 
+async function createKeyPair(password, salt, accountName, permissionName, options = {}) {
+  const authKeys = await Keygen.generateMasterKeys();
+  await addAuthPermission.bind(this)(accountName, [authKeys.publicKeys.active], permissionName);
+  const encryptedKeys = await encryptKeys.bind(this)(keys, password, salt);
+  return encryptedKeys;
+}
+
 // Creates an account, with verifier auth keys for ORE, and without for EOS
 async function createOreAccount(password, salt, ownerPublicKey, orePayerAccountName, options = {}) {
   const { broadcast } = options;
@@ -302,6 +328,7 @@ async function createOreAccount(password, salt, ownerPublicKey, orePayerAccountN
 }
 
 module.exports = {
+  createKeyPair,
   createOreAccount,
   eosBase32,
 };
