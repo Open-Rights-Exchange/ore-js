@@ -3,11 +3,11 @@ const hash = require("hash.js")
 const ecc = require('eosjs-ecc')
 
 // sign the input data with the user keys
-async function sign(data) {
+function sign(data) {
     try {
-        return ecc.sign(data.toString(), this.config.privateKeys[0]);
+        return ecc.sign(data.toString(), this.signatureProvider.getAvailableKeys()[0])
     } catch(error) {
-        errorTitle = "Orejs Verifier Sign Error";
+        let errorTitle = "Orejs Verifier Sign Error";
         throw new Error(`${errorTitle}: ${error.message}`);
     }
 }
