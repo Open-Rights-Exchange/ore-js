@@ -45,6 +45,7 @@ describe('account', () => {
             mockAction({ account: 'eosio', name: 'newaccount', authorization: { permission }, data: {
               creator: ORE_PAYER_ACCOUNT_NAME,
               name: expect.any(String),
+              newact: expect.any(String),
               owner: expect.any(Object),
               active: expect.any(Object),
             } }),
@@ -143,32 +144,6 @@ describe('account', () => {
             publicKey: expect.any(String),
             transaction,
           });
-        });
-      });
-
-      describe('when running on server version 1.5.0', () => {
-        let info;
-        let spyTransaction;
-
-        beforeEach(() => {
-          info = mockGetInfo(orejs, { server_version_string: 'v1.5.0-rc2' });
-          spyTransaction = jest.spyOn(orejs.eos, 'transact');
-        });
-
-        it('creates an account with the newact parameter', async () => {
-          const account = await orejs.createOreAccount(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, ORE_OWNER_ACCOUNT_KEY, ORE_PAYER_ACCOUNT_NAME);
-          expect(spyTransaction).toHaveBeenNthCalledWith(1, {
-            actions: [
-              mockAction({ account: 'eosio', name: 'newaccount', data: {
-                creator: ORE_PAYER_ACCOUNT_NAME,
-                newact: expect.any(String),
-                owner: expect.any(Object),
-                active: expect.any(Object),
-              } }),
-              mockAction({ account: 'eosio', name: 'buyrambytes' }),
-              mockAction({ account: 'eosio', name: 'delegatebw' }),
-            ],
-          }, mockOptions());
         });
       });
     });
