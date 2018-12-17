@@ -80,16 +80,6 @@ function newAccountTransaction(name, ownerPublicKey, activePublicKey, orePayerAc
   return this.transact(actions, broadcast);
 }
 
-function eosBase32(base32String) {
-  // NOTE: Returns valid EOS base32, which is different than the standard JS base32 implementation
-  return base32String
-    .replace(/0/g, 'v')
-    .replace(/6/g, 'w')
-    .replace(/7/g, 'x')
-    .replace(/8/g, 'y')
-    .replace(/9/g, 'z');
-}
-
 function timestampEosBase32() {
   // NOTE: Returns a UNIX timestamp, that is EOS base32 encoded
   return eosBase32(Date.now().toString(BASE));
@@ -102,15 +92,6 @@ function randomEosBase32() {
 
 function generateAccountNameString() {
   return (timestampEosBase32() + randomEosBase32()).substr(0, 12);
-}
-
-async function getNameAlreadyExists(accountName) {
-  try {
-    await this.eos.rpc.get_account(accountName);
-    return true;
-  } catch(e) {
-    return false;
-  }
 }
 
 // Recursively generates account names, until a uniq name is generated...
@@ -327,8 +308,28 @@ async function createOreAccount(password, salt, ownerPublicKey, orePayerAccountN
   return returnInfo;
 }
 
+function eosBase32(base32String) {
+  // NOTE: Returns valid EOS base32, which is different than the standard JS base32 implementation
+  return base32String
+    .replace(/0/g, 'v')
+    .replace(/6/g, 'w')
+    .replace(/7/g, 'x')
+    .replace(/8/g, 'y')
+    .replace(/9/g, 'z');
+}
+
+async function getNameAlreadyExists(accountName) {
+  try {
+    await this.eos.rpc.get_account(accountName);
+    return true;
+  } catch(e) {
+    return false;
+  }
+}
+
 module.exports = {
   createKeyPair,
   createOreAccount,
   eosBase32,
+  getNameAlreadyExists,
 };

@@ -176,4 +176,35 @@ describe('account', () => {
       expect(accountName).toEqual('abcde.vwxyzz');
     });
   });
-});
+
+  describe('getNameAlreadyExists', async () => {
+    let accountName;
+
+    beforeEach(() => {
+      accountName = 'thenameiwant';
+    });
+
+    describe('when the name already exists', async () => {
+
+      beforeEach(() => {
+        mockGetAccountWithAlreadyExistingAccount(orejs);
+      });
+
+      it('return true', async () => {
+        const nameAlreadyExists = await orejs.getNameAlreadyExists(accountName);
+        expect(nameAlreadyExists).toEqual(true);
+      });
+    });
+
+    describe('when the name does not yet exist', async () => {
+
+      beforeEach(() => {
+        mockGetAccount(orejs);
+      });
+
+      it('returns false', async () => {
+        const nameAlreadyExists = await orejs.getNameAlreadyExists(accountName);
+        expect(nameAlreadyExists).toEqual(false);
+      });
+    });
+  });});
