@@ -27,12 +27,14 @@ function mockGetAbi(_orejs = undefined) {
   return getAbi;
 }
 
-function mockGetAccount(_orejs = undefined, _account = {}) {
+function mockGetAccount(_orejs = undefined, withInitialCheck = true, _account = {}) {
   const mockupAccount = jest.fn();
 
   const getAccount = JSON.parse(mockAccount(_account)[0])[0];
 
-  mockupAccount.mockImplementationOnce(() => Promise.reject(false));
+  if (withInitialCheck) {
+    mockupAccount.mockImplementationOnce(() => Promise.reject(false));
+  }
   mockupAccount.mockImplementationOnce(() => Promise.resolve(getAccount));
   const orejs = _orejs || constructOrejs();
   orejs.eos.rpc.get_account = mockupAccount;

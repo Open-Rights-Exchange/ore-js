@@ -18,6 +18,64 @@ describe('account', () => {
     orejs = constructOrejs();
   });
 
+  describe('createKeyPair', () => {
+    let accountName = 'accountname';
+    let permissionName = 'custom';
+    let options = {};
+
+    beforeEach(() => {
+      mockGetAccount(orejs, false);
+      mockGetTransaction(orejs);
+    });
+
+    describe('when generating a new key pair', () => {
+      let spyTransaction;
+      let spyAccount;
+
+      beforeEach(() => {
+        spyTransaction = jest.spyOn(orejs.eos, 'transact');
+        spyAccount = jest.spyOn(orejs.eos.rpc, 'get_account');
+      });
+
+      it('returns a new key pair', async () => {
+        const keypair = await orejs.createKeyPair(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, accountName, permissionName, options);
+        expect(spyTransaction).toHaveBeenNthCalledWith(1, {
+          actions: [
+            mockAction({ account: 'eosio', name: 'updateauth' }),
+            mockAction({ account: 'eosio', name: 'updateauth' }),
+            mockAction({ account: 'eosio', name: 'updateauth' })
+          ],
+        }, mockOptions());
+        expect(spyAccount).toHaveBeenCalledWith(expect.any(String));
+        expect(ecc.privateToPublic(orejs.decrypt(keypair.privateKeys.owner, WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT))).toEqual(keypair.publicKeys.owner);
+      });
+    })
+
+    describe('when adding an existing key pair', () => {
+      let keys = {
+        masterPrivateKey: 'PW5HwnCgUkikSr7eFL1RGiALnJBr4oP4eK7Mq7ynjedKbxjt2oX3o',
+        privateKeys: {
+          owner: '5HugrGmD5Vbgdef1kvJgqWtjXyqxP1uYzB54rF7raGRij39an9N',
+          active: '5JuSXobBCwGJEYkpDyv1ENdqGAYoaprEnfEujuZmj52huk1WBfh'
+        },
+        publicKeys: {
+          owner: 'EOS5Dcydoh8BfHdoEcj1YfsiTUZm4Dghxx6W916GaUUpqHmNwfy1b',
+          active: 'EOS521jAgBCgtWskTS8SSthM1uJnDABAnVqeW9W3Z2yeShX6U2sgF'
+        }
+      }
+
+      beforeEach(() => {
+        options.keys = keys;
+      });
+
+      it('returns the existing key pair', async () => {
+        const keypair = await orejs.createKeyPair(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, accountName, permissionName, options);
+        expect(ecc.privateToPublic(orejs.decrypt(keypair.privateKeys.owner, WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT))).toEqual(keypair.publicKeys.owner);
+        expect(keypair.publicKeys.owner).toEqual(keys.publicKeys.owner);
+      });
+    })
+  });
+
   describe('createOreAccount', () => {
     describe('when generating a new account name', () => {
       let spyTransaction;
