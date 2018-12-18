@@ -89,6 +89,7 @@ async function checkPubKeytoAccount(account, publicKey) {
   return false;
 }
 
+// NOTE: setting the broadcast parameter to false allows us to receive signed transactions, without submitting them
 function transact(actions, broadcast = true, blocksBehind = 3, expireSeconds = 30) {
   return this.eos.transact({
     actions

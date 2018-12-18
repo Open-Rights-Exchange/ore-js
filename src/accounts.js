@@ -80,16 +80,6 @@ function newAccountTransaction(name, ownerPublicKey, activePublicKey, orePayerAc
   return this.transact(actions, broadcast);
 }
 
-function eosBase32(base32String) {
-  // NOTE: Returns valid EOS base32, which is different than the standard JS base32 implementation
-  return base32String
-    .replace(/0/g, 'v')
-    .replace(/6/g, 'w')
-    .replace(/7/g, 'x')
-    .replace(/8/g, 'y')
-    .replace(/9/g, 'z');
-}
-
 function timestampEosBase32() {
   // NOTE: Returns a UNIX timestamp, that is EOS base32 encoded
   return eosBase32(Date.now().toString(BASE));
@@ -102,15 +92,6 @@ function randomEosBase32() {
 
 function generateAccountNameString() {
   return (timestampEosBase32() + randomEosBase32()).substr(0, 12);
-}
-
-async function getNameAlreadyExists(accountName) {
-  try {
-    await this.eos.rpc.get_account(accountName);
-    return true;
-  } catch(e) {
-    return false;
-  }
 }
 
 // Recursively generates account names, until a uniq name is generated...
@@ -263,7 +244,7 @@ async function createOreAccountWithKeys(activePublicKey, ownerPublicKey, orePaye
 }
 
 async function generateOreAccountAndKeys(ownerPublicKey, orePayerAccountName, options = {}) {
-  const keys = await Keygen.generateMasterKeys();
+  const keys = options.keys || await Keygen.generateMasterKeys();
 
   const {
     oreAccountName,
@@ -278,7 +259,7 @@ async function generateOreAccountAndEncryptedKeys(password, salt, ownerPublicKey
     keys, oreAccountName, transaction,
   } = await generateOreAccountAndKeys.bind(this)(ownerPublicKey, orePayerAccountName, options);
 
-  const encryptedKeys = await encryptKeys.bind(this)(keys, password, salt);
+  const encryptedKeys = encryptKeys.bind(this)(keys, password, salt);
   return { encryptedKeys, oreAccountName, transaction };
 }
 
@@ -305,9 +286,9 @@ async function createAccount(password, salt, ownerPublicKey, orePayerAccountName
 /* Public */
 
 async function createKeyPair(password, salt, accountName, permissionName, options = {}) {
-  const authKeys = await Keygen.generateMasterKeys();
+  const authKeys = options.keys || await Keygen.generateMasterKeys();
   await addAuthPermission.bind(this)(accountName, [authKeys.publicKeys.active], permissionName);
-  const encryptedKeys = await encryptKeys.bind(this)(keys, password, salt);
+  const encryptedKeys = encryptKeys.bind(this)(authKeys, password, salt);
   return encryptedKeys;
 }
 
@@ -327,8 +308,28 @@ async function createOreAccount(password, salt, ownerPublicKey, orePayerAccountN
   return returnInfo;
 }
 
+function eosBase32(base32String) {
+  // NOTE: Returns valid EOS base32, which is different than the standard JS base32 implementation
+  return base32String
+    .replace(/0/g, 'v')
+    .replace(/6/g, 'w')
+    .replace(/7/g, 'x')
+    .replace(/8/g, 'y')
+    .replace(/9/g, 'z');
+}
+
+async function getNameAlreadyExists(accountName) {
+  try {
+    await this.eos.rpc.get_account(accountName);
+    return true;
+  } catch(e) {
+    return false;
+  }
+}
+
 module.exports = {
   createKeyPair,
   createOreAccount,
   eosBase32,
+  getNameAlreadyExists,
 };

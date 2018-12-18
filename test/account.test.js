@@ -18,6 +18,64 @@ describe('account', () => {
     orejs = constructOrejs();
   });
 
+  describe('createKeyPair', () => {
+    let accountName = 'accountname';
+    let permissionName = 'custom';
+    let options = {};
+
+    beforeEach(() => {
+      mockGetAccount(orejs, false);
+      mockGetTransaction(orejs);
+    });
+
+    describe('when generating a new key pair', () => {
+      let spyTransaction;
+      let spyAccount;
+
+      beforeEach(() => {
+        spyTransaction = jest.spyOn(orejs.eos, 'transact');
+        spyAccount = jest.spyOn(orejs.eos.rpc, 'get_account');
+      });
+
+      it('returns a new key pair', async () => {
+        const keypair = await orejs.createKeyPair(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, accountName, permissionName, options);
+        expect(spyTransaction).toHaveBeenNthCalledWith(1, {
+          actions: [
+            mockAction({ account: 'eosio', name: 'updateauth' }),
+            mockAction({ account: 'eosio', name: 'updateauth' }),
+            mockAction({ account: 'eosio', name: 'updateauth' })
+          ],
+        }, mockOptions());
+        expect(spyAccount).toHaveBeenCalledWith(expect.any(String));
+        expect(ecc.privateToPublic(orejs.decrypt(keypair.privateKeys.owner, WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT))).toEqual(keypair.publicKeys.owner);
+      });
+    })
+
+    describe('when adding an existing key pair', () => {
+      let keys = {
+        masterPrivateKey: 'PW5HwnCgUkikSr7eFL1RGiALnJBr4oP4eK7Mq7ynjedKbxjt2oX3o',
+        privateKeys: {
+          owner: '5HugrGmD5Vbgdef1kvJgqWtjXyqxP1uYzB54rF7raGRij39an9N',
+          active: '5JuSXobBCwGJEYkpDyv1ENdqGAYoaprEnfEujuZmj52huk1WBfh'
+        },
+        publicKeys: {
+          owner: 'EOS5Dcydoh8BfHdoEcj1YfsiTUZm4Dghxx6W916GaUUpqHmNwfy1b',
+          active: 'EOS521jAgBCgtWskTS8SSthM1uJnDABAnVqeW9W3Z2yeShX6U2sgF'
+        }
+      }
+
+      beforeEach(() => {
+        options.keys = keys;
+      });
+
+      it('returns the existing key pair', async () => {
+        const keypair = await orejs.createKeyPair(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, accountName, permissionName, options);
+        expect(ecc.privateToPublic(orejs.decrypt(keypair.privateKeys.owner, WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT))).toEqual(keypair.publicKeys.owner);
+        expect(keypair.publicKeys.owner).toEqual(keys.publicKeys.owner);
+      });
+    })
+  });
+
   describe('createOreAccount', () => {
     describe('when generating a new account name', () => {
       let spyTransaction;
@@ -45,6 +103,7 @@ describe('account', () => {
             mockAction({ account: 'eosio', name: 'newaccount', authorization: { permission }, data: {
               creator: ORE_PAYER_ACCOUNT_NAME,
               name: expect.any(String),
+              newact: expect.any(String),
               owner: expect.any(Object),
               active: expect.any(Object),
             } }),
@@ -145,32 +204,6 @@ describe('account', () => {
           });
         });
       });
-
-      describe('when running on server version 1.5.0', () => {
-        let info;
-        let spyTransaction;
-
-        beforeEach(() => {
-          info = mockGetInfo(orejs, { server_version_string: 'v1.5.0-rc2' });
-          spyTransaction = jest.spyOn(orejs.eos, 'transact');
-        });
-
-        it('creates an account with the newact parameter', async () => {
-          const account = await orejs.createOreAccount(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, ORE_OWNER_ACCOUNT_KEY, ORE_PAYER_ACCOUNT_NAME);
-          expect(spyTransaction).toHaveBeenNthCalledWith(1, {
-            actions: [
-              mockAction({ account: 'eosio', name: 'newaccount', data: {
-                creator: ORE_PAYER_ACCOUNT_NAME,
-                newact: expect.any(String),
-                owner: expect.any(Object),
-                active: expect.any(Object),
-              } }),
-              mockAction({ account: 'eosio', name: 'buyrambytes' }),
-              mockAction({ account: 'eosio', name: 'delegatebw' }),
-            ],
-          }, mockOptions());
-        });
-      });
     });
 
     describe('when defining the accountName', () => {
@@ -201,4 +234,35 @@ describe('account', () => {
       expect(accountName).toEqual('abcde.vwxyzz');
     });
   });
-});
+
+  describe('getNameAlreadyExists', async () => {
+    let accountName;
+
+    beforeEach(() => {
+      accountName = 'thenameiwant';
+    });
+
+    describe('when the name already exists', async () => {
+
+      beforeEach(() => {
+        mockGetAccountWithAlreadyExistingAccount(orejs);
+      });
+
+      it('return true', async () => {
+        const nameAlreadyExists = await orejs.getNameAlreadyExists(accountName);
+        expect(nameAlreadyExists).toEqual(true);
+      });
+    });
+
+    describe('when the name does not yet exist', async () => {
+
+      beforeEach(() => {
+        mockGetAccount(orejs);
+      });
+
+      it('returns false', async () => {
+        const nameAlreadyExists = await orejs.getNameAlreadyExists(accountName);
+        expect(nameAlreadyExists).toEqual(false);
+      });
+    });
+  });});
