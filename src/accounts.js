@@ -263,7 +263,7 @@ async function createOreAccountWithKeys(activePublicKey, ownerPublicKey, orePaye
 }
 
 async function generateOreAccountAndKeys(ownerPublicKey, orePayerAccountName, options = {}) {
-  const keys = await Keygen.generateMasterKeys();
+  const keys = options.keys || await Keygen.generateMasterKeys();
 
   const {
     oreAccountName,
@@ -278,7 +278,7 @@ async function generateOreAccountAndEncryptedKeys(password, salt, ownerPublicKey
     keys, oreAccountName, transaction,
   } = await generateOreAccountAndKeys.bind(this)(ownerPublicKey, orePayerAccountName, options);
 
-  const encryptedKeys = await encryptKeys.bind(this)(keys, password, salt);
+  const encryptedKeys = encryptKeys.bind(this)(keys, password, salt);
   return { encryptedKeys, oreAccountName, transaction };
 }
 
@@ -305,9 +305,9 @@ async function createAccount(password, salt, ownerPublicKey, orePayerAccountName
 /* Public */
 
 async function createKeyPair(password, salt, accountName, permissionName, options = {}) {
-  const authKeys = await Keygen.generateMasterKeys();
+  const authKeys = options.keys || await Keygen.generateMasterKeys();
   await addAuthPermission.bind(this)(accountName, [authKeys.publicKeys.active], permissionName);
-  const encryptedKeys = await encryptKeys.bind(this)(keys, password, salt);
+  const encryptedKeys = encryptKeys.bind(this)(authKeys, password, salt);
   return encryptedKeys;
 }
 
