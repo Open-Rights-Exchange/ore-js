@@ -448,19 +448,6 @@ function mockAccount(account = {}) {
     },
     net_weight: 10000,
     permissions: [{
-      parent: 'owner',
-      perm_name: 'active',
-      required_auth: {
-        accounts: [],
-        keys: [{
-          key: 'EOS5QygD8vsKRXuVR8JMgLPjWwqzUyVGAJyvYaK7ffU4oPDmgwgqX',
-          weight: 1,
-        }],
-        threshold: 1,
-        waits: [],
-      },
-    },
-    {
       parent: '',
       perm_name: 'owner',
       required_auth: {
@@ -472,8 +459,31 @@ function mockAccount(account = {}) {
         threshold: 1,
         waits: [],
       },
-    },
-    ],
+    },{
+      parent: 'owner',
+      perm_name: 'active',
+      required_auth: {
+        accounts: [],
+        keys: [{
+          key: 'EOS5QygD8vsKRXuVR8JMgLPjWwqzUyVGAJyvYaK7ffU4oPDmgwgqX',
+          weight: 1,
+        }],
+        threshold: 1,
+        waits: [],
+      },
+    },{
+      parent: 'active',
+      perm_name: 'custom',
+      required_auth: {
+        accounts: [],
+        keys: [{
+          key: 'EOS5QygD8vsKRXuVR8JMgLPjWwqzUyVGAJyvYaK7ffU4oPDmgwgqX',
+          weight: 1,
+        }],
+        threshold: 1,
+        waits: [],
+      },
+    }],
     privileged: false,
     ram_quota: 8150,
     ram_usage: 2996,
