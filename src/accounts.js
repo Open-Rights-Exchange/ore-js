@@ -156,7 +156,7 @@ async function appendPermission(oreAccountName, keys, permName, parent = 'active
   const existingPerm = perms.find(perm => perm.perm_name === permName);
   const weightedKeys = weightKeys.bind(this)(keys, weights);
   if (existingPerm) {
-    existingPerm.required_auth.keys.push(weightedKeys);
+    existingPerm.required_auth.keys = existingPerm.required_auth.keys.concat(weightedKeys);
     return existingPerm;
   } else {
     const newPerm = newPermission.bind(this)(keys, permName, parent, threshold, weights);
