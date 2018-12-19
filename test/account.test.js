@@ -194,6 +194,7 @@ describe('account', () => {
           oreAccountName: expect.stringMatching(/[a-z1-5]{12}/),
           privateKey: expect.any(String),
           publicKey: expect.any(String),
+          keys: expect.any(Object),
           transaction,
         });
         expect(ecc.privateToPublic(orejs.decrypt(account.privateKey, WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT))).toEqual(account.publicKey);
@@ -217,6 +218,7 @@ describe('account', () => {
             oreAccountName: expect.stringMatching(/[a-z1-5]{12}/),
             privateKey: expect.any(String),
             publicKey: expect.any(String),
+            keys: expect.any(Object),
             transaction,
           });
         });
@@ -260,6 +262,7 @@ describe('account', () => {
             oreAccountName: expect.stringMatching(/[a-z1-5]{12}/),
             privateKey: expect.any(String),
             publicKey: expect.any(String),
+            keys: expect.any(Object),
             transaction,
           });
         });
@@ -281,6 +284,7 @@ describe('account', () => {
           oreAccountName,
           privateKey: expect.any(String),
           publicKey: expect.any(String),
+          keys: expect.any(Object),
           transaction,
         });
       });
