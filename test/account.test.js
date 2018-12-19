@@ -21,7 +21,7 @@ describe('account', () => {
   describe('createKeyPair', () => {
     let accountName = 'accountname';
     let parentPermission = 'active';
-    let options = {};
+    let options = { parentPermission };
 
     beforeEach(() => {
       mockGetAccount(orejs, false);
@@ -39,7 +39,7 @@ describe('account', () => {
       });
 
       it('returns a new key pair', async () => {
-        const keypair = await orejs.createKeyPair(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, accountName, permissionName, parentPermission, options);
+        const keypair = await orejs.createKeyPair(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, accountName, permissionName, options);
         expect(spyTransaction).toHaveBeenNthCalledWith(1, {
           actions: [
             mockAction({
@@ -66,7 +66,54 @@ describe('account', () => {
         expect(spyAccount).toHaveBeenCalledWith(expect.any(String));
         expect(ecc.privateToPublic(orejs.decrypt(keypair.privateKeys.owner, WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT))).toEqual(keypair.publicKeys.owner);
       });
-    })
+
+      describe('when passing in links', () => {
+        let code = 'contract';
+        let type = 'action';
+
+        beforeEach(() => {
+          options.links = [{ code, type }];
+        });
+
+        it('returns a new key pair, with links', async () => {
+          const keypair = await orejs.createKeyPair(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, accountName, permissionName, options);
+          expect(spyTransaction).toHaveBeenNthCalledWith(1, {
+            actions: [
+              mockAction({
+                account: 'eosio',
+                name: 'updateauth',
+                authorization: { actor: accountName, permission: parentPermission },
+                data: {
+                  account: accountName,
+                  auth: {
+                    accounts: [],
+                    keys: [{
+                      key: expect.any(String),
+                      weight: 1,
+                    }],
+                    threshold: 1,
+                    waits: [],
+                  },
+                  parent: parentPermission,
+                  permission: permissionName,
+                }
+              }),
+              mockAction({
+                account: 'eosio',
+                name: 'linkauth',
+                authorization: { actor: accountName, permission: parentPermission },
+                data: {
+                  account: accountName,
+                  code,
+                  type,
+                  requirement: permissionName,
+                }
+              })
+            ],
+          }, mockOptions());
+        });
+      });
+    });
 
     describe('when appending keys to an pre-existing permission', () => {
       let permissionName = 'custom';
@@ -74,13 +121,14 @@ describe('account', () => {
       let spyAccount;
 
       beforeEach(() => {
+        options.links = [];
         mockGetAccount(orejs, false);
         spyTransaction = jest.spyOn(orejs.eos, 'transact');
         spyAccount = jest.spyOn(orejs.eos.rpc, 'get_account');
       });
 
       it('returns the existing and new key pair', async () => {
-        const keypair = await orejs.createKeyPair(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, accountName, permissionName, parentPermission, options);
+        const keypair = await orejs.createKeyPair(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, accountName, permissionName, options);
         expect(spyTransaction).toHaveBeenNthCalledWith(1, {
           actions: [
             mockAction({
@@ -131,7 +179,7 @@ describe('account', () => {
       });
 
       it('returns the existing key pair', async () => {
-        const keypair = await orejs.createKeyPair(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, accountName, permissionName, parentPermission, options);
+        const keypair = await orejs.createKeyPair(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, accountName, permissionName, options);
         expect(ecc.privateToPublic(orejs.decrypt(keypair.privateKeys.owner, WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT))).toEqual(keypair.publicKeys.owner);
         expect(keypair.publicKeys.owner).toEqual(keys.publicKeys.owner);
       });

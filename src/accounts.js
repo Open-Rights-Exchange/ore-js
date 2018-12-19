@@ -164,65 +164,55 @@ async function appendPermission(oreAccountName, keys, permName, parent = 'active
   }
 }
 
-// TODO: Combine addAuthPermission & addAndLinkAuthPermission with a parameter function
-async function addAuthPermission(accountName, keys, permissionName, parentPermission, authPermission = 'active') {
-  const perm = await appendPermission.bind(this)(accountName, keys, permissionName, parentPermission);
+async function addPermission(authAccountName, keys, permissionName, parentPermission, options = {}) {
+  options = {
+    authPermission: 'active',
+    ...options
+  }
+  const { authPermission, links = [], broadcast = true } = options;
+  const perm = await appendPermission.bind(this)(authAccountName, keys, permissionName, parentPermission);
   const { perm_name:permission, parent, required_auth:auth } = perm;
   const actions = [{
     account: 'eosio',
     name: 'updateauth',
     authorization: [{
-      actor: accountName,
+      actor: authAccountName,
       permission: authPermission,
     }],
     data: {
-      account: accountName,
+      account: authAccountName,
       permission,
       parent,
       auth,
     },
   }];
 
-  return this.transact(actions);
-}
-
-async function addAndLinkAuthPermission(oreAccountName, keys, permName, code, type, parentPermission = 'active', authPermission = 'owner', broadcast = true) {
-  const perm = await appendPermission.bind(this)(oreAccountName, keys, permName, parentPermission);
-  const { perm_name:permission, parent, required_auth:auth } = perm;
-  const actions = [{
-    account: 'eosio',
-    name: 'updateauth',
-    authorization: [{
-      actor: oreAccountName,
-      permission: authPermission,
-    }],
-    data: {
-      account: oreAccountName,
-      permission,
-      parent,
-      auth,
-    },
-  }, {
-    account: 'eosio',
-    name: 'linkauth',
-    authorization: [{
-      actor: oreAccountName,
-      permission: authPermission,
-    }],
-    data: {
-      account: oreAccountName,
-      code,
-      type,
-      requirement: permName,
-    },
-  }];
+  links.forEach(link => {
+    const { code, type } = link;
+    actions.push({
+      account: 'eosio',
+      name: 'linkauth',
+      authorization: [{
+        actor: authAccountName,
+        permission: authPermission,
+      }],
+      data: {
+        account: authAccountName,
+        code,
+        type,
+        requirement: permission,
+      }
+    });
+  });
 
   return this.transact(actions, broadcast);
 }
 
+// NOTE: This method is specific to creating authVerifier keys...
 async function generateAuthKeys(oreAccountName, permName, code, action, broadcast) {
   const authKeys = await Keygen.generateMasterKeys();
-  await addAndLinkAuthPermission.bind(this)(oreAccountName, [authKeys.publicKeys.active], permName, code, action, 'active', 'owner', broadcast);
+  const options = { broadcast, authPermission: 'owner', links: [{ code, type: action }] }
+  await addPermission.bind(this)(oreAccountName, [authKeys.publicKeys.active], permName, 'active', options);
   return authKeys;
 }
 
@@ -285,10 +275,15 @@ async function createAccount(password, salt, ownerPublicKey, orePayerAccountName
 
 /* Public */
 
-async function createKeyPair(password, salt, accountName, permissionName, parentPermission = 'active', options = {}) {
-  const authKeys = options.keys || await Keygen.generateMasterKeys();
-  await addAuthPermission.bind(this)(accountName, [authKeys.publicKeys.active], permissionName, parentPermission);
-  const encryptedKeys = encryptKeys.bind(this)(authKeys, password, salt);
+async function createKeyPair(password, salt, authAccountName, permissionName, options = {}) {
+  options = {
+    parentPermission: 'active',
+    keys: await Keygen.generateMasterKeys(),
+    ...options
+  }
+  const { keys, parentPermission } = options;
+  await addPermission.bind(this)(authAccountName, [keys.publicKeys.active], permissionName, parentPermission, options);
+  const encryptedKeys = encryptKeys.bind(this)(keys, password, salt);
   return encryptedKeys;
 }
 
