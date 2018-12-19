@@ -130,14 +130,14 @@ function weightedKey(key, weight = 1) {
   return { key, weight };
 }
 
-function weightedKeys(keys, weight = 1) {
+function weightKeys(keys, weight = 1) {
   return keys.map(key => weightedKey(key, weight));
 }
 
 function newPermissionDetails(keys, threshold = 1, weights = 1) {
   return {
     accounts: [],
-    keys: weightedKeys.bind(this)(keys, weights),
+    keys: weightKeys.bind(this)(keys, weights),
     threshold,
     waits: [],
   };
@@ -153,62 +153,61 @@ function newPermission(keys, permName, parent = 'active', threshold = 1, weights
 
 async function appendPermission(oreAccountName, keys, permName, parent = 'active', threshold = 1, weights = 1) {
   const perms = await getAccountPermissions.bind(this)(oreAccountName);
-  const newPerm = newPermission.bind(this)(keys, permName, parent, threshold, weights);
-
-  perms.push(newPerm);
-  return perms;
+  const existingPerm = perms.find(perm => perm.perm_name === permName);
+  const weightedKeys = weightKeys.bind(this)(keys, weights);
+  if (existingPerm) {
+    existingPerm.required_auth.keys.push(weightedKeys);
+    return existingPerm;
+  } else {
+    const newPerm = newPermission.bind(this)(keys, permName, parent, threshold, weights);
+    return newPerm;
+  }
 }
 
 // TODO: Combine addAuthPermission & addAndLinkAuthPermission with a parameter function
-async function addAuthPermission(accountName, keys, permissionName) {
-  const perms = await appendPermission.bind(this)(accountName, keys, permissionName);
-  const actions = perms.map((perm) => {
-    const { perm_name:permission, parent, required_auth:auth } = perm;
-    return {
-      account: 'eosio',
-      name: 'updateauth',
-      authorization: [{
-        actor: accountName,
-        permission: 'owner',
-      }],
-      data: {
-        account: accountName,
-        permission,
-        parent,
-        auth,
-      },
-    };
-  });
+async function addAuthPermission(accountName, keys, permissionName, parentPermission, authPermission = 'active') {
+  const perm = await appendPermission.bind(this)(accountName, keys, permissionName, parentPermission);
+  const { perm_name:permission, parent, required_auth:auth } = perm;
+  const actions = [{
+    account: 'eosio',
+    name: 'updateauth',
+    authorization: [{
+      actor: accountName,
+      permission: authPermission,
+    }],
+    data: {
+      account: accountName,
+      permission,
+      parent,
+      auth,
+    },
+  }];
 
   return this.transact(actions);
 }
 
-async function addAndLinkAuthPermission(oreAccountName, keys, permName, code, type, broadcast) {
-  const perms = await appendPermission.bind(this)(oreAccountName, keys, permName);
-  const actions = perms.map((perm) => {
-    const { perm_name:permission, parent, required_auth:auth } = perm;
-    return {
-      account: 'eosio',
-      name: 'updateauth',
-      authorization: [{
-        actor: oreAccountName,
-        permission: 'owner',
-      }],
-      data: {
-        account: oreAccountName,
-        permission,
-        parent,
-        auth,
-      },
-    };
-  });
-
-  actions.push({
+async function addAndLinkAuthPermission(oreAccountName, keys, permName, code, type, parentPermission = 'active', authPermission = 'owner', broadcast = true) {
+  const perm = await appendPermission.bind(this)(oreAccountName, keys, permName, parentPermission);
+  const { perm_name:permission, parent, required_auth:auth } = perm;
+  const actions = [{
+    account: 'eosio',
+    name: 'updateauth',
+    authorization: [{
+      actor: oreAccountName,
+      permission: authPermission,
+    }],
+    data: {
+      account: oreAccountName,
+      permission,
+      parent,
+      auth,
+    },
+  }, {
     account: 'eosio',
     name: 'linkauth',
     authorization: [{
       actor: oreAccountName,
-      permission: 'owner',
+      permission: authPermission,
     }],
     data: {
       account: oreAccountName,
@@ -216,14 +215,14 @@ async function addAndLinkAuthPermission(oreAccountName, keys, permName, code, ty
       type,
       requirement: permName,
     },
-  });
+  }];
 
   return this.transact(actions, broadcast);
 }
 
 async function generateAuthKeys(oreAccountName, permName, code, action, broadcast) {
   const authKeys = await Keygen.generateMasterKeys();
-  await addAndLinkAuthPermission.bind(this)(oreAccountName, [authKeys.publicKeys.active], permName, code, action, broadcast);
+  await addAndLinkAuthPermission.bind(this)(oreAccountName, [authKeys.publicKeys.active], permName, code, action, 'active', 'owner', broadcast);
   return authKeys;
 }
 
@@ -285,9 +284,9 @@ async function createAccount(password, salt, ownerPublicKey, orePayerAccountName
 
 /* Public */
 
-async function createKeyPair(password, salt, accountName, permissionName, options = {}) {
+async function createKeyPair(password, salt, accountName, permissionName, parentPermission = 'active', options = {}) {
   const authKeys = options.keys || await Keygen.generateMasterKeys();
-  await addAuthPermission.bind(this)(accountName, [authKeys.publicKeys.active], permissionName);
+  await addAuthPermission.bind(this)(accountName, [authKeys.publicKeys.active], permissionName, parentPermission);
   const encryptedKeys = encryptKeys.bind(this)(authKeys, password, salt);
   return encryptedKeys;
 }

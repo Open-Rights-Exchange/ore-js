@@ -21,6 +21,7 @@ describe('account', () => {
   describe('createKeyPair', () => {
     let accountName = 'accountname';
     let permissionName = 'custom';
+    let parentPermission = 'active';
     let options = {};
 
     beforeEach(() => {
@@ -38,12 +39,28 @@ describe('account', () => {
       });
 
       it('returns a new key pair', async () => {
-        const keypair = await orejs.createKeyPair(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, accountName, permissionName, options);
+        const keypair = await orejs.createKeyPair(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, accountName, permissionName, parentPermission, options);
         expect(spyTransaction).toHaveBeenNthCalledWith(1, {
           actions: [
-            mockAction({ account: 'eosio', name: 'updateauth' }),
-            mockAction({ account: 'eosio', name: 'updateauth' }),
-            mockAction({ account: 'eosio', name: 'updateauth' })
+            mockAction({
+              account: 'eosio',
+              name: 'updateauth',
+              authorization: { actor: accountName, permission: parentPermission },
+              data: {
+                account: accountName,
+                auth: {
+                  accounts: [],
+                  keys: [{
+                    key: expect.any(String),
+                    weight: 1,
+                  }],
+                  threshold: 1,
+                  waits: [],
+                },
+                parent: parentPermission,
+                permission: permissionName,
+              }
+            })
           ],
         }, mockOptions());
         expect(spyAccount).toHaveBeenCalledWith(expect.any(String));
@@ -69,7 +86,7 @@ describe('account', () => {
       });
 
       it('returns the existing key pair', async () => {
-        const keypair = await orejs.createKeyPair(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, accountName, permissionName, options);
+        const keypair = await orejs.createKeyPair(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, accountName, permissionName, parentPermission, options);
         expect(ecc.privateToPublic(orejs.decrypt(keypair.privateKeys.owner, WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT))).toEqual(keypair.publicKeys.owner);
         expect(keypair.publicKeys.owner).toEqual(keys.publicKeys.owner);
       });
@@ -119,8 +136,6 @@ describe('account', () => {
         }, mockOptions());
         expect(spyTransaction).toHaveBeenNthCalledWith(2, {
           actions: [
-            mockAction({ account: 'eosio', name: 'updateauth' }),
-            mockAction({ account: 'eosio', name: 'updateauth' }),
             mockAction({ account: 'eosio', name: 'updateauth' }),
             mockAction({ account: 'eosio', name: 'linkauth' }),
           ],
