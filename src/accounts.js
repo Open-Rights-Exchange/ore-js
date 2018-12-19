@@ -164,19 +164,24 @@ async function appendPermission(oreAccountName, keys, permName, parent = 'active
   }
 }
 
-// TODO: Combine addAuthPermission & addAndLinkAuthPermission with a parameter function
-async function addAuthPermission(accountName, keys, permissionName, parentPermission, authPermission = 'active') {
-  const perm = await appendPermission.bind(this)(accountName, keys, permissionName, parentPermission);
+// TODO: Combine addPermission & addAndLinkAuthPermission with a parameter function
+async function addPermission(authAccountName, keys, permissionName, parentPermission, options = {}) {
+  options = {
+    authPermission: 'active',
+    ...options
+  }
+  const { authPermission } = options;
+  const perm = await appendPermission.bind(this)(authAccountName, keys, permissionName, parentPermission);
   const { perm_name:permission, parent, required_auth:auth } = perm;
   const actions = [{
     account: 'eosio',
     name: 'updateauth',
     authorization: [{
-      actor: accountName,
+      actor: authAccountName,
       permission: authPermission,
     }],
     data: {
-      account: accountName,
+      account: authAccountName,
       permission,
       parent,
       auth,
@@ -285,10 +290,15 @@ async function createAccount(password, salt, ownerPublicKey, orePayerAccountName
 
 /* Public */
 
-async function createKeyPair(password, salt, accountName, permissionName, parentPermission = 'active', options = {}) {
-  const authKeys = options.keys || await Keygen.generateMasterKeys();
-  await addAuthPermission.bind(this)(accountName, [authKeys.publicKeys.active], permissionName, parentPermission);
-  const encryptedKeys = encryptKeys.bind(this)(authKeys, password, salt);
+async function createKeyPair(password, salt, authAccountName, permissionName, options = {}) {
+  options = {
+    parentPermission: 'active',
+    keys: await Keygen.generateMasterKeys(),
+    ...options
+  }
+  const { keys, parentPermission } = options;
+  await addPermission.bind(this)(authAccountName, [keys.publicKeys.active], permissionName, parentPermission, options);
+  const encryptedKeys = encryptKeys.bind(this)(keys, password, salt);
   return encryptedKeys;
 }
 
