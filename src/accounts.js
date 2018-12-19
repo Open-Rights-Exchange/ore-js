@@ -259,7 +259,7 @@ async function generateOreAccountAndEncryptedKeys(password, salt, ownerPublicKey
   } = await generateOreAccountAndKeys.bind(this)(ownerPublicKey, orePayerAccountName, options);
 
   const encryptedKeys = encryptKeys.bind(this)(keys, password, salt);
-  return { encryptedKeys, oreAccountName, transaction };
+  return { encryptedKeys, oreAccountName, transaction, keys };
 }
 
 // Creates an account, without verifier auth keys
@@ -271,13 +271,14 @@ async function createAccount(password, salt, ownerPublicKey, orePayerAccountName
   const { broadcast } = options;
 
   const {
-    encryptedKeys, oreAccountName, transaction,
+    encryptedKeys, oreAccountName, transaction, keys,
   } = await generateOreAccountAndEncryptedKeys.bind(this)(password, salt, ownerPublicKey, orePayerAccountName, options);
 
   return {
     oreAccountName,
     privateKey: encryptedKeys.privateKeys.active,
     publicKey: encryptedKeys.publicKeys.active,
+    keys,
     transaction,
   };
 }
