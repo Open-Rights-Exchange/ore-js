@@ -211,7 +211,7 @@ async function addPermission(authAccountName, keys, permissionName, parentPermis
 // NOTE: This method is specific to creating authVerifier keys...
 async function generateAuthKeys(oreAccountName, permName, code, action, broadcast) {
   const authKeys = await Keygen.generateMasterKeys();
-  const options = { broadcast, authPermission: 'owner', links: [{ code, action }] }
+  const options = { broadcast, authPermission: 'owner', links: [{ code, type: action }] }
   await addPermission.bind(this)(oreAccountName, [authKeys.publicKeys.active], permName, 'active', options);
   return authKeys;
 }
