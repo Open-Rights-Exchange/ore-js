@@ -21,7 +21,7 @@ function getAmount(tokenAmount, tokenSymbol) {
   }
 }
 
-function createToken(toAccountName, ownerAccountName, tokenAmount, contractName, permission = 'active') {
+function createToken(toAccountName, ownerAccountName, tokenAmount, contractName, permission = 'active', broadcast = true) {
   return this.transact([{
     account: contractName,
     name: 'create',
@@ -33,10 +33,10 @@ function createToken(toAccountName, ownerAccountName, tokenAmount, contractName,
       issuer: toAccountName,
       maximum_supply: tokenAmount,
     },
-  }]);
+  }], broadcast);
 }
 
-function issueToken(toAccountName, tokenAmount, ownerAccountName, contractName, memo = '', permission = 'active') {
+function issueToken(toAccountName, tokenAmount, ownerAccountName, contractName, memo = '', permission = 'active', broadcast = true) {
   return this.transact([{
     account: contractName,
     name: 'issue',
@@ -49,11 +49,11 @@ function issueToken(toAccountName, tokenAmount, ownerAccountName, contractName, 
       quantity: tokenAmount,
       memo,
     },
-  }]);
+  }], broadcast);
 }
 
 // cleos push action cpu.ore approve '[""]
-function approveTransfer(fromAccountName, toAccountName, tokenAmount, contractName, memo = '', permission = 'active') {
+function approveTransfer(fromAccountName, toAccountName, tokenAmount, contractName, memo = '', permission = 'active', broadcast = true) {
   // Appprove some account to spend on behalf of approving account
   return this.transact([{
     account: contractName,
@@ -68,7 +68,7 @@ function approveTransfer(fromAccountName, toAccountName, tokenAmount, contractNa
       quantity: tokenAmount,
       memo,
     },
-  }]);
+  }], broadcast);
 }
 
 // cleos get table token.ore test1.acnt allowances
@@ -106,7 +106,7 @@ async function getBalance(accountName, tokenSymbol, contractName) {
   return parseFloat(0.0000);
 }
 
-function retireToken(ownerAccountName, tokenAmount, contractName, memo = '', permission = 'active') {
+function retireToken(ownerAccountName, tokenAmount, contractName, memo = '', permission = 'active', broadcast = true) {
   return this.transact([{
     account: contractName,
     name: 'retire',
@@ -118,11 +118,11 @@ function retireToken(ownerAccountName, tokenAmount, contractName, memo = '', per
       quantity: tokenAmount,
       memo,
     },
-  }]);
+  }], broadcast);
 }
 
 // cleos push action cpu.ore transfer '["test1.acnt", "test2.acnt", "10.0000 CPU", "memo"]' -p test1.acnt
-function transferToken(fromAccountName, toAccountName, tokenAmount, contractName, memo = '', permission = 'active') {
+function transferToken(fromAccountName, toAccountName, tokenAmount, contractName, memo = '', permission = 'active', broadcast = true) {
   return this.transact([{
     account: contractName,
     name: 'transfer',
@@ -136,11 +136,11 @@ function transferToken(fromAccountName, toAccountName, tokenAmount, contractName
       quantity: tokenAmount,
       memo,
     },
-  }]);
+  }], broadcast);
 }
 
 // cleos push action cpu.ore transferFrom '["app.acnt", "test1.acnt", "test2.acnt", "10.0000 CPU"]' -p app.acnt
-function transferFrom(approvedAccountName, fromAccountName, toAccountName, tokenAmount, contractName, memo = '', permission = 'active') {
+function transferFrom(approvedAccountName, fromAccountName, toAccountName, tokenAmount, contractName, memo = '', permission = 'active', broadcast = true) {
   // Standard token transfer
   return this.transact([{
     account: contractName,
@@ -156,7 +156,7 @@ function transferFrom(approvedAccountName, fromAccountName, toAccountName, token
       quantity: tokenAmount,
       memo,
     },
-  }]);
+  }], broadcast);
 }
 
 module.exports = {

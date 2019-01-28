@@ -281,31 +281,31 @@ function mockAbi() {
             "name": "issuer",
             "type": "name"
           },{
-            "name": "api_voucher_license_price_in_cpu",
+            "name": "api_instrument_license_price_in_cpu",
             "type": "string"
           },{
-            "name": "api_voucher_lifetime_in_seconds",
+            "name": "api_instrument_lifetime_in_seconds",
             "type": "string"
           },{
-            "name": "api_voucher_start_date",
+            "name": "api_instrument_start_date",
             "type": "string"
           },{
-            "name": "api_voucher_end_date",
+            "name": "api_instrument_end_date",
             "type": "string"
           },{
-            "name": "api_voucher_valid_forever",
+            "name": "api_instrument_valid_forever",
             "type": "uint8"
           },{
-            "name": "api_voucher_mutability",
+            "name": "api_instrument_mutability",
             "type": "uint8"
           },{
-            "name": "api_voucher_security_type",
+            "name": "api_instrument_security_type",
             "type": "string"
           },{
             "name": "right_params",
             "type": "offer_params[]"
           },{
-            "name": "api_voucher_parameter_rules",
+            "name": "api_instrument_parameter_rules",
             "type": "param_type[]"
           },{
             "name": "offer_mutability",
@@ -343,7 +343,7 @@ function mockAbi() {
             "name": "offer_template",
             "type": "string"
           },{
-            "name": "override_voucher_id",
+            "name": "override_instrument_id",
             "type": "uint64"
           }
         ]
@@ -448,19 +448,6 @@ function mockAccount(account = {}) {
     },
     net_weight: 10000,
     permissions: [{
-      parent: 'owner',
-      perm_name: 'active',
-      required_auth: {
-        accounts: [],
-        keys: [{
-          key: 'EOS5QygD8vsKRXuVR8JMgLPjWwqzUyVGAJyvYaK7ffU4oPDmgwgqX',
-          weight: 1,
-        }],
-        threshold: 1,
-        waits: [],
-      },
-    },
-    {
       parent: '',
       perm_name: 'owner',
       required_auth: {
@@ -472,8 +459,31 @@ function mockAccount(account = {}) {
         threshold: 1,
         waits: [],
       },
-    },
-    ],
+    },{
+      parent: 'owner',
+      perm_name: 'active',
+      required_auth: {
+        accounts: [],
+        keys: [{
+          key: 'EOS5QygD8vsKRXuVR8JMgLPjWwqzUyVGAJyvYaK7ffU4oPDmgwgqX',
+          weight: 1,
+        }],
+        threshold: 1,
+        waits: [],
+      },
+    },{
+      parent: 'active',
+      perm_name: 'custom',
+      required_auth: {
+        accounts: [],
+        keys: [{
+          key: 'EOS5QygD8vsKRXuVR8JMgLPjWwqzUyVGAJyvYaK7ffU4oPDmgwgqX',
+          weight: 1,
+        }],
+        threshold: 1,
+        waits: [],
+      },
+    }],
     privileged: false,
     ram_quota: 8150,
     ram_usage: 2996,
@@ -542,7 +552,8 @@ function mockInfo(info = {}) {
     virtual_block_cpu_limit: 200000000,
     virtual_block_net_limit: 1048576000,
     block_cpu_limit: 199900,
-    block_net_limit: 1048576,
+    lock_net_limit: 1048576,
+    server_version_string: "v1.4.2",
     ...info,
   }]);
 }

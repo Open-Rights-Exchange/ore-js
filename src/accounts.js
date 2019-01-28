@@ -6,12 +6,15 @@ const BASE = 31; // Base 31 allows us to leave out '.', as it's used for account
 /* Private */
 
 function newAccountTransaction(name, ownerPublicKey, activePublicKey, orePayerAccountName, options = {}) {
-  const option = {
-    bytes: 8192,
-    stakedNet: 1,
-    stakedCpu: 1,
+  const { broadcast, bytes, permission, stakedCpu, stakedNet, transfer, tokenSymbol } = {
+    broadcast: true,
+    bytes: 2048,
+    permission: 'active',
+    stakedCpu: '0.1000',
+    stakedNet: '0.1000',
+    tokenSymbol: this.chainName === 'ore' ? 'SYS' : 'EOS',
     transfer: false,
-    ...options,
+    ...options
   };
 
   let actions = [{
@@ -19,11 +22,12 @@ function newAccountTransaction(name, ownerPublicKey, activePublicKey, orePayerAc
     name: 'newaccount',
     authorization: [{
       actor: orePayerAccountName,
-      permission: 'active',
+      permission,
     }],
     data: {
       creator: orePayerAccountName,
       name,
+      newact: name, // Some versions of the system contract are running a different version of the newaccount code
       owner: {
         threshold: 1,
         keys: [{
@@ -49,12 +53,12 @@ function newAccountTransaction(name, ownerPublicKey, activePublicKey, orePayerAc
     name: 'buyrambytes',
     authorization: [{
       actor: orePayerAccountName,
-      permission: 'active',
+      permission,
     }],
     data: {
       payer: orePayerAccountName,
       receiver: name,
-      bytes: option.bytes,
+      bytes: bytes,
     },
   },
   {
@@ -62,27 +66,18 @@ function newAccountTransaction(name, ownerPublicKey, activePublicKey, orePayerAc
     name: 'delegatebw',
     authorization: [{
       actor: orePayerAccountName,
-      permission: 'active',
+      permission,
     }],
     data: {
       from: orePayerAccountName,
       receiver: name,
-      stake_net_quantity: `${option.stakedNet}.0000 SYS`,
-      stake_cpu_quantity: `${option.stakedCpu}.0000 SYS`,
-      transfer: option.transfer,
+      stake_net_quantity: `${stakedNet} ${tokenSymbol}`,
+      stake_cpu_quantity: `${stakedCpu} ${tokenSymbol}`,
+      transfer: transfer,
     },
   }];
-  return this.transact(actions);
-}
 
-function eosBase32(base32String) {
-  // NOTE: Returns valid EOS base32, which is different than the standard JS base32 implementation
-  return base32String
-    .replace(/0/g, 'v')
-    .replace(/6/g, 'w')
-    .replace(/7/g, 'x')
-    .replace(/8/g, 'y')
-    .replace(/9/g, 'z');
+  return this.transact(actions, broadcast);
 }
 
 function timestampEosBase32() {
@@ -95,11 +90,22 @@ function randomEosBase32() {
   return eosBase32(Math.random().toString(BASE).substr(2));
 }
 
-function generateAccountName() {
+function generateAccountNameString() {
+  return (timestampEosBase32() + randomEosBase32()).substr(0, 12);
+}
+
+// Recursively generates account names, until a uniq name is generated...
+async function generateAccountName() {
   // NOTE: account names MUST be base32 encoded, and be 12 characters, in compliance with the EOS standard
   // NOTE: account names can also contain only the following characters: a-z, 1-5, & '.' In regex: [a-z1-5\.]{12}
   // NOTE: account names are generated based on the current unix timestamp + some randomness, and cut to be 12 chars
-  return (timestampEosBase32() + randomEosBase32()).substr(0, 12);
+  let accountName = generateAccountNameString.bind(this)();
+  const nameAlreadyExists = await getNameAlreadyExists.bind(this)(accountName);
+  if (nameAlreadyExists) {
+    return generateAccountName.bind(this)();
+  } else {
+    return accountName;
+  }
 }
 
 function encryptKeys(keys, password, salt) {
@@ -124,14 +130,14 @@ function weightedKey(key, weight = 1) {
   return { key, weight };
 }
 
-function weightedKeys(keys, weight = 1) {
+function weightKeys(keys, weight = 1) {
   return keys.map(key => weightedKey(key, weight));
 }
 
 function newPermissionDetails(keys, threshold = 1, weights = 1) {
   return {
     accounts: [],
-    keys: weightedKeys.bind(this)(keys, weights),
+    keys: weightKeys.bind(this)(keys, weights),
     threshold,
     waits: [],
   };
@@ -147,60 +153,35 @@ function newPermission(keys, permName, parent = 'active', threshold = 1, weights
 
 async function appendPermission(oreAccountName, keys, permName, parent = 'active', threshold = 1, weights = 1) {
   const perms = await getAccountPermissions.bind(this)(oreAccountName);
-  const newPerm = newPermission.bind(this)(keys, permName, parent, threshold, weights);
-
-  perms.push(newPerm);
-  return perms;
+  const existingPerm = perms.find(perm => perm.perm_name === permName);
+  if (existingPerm) { // NOTE: Add new keys & update the parent permission
+    const weightedKeys = weightKeys.bind(this)(keys, weights);
+    existingPerm.required_auth.keys = existingPerm.required_auth.keys.concat(weightedKeys);
+    existingPerm.parent = parent;
+    return existingPerm;
+  } else {
+    const newPerm = newPermission.bind(this)(keys, permName, parent, threshold, weights);
+    return newPerm;
+  }
 }
 
-async function addAuthPermission(oreAccountName, keys, permName, code, type) {
-  const perms = await appendPermission.bind(this)(oreAccountName, keys, permName);
-  const actions = perms.map((perm) => {
-    const { perm_name:permission, parent, required_auth:auth } = perm;
-    return {
-      account: 'eosio',
-      name: 'updateauth',
-      authorization: [{
-        actor: oreAccountName,
-        permission: 'owner',
-      }],
-      data: {
-        account: oreAccountName,
-        permission,
-        parent,
-        auth,
-      },
-    };
-  });
-
-  actions.push({
-    account: 'eosio',
-    name: 'linkauth',
-    authorization: [{
-      actor: oreAccountName,
-      permission: 'owner',
-    }],
-    data: {
-      account: oreAccountName,
-      code,
-      type,
-      requirement: permName,
-    },
-  });
-
-  return this.transact(actions);
-}
-
-async function generateAuthKeys(oreAccountName, permName, code, action) {
+// NOTE: This method is specific to creating authVerifier keys...
+async function generateAuthKeys(oreAccountName, permName, code, action, broadcast) {
   const authKeys = await Keygen.generateMasterKeys();
-  await addAuthPermission.bind(this)(oreAccountName, [authKeys.publicKeys.active], permName, code, action);
+  const options = { broadcast, authPermission: 'owner', links: [{ code, type: action }] }
+  await addPermission.bind(this)(oreAccountName, [authKeys.publicKeys.active], permName, 'active', options);
   return authKeys;
 }
 
-async function createOreAccountWithKeys(activePublicKey, ownerPublicKey, orePayerAccountName, options = {}, confirm = false) {
-  const oreAccountName = options.oreAccountName || generateAccountName();
+async function createOreAccountWithKeys(activePublicKey, ownerPublicKey, orePayerAccountName, options = {}) {
+  options = {
+    confirm: true,
+    ...options
+  };
+  let oreAccountName = options.oreAccountName || await generateAccountName.bind(this)();
+
   let transaction;
-  if (confirm) {
+  if (options.confirm) {
     transaction = await this.awaitTransaction(() => newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, options));
   } else {
     transaction = await newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, options);
@@ -209,13 +190,12 @@ async function createOreAccountWithKeys(activePublicKey, ownerPublicKey, orePaye
 }
 
 async function generateOreAccountAndKeys(ownerPublicKey, orePayerAccountName, options = {}) {
-  const keys = await Keygen.generateMasterKeys();
+  const keys = options.keys || await Keygen.generateMasterKeys();
 
-  // TODO Check for existing wallets, for name collisions
   const {
     oreAccountName,
     transaction,
-  } = await createOreAccountWithKeys.bind(this)(keys.publicKeys.active, ownerPublicKey, orePayerAccountName, options, true);
+  } = await createOreAccountWithKeys.bind(this)(keys.publicKeys.active, ownerPublicKey, orePayerAccountName, options);
 
   return { keys, oreAccountName, transaction };
 }
@@ -225,29 +205,128 @@ async function generateOreAccountAndEncryptedKeys(password, salt, ownerPublicKey
     keys, oreAccountName, transaction,
   } = await generateOreAccountAndKeys.bind(this)(ownerPublicKey, orePayerAccountName, options);
 
-  const encryptedKeys = await encryptKeys.bind(this)(keys, password, salt);
-  return { encryptedKeys, oreAccountName, transaction };
+  const encryptedKeys = encryptKeys.bind(this)(keys, password, salt);
+  return { encryptedKeys, oreAccountName, transaction, keys };
 }
 
-/* Public */
+// Creates an account, without verifier auth keys
+async function createAccount(password, salt, ownerPublicKey, orePayerAccountName, options = {}) {
+  options = {
+    broadcast: true,
+    ...options
+  };
+  const { broadcast } = options;
 
-async function createOreAccount(password, salt, ownerPublicKey, orePayerAccountName, options = {}) {
   const {
-    encryptedKeys, oreAccountName, transaction,
+    encryptedKeys, oreAccountName, transaction, keys,
   } = await generateOreAccountAndEncryptedKeys.bind(this)(password, salt, ownerPublicKey, orePayerAccountName, options);
-  const verifierAuthKeys = await generateAuthKeys.bind(this)(oreAccountName, 'authverifier', 'token.ore', 'approve');
 
   return {
-    verifierAuthKey: verifierAuthKeys.privateKeys.active,
-    verifierAuthPublicKey: verifierAuthKeys.publicKeys.active,
     oreAccountName,
     privateKey: encryptedKeys.privateKeys.active,
     publicKey: encryptedKeys.publicKeys.active,
+    keys,
     transaction,
   };
 }
 
+/* Public */
+
+async function addPermission(authAccountName, keys, permissionName, parentPermission, options = {}) {
+  options = {
+    authPermission: 'active',
+    ...options
+  }
+  const { authPermission, links = [], broadcast = true } = options;
+  const perm = await appendPermission.bind(this)(authAccountName, keys, permissionName, parentPermission);
+  const { perm_name:permission, parent, required_auth:auth } = perm;
+  const actions = [{
+    account: 'eosio',
+    name: 'updateauth',
+    authorization: [{
+      actor: authAccountName,
+      permission: authPermission,
+    }],
+    data: {
+      account: authAccountName,
+      permission,
+      parent,
+      auth,
+    },
+  }];
+
+  links.forEach(link => {
+    const { code, type } = link;
+    actions.push({
+      account: 'eosio',
+      name: 'linkauth',
+      authorization: [{
+        actor: authAccountName,
+        permission: authPermission,
+      }],
+      data: {
+        account: authAccountName,
+        code,
+        type,
+        requirement: permission,
+      }
+    });
+  });
+
+  return this.transact(actions, broadcast);
+}
+
+async function createKeyPair(password, salt, authAccountName, permissionName, options = {}) {
+  options = {
+    parentPermission: 'active',
+    keys: await Keygen.generateMasterKeys(),
+    ...options
+  }
+  const { keys, parentPermission } = options;
+  await addPermission.bind(this)(authAccountName, [keys.publicKeys.active], permissionName, parentPermission, options);
+  const encryptedKeys = encryptKeys.bind(this)(keys, password, salt);
+  return encryptedKeys;
+}
+
+// Creates an account, with verifier auth keys for ORE, and without for EOS
+async function createOreAccount(password, salt, ownerPublicKey, orePayerAccountName, options = {}) {
+  const { broadcast } = options;
+
+  const returnInfo = await createAccount.bind(this)(password, salt, ownerPublicKey, orePayerAccountName, options);
+
+  if (this.chainName === 'ore') {
+    const verifierAuthKeys = await generateAuthKeys.bind(this)(returnInfo.oreAccountName, 'authverifier', 'token.ore', 'approve', broadcast);
+
+    returnInfo.verifierAuthKey = verifierAuthKeys.privateKeys.active;
+    returnInfo.verifierAuthPublicKey = verifierAuthKeys.publicKeys.active;
+  }
+
+  return returnInfo;
+}
+
+function eosBase32(base32String) {
+  // NOTE: Returns valid EOS base32, which is different than the standard JS base32 implementation
+  return base32String
+    .replace(/0/g, 'v')
+    .replace(/6/g, 'w')
+    .replace(/7/g, 'x')
+    .replace(/8/g, 'y')
+    .replace(/9/g, 'z');
+}
+
+async function getNameAlreadyExists(accountName) {
+  try {
+    await this.eos.rpc.get_account(accountName);
+    return true;
+  } catch(e) {
+    return false;
+  }
+}
+
 module.exports = {
+  addPermission,
+  createKeyPair,
   createOreAccount,
   eosBase32,
+  getNameAlreadyExists
 };
