@@ -154,58 +154,15 @@ function newPermission(keys, permName, parent = 'active', threshold = 1, weights
 async function appendPermission(oreAccountName, keys, permName, parent = 'active', threshold = 1, weights = 1) {
   const perms = await getAccountPermissions.bind(this)(oreAccountName);
   const existingPerm = perms.find(perm => perm.perm_name === permName);
-  const weightedKeys = weightKeys.bind(this)(keys, weights);
-  if (existingPerm) {
+  if (existingPerm) { // NOTE: Add new keys & update the parent permission
+    const weightedKeys = weightKeys.bind(this)(keys, weights);
     existingPerm.required_auth.keys = existingPerm.required_auth.keys.concat(weightedKeys);
+    existingPerm.parent = parent;
     return existingPerm;
   } else {
     const newPerm = newPermission.bind(this)(keys, permName, parent, threshold, weights);
     return newPerm;
   }
-}
-
-async function addPermission(authAccountName, keys, permissionName, parentPermission, options = {}) {
-  options = {
-    authPermission: 'active',
-    ...options
-  }
-  const { authPermission, links = [], broadcast = true } = options;
-  const perm = await appendPermission.bind(this)(authAccountName, keys, permissionName, parentPermission);
-  const { perm_name:permission, parent, required_auth:auth } = perm;
-  const actions = [{
-    account: 'eosio',
-    name: 'updateauth',
-    authorization: [{
-      actor: authAccountName,
-      permission: authPermission,
-    }],
-    data: {
-      account: authAccountName,
-      permission,
-      parent,
-      auth,
-    },
-  }];
-
-  links.forEach(link => {
-    const { code, type } = link;
-    actions.push({
-      account: 'eosio',
-      name: 'linkauth',
-      authorization: [{
-        actor: authAccountName,
-        permission: authPermission,
-      }],
-      data: {
-        account: authAccountName,
-        code,
-        type,
-        requirement: permission,
-      }
-    });
-  });
-
-  return this.transact(actions, broadcast);
 }
 
 // NOTE: This method is specific to creating authVerifier keys...
@@ -275,6 +232,50 @@ async function createAccount(password, salt, ownerPublicKey, orePayerAccountName
 
 /* Public */
 
+async function addPermission(authAccountName, keys, permissionName, parentPermission, options = {}) {
+  options = {
+    authPermission: 'active',
+    ...options
+  }
+  const { authPermission, links = [], broadcast = true } = options;
+  const perm = await appendPermission.bind(this)(authAccountName, keys, permissionName, parentPermission);
+  const { perm_name:permission, parent, required_auth:auth } = perm;
+  const actions = [{
+    account: 'eosio',
+    name: 'updateauth',
+    authorization: [{
+      actor: authAccountName,
+      permission: authPermission,
+    }],
+    data: {
+      account: authAccountName,
+      permission,
+      parent,
+      auth,
+    },
+  }];
+
+  links.forEach(link => {
+    const { code, type } = link;
+    actions.push({
+      account: 'eosio',
+      name: 'linkauth',
+      authorization: [{
+        actor: authAccountName,
+        permission: authPermission,
+      }],
+      data: {
+        account: authAccountName,
+        code,
+        type,
+        requirement: permission,
+      }
+    });
+  });
+
+  return this.transact(actions, broadcast);
+}
+
 async function createKeyPair(password, salt, authAccountName, permissionName, options = {}) {
   options = {
     parentPermission: 'active',
@@ -323,8 +324,9 @@ async function getNameAlreadyExists(accountName) {
 }
 
 module.exports = {
+  addPermission,
   createKeyPair,
   createOreAccount,
   eosBase32,
-  getNameAlreadyExists,
+  getNameAlreadyExists
 };

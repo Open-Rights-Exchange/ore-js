@@ -3,6 +3,7 @@
 /* global ORE_OWNER_ACCOUNT_KEY:true */
 /* global ORE_NETWORK_URI:true */
 /* global ORE_PAYER_ACCOUNT_NAME:true */
+const { Keygen } = require('eosjs-keygen');
 const ecc = require('eosjs-ecc');
 const { mockAction, mockOptions } = require('./helpers/eos');
 const { constructOrejs, mockGetAccount, mockGetAccountWithAlreadyExistingAccount, mockGetInfo, mockGetBlock,
@@ -16,6 +17,60 @@ describe('account', () => {
 
   beforeAll(() => {
     orejs = constructOrejs();
+  });
+
+  // NOTE: The functionality of addPermission is only partially tested directly.
+  // NOTE: Additional functionality is tested via createKeyPair
+  describe('addPermission', () => {
+    let accountName = 'accountname';
+    let keys;
+    let parentPermission = 'active';
+    let options = { authPermission: parentPermission };
+
+    beforeEach(async () => {
+      keys = await Keygen.generateMasterKeys();
+      mockGetAccount(orejs, false);
+      mockGetTransaction(orejs);
+    });
+
+    describe('when removing an existing permission', () => {
+      let permissionName = 'newpermission';
+      let spyTransaction;
+      let spyAccount;
+
+      beforeEach(() => {
+        spyTransaction = jest.spyOn(orejs.eos, 'transact');
+        spyAccount = jest.spyOn(orejs.eos.rpc, 'get_account');
+      });
+
+      it('returns the transaction', async () => {
+        const permissionTransaction =  await orejs.addPermission(accountName, [keys.publicKeys.active], permissionName, parentPermission, options);
+        expect(spyTransaction).toHaveBeenNthCalledWith(1, {
+          actions: [
+            mockAction({
+              account: 'eosio',
+              name: 'updateauth',
+              authorization: { actor: accountName, permission: parentPermission },
+              data: {
+                account: accountName,
+                auth: {
+                  accounts: [],
+                  keys: [{
+                    key: expect.any(String),
+                    weight: 1,
+                  }],
+                  threshold: 1,
+                  waits: [],
+                },
+                parent: parentPermission,
+                permission: permissionName,
+              }
+            })
+          ],
+        }, mockOptions());
+        expect(spyAccount).toHaveBeenCalledWith(expect.any(String));
+      });
+    })
   });
 
   describe('createKeyPair', () => {
@@ -377,4 +432,5 @@ describe('account', () => {
         expect(nameAlreadyExists).toEqual(false);
       });
     });
-  });});
+  });
+});
