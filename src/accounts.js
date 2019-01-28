@@ -323,39 +323,10 @@ async function getNameAlreadyExists(accountName) {
   }
 }
 
-async function removePermission(authAccountName, permissionName, options = {}) {
-  options = {
-    authPermission: 'active',
-    ...options
-  }
-  const { authPermission, broadcast = true } = options;
-  const perms = await getAccountPermissions.bind(this)(authAccountName);
-
-  const actions = [];
-  for (const perm of perms) {
-    let { perm_name:permission, parent, required_auth:auth } = perm;
-    actions.push({
-      account: 'eosio',
-      name: 'deleteauth',
-      authorization: [{
-        actor: authAccountName,
-        permission: authPermission,
-      }],
-      data: {
-        account: authAccountName,
-        permission,
-      }
-    });
-  }
-
-  return this.transact(actions, broadcast);
-}
-
 module.exports = {
   addPermission,
   createKeyPair,
   createOreAccount,
   eosBase32,
-  getNameAlreadyExists,
-  removePermission,
+  getNameAlreadyExists
 };
