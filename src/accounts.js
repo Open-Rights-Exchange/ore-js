@@ -109,9 +109,13 @@ async function generateAccountName() {
 }
 
 function encryptKeys(keys, password, salt) {
-  const encryptedKeys = keys;
-  const encryptedWalletPassword = this.encrypt(keys.masterPrivateKey, password, salt).toString();
-  encryptedKeys.masterPrivateKey = encryptedWalletPassword;
+  const { masterPrivateKey, privateKeys, publicKeys } = keys;
+  const encryptedKeys = {
+    masterPrivateKey,
+    privateKeys: { ...privateKeys },
+    publicKeys: { ...publicKeys }
+  };
+  encryptedKeys.masterPrivateKey = this.encrypt(keys.masterPrivateKey, password, salt).toString();
   encryptedKeys.privateKeys.owner = this.encrypt(keys.privateKeys.owner, password, salt).toString();
   encryptedKeys.privateKeys.active = this.encrypt(keys.privateKeys.active, password, salt).toString();
   return encryptedKeys;
