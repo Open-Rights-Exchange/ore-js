@@ -292,12 +292,22 @@ describe('account', () => {
         expect(spyInfo).toHaveBeenCalledWith({});
         expect(spyBlock).toHaveBeenCalledWith(block.block_num + 1);
         expect(account).toEqual({
-          verifierAuthKey: expect.any(String),
-          verifierAuthPublicKey: expect.any(String),
+          verifierAuthKey: expect.stringMatching(/^\w*$/),
+          verifierAuthPublicKey: expect.stringMatching(/^EOS\w*$/),
           oreAccountName: expect.stringMatching(/[a-z1-5]{12}/),
-          privateKey: expect.any(String),
-          publicKey: expect.any(String),
-          keys: expect.any(Object),
+          privateKey: expect.stringMatching(/^\{.*\}$/),
+          publicKey: expect.stringMatching(/^EOS\w*$/),
+          keys: expect.objectContaining({
+            masterPrivateKey: expect.stringMatching(/^PW\w*$/),
+            privateKeys: expect.objectContaining({
+              active: expect.stringMatching(/^\w*$/),
+              owner: expect.stringMatching(/^\w*$/)
+            }),
+            publicKeys: expect.objectContaining({
+              active: expect.stringMatching(/^EOS\w*$/),
+              owner: expect.stringMatching(/^EOS\w*$/)
+            })
+          }),
           transaction,
         });
         expect(ecc.privateToPublic(orejs.decrypt(account.privateKey, WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT))).toEqual(account.publicKey);
@@ -316,12 +326,22 @@ describe('account', () => {
           const account = await orejs.createOreAccount(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, ORE_OWNER_ACCOUNT_KEY, ORE_PAYER_ACCOUNT_NAME);
           expect(spyAccount).toHaveBeenCalledWith(expect.any(String));
           expect(account).toEqual({
-            verifierAuthKey: expect.any(String),
-            verifierAuthPublicKey: expect.any(String),
+            verifierAuthKey: expect.stringMatching(/^\w*$/),
+            verifierAuthPublicKey: expect.stringMatching(/^EOS\w*$/),
             oreAccountName: expect.stringMatching(/[a-z1-5]{12}/),
-            privateKey: expect.any(String),
-            publicKey: expect.any(String),
-            keys: expect.any(Object),
+            privateKey: expect.stringMatching(/^\{.*\}$/),
+            publicKey: expect.stringMatching(/^EOS\w*$/),
+            keys: expect.objectContaining({
+              masterPrivateKey: expect.stringMatching(/^PW\w*$/),
+              privateKeys: expect.objectContaining({
+                active: expect.stringMatching(/^\w*$/),
+                owner: expect.stringMatching(/^\w*$/)
+              }),
+              publicKeys: expect.objectContaining({
+                active: expect.stringMatching(/^EOS\w*$/),
+                owner: expect.stringMatching(/^EOS\w*$/)
+              })
+            }),
             transaction,
           });
         });
@@ -363,9 +383,19 @@ describe('account', () => {
           const account = await orejs.createOreAccount(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, ORE_OWNER_ACCOUNT_KEY, ORE_PAYER_ACCOUNT_NAME);
           expect(account).toEqual({
             oreAccountName: expect.stringMatching(/[a-z1-5]{12}/),
-            privateKey: expect.any(String),
-            publicKey: expect.any(String),
-            keys: expect.any(Object),
+            privateKey: expect.stringMatching(/^\{.*\}$/),
+            publicKey: expect.stringMatching(/^EOS\w*$/),
+            keys: expect.objectContaining({
+              masterPrivateKey: expect.stringMatching(/^PW\w*$/),
+              privateKeys: expect.objectContaining({
+                active: expect.stringMatching(/^\w*$/),
+                owner: expect.stringMatching(/^\w*$/)
+              }),
+              publicKeys: expect.objectContaining({
+                active: expect.stringMatching(/^EOS\w*$/),
+                owner: expect.stringMatching(/^EOS\w*$/)
+              })
+            }),
             transaction,
           });
         });
@@ -385,9 +415,19 @@ describe('account', () => {
         const account = await orejs.createOreAccount(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, ORE_OWNER_ACCOUNT_KEY, ORE_PAYER_ACCOUNT_NAME, options);
         expect(account).toEqual({
           oreAccountName,
-          privateKey: expect.any(String),
-          publicKey: expect.any(String),
-          keys: expect.any(Object),
+          privateKey: expect.stringMatching(/^\{.*\}$/),
+          publicKey: expect.stringMatching(/^EOS\w*$/),
+          keys: expect.objectContaining({
+            masterPrivateKey: expect.stringMatching(/^PW\w*$/),
+            privateKeys: expect.objectContaining({
+              active: expect.stringMatching(/^\w*$/),
+              owner: expect.stringMatching(/^\w*$/)
+            }),
+            publicKeys: expect.objectContaining({
+              active: expect.stringMatching(/^EOS\w*$/),
+              owner: expect.stringMatching(/^EOS\w*$/)
+            })
+          }),
           transaction,
         });
       });

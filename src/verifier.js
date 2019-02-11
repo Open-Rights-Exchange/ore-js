@@ -2,16 +2,6 @@ const fetch = require('node-fetch')
 const hash = require("hash.js")
 const ecc = require('eosjs-ecc')
 
-// sign the input data with the user keys
-async function sign(data) {
-    try {
-        return ecc.sign(data.toString(), this.config.privateKeys[0]);
-    } catch(error) {
-        errorTitle = "Orejs Verifier Sign Error";
-        throw new Error(`${errorTitle}: ${error.message}`);
-    }
-}
-
 // hash the parameter values to be sent to the verifier
 function hashParams(params) {
     let hashedParams = {}
@@ -75,7 +65,6 @@ async function getAccessTokenFromVerifier(verifierEndpoint, instrument, right, h
 }
 
 module.exports = {
-    sign,
     getAccessTokenFromVerifier,
     hashParams,
 }
