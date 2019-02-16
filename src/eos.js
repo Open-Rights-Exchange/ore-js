@@ -33,7 +33,13 @@ function awaitTransaction(func, blocksToCheck = 20, checkInterval = 400, getBloc
     const preCommitInfo = await getInfo.bind(this)();
     const preCommitHeadBlockNum = preCommitInfo.head_block_num;
     // make the transaction...
-    const transaction = await func();
+    //const transaction = await func();
+    let transaction;
+    try {
+      transaction = await func();
+    } catch (error) {
+      reject(new Error(`Await Transaction Failure: ${JSON.stringify(error)}`));
+    }
     // keep checking for the transaction in future blocks...
     let blockNumToCheck = preCommitHeadBlockNum + 1;
     let blockToCheck;
