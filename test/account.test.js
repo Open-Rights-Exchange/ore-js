@@ -400,6 +400,22 @@ describe('account', () => {
           });
         });
       });
+
+      describe('when the chain fails to create a new account', async () => {
+        let options = { confirm: true };
+
+        beforeEach(() => {
+          transaction = mockGetTransaction(orejs, false);
+        });
+
+        it('returns a failure', async () => {
+          try {
+            const account = await orejs.createOreAccount(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, ORE_OWNER_ACCOUNT_KEY, ORE_PAYER_ACCOUNT_NAME, options);
+          } catch(error) {
+            expect(error.message).toMatch(/^Await Transaction Failure: .*/);
+          }
+        });
+      });
     });
 
     describe('when defining the accountName', () => {
