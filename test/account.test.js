@@ -512,6 +512,48 @@ describe('account', () => {
       });
       expect(ecc.privateToPublic(orejs.decrypt(account.privateKey, WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT))).toEqual(account.publicKey);
     });
+
+    it('returns a new account under a new contractName', async () => {
+      const permission = 'custom';
+      const accountName = 'eptestoretyl';
+      const dappName = 'ep.test.ore.tyl';
+      const contractName = 'orebridge';
+      const options = { permission, origin: dappName, contractName };
+      const authorizingAccount = { accountName, permission };
+      const account = await orejs.createBridgeAccount(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, authorizingAccount, options);
+      expect(spyTransaction).toHaveBeenNthCalledWith(1, {
+        actions: [
+          mockAction({ account: contractName, name: 'create', authorization: { permission }, data: {
+            memo: accountName,
+            account: expect.stringMatching(/[a-z1-5]{12}/),
+            ownerkey: expect.stringMatching(/^EOS\w*$/),
+            activekey: expect.stringMatching(/^EOS\w*$/),
+            origin: dappName
+          } }),
+        ],
+      }, mockOptions());
+      expect(spyAccount).toHaveBeenCalledWith(expect.any(String));
+      expect(spyInfo).toHaveBeenCalledWith({});
+      expect(spyBlock).toHaveBeenCalledWith(block.block_num + 1);
+      expect(account).toEqual({
+        oreAccountName: expect.stringMatching(/[a-z1-5]{12}/),
+        privateKey: expect.stringMatching(/^\{.*\}$/),
+        publicKey: expect.stringMatching(/^EOS\w*$/),
+        keys: expect.objectContaining({
+          masterPrivateKey: expect.stringMatching(/^PW\w*$/),
+          privateKeys: expect.objectContaining({
+            active: expect.stringMatching(/^\w*$/),
+            owner: expect.stringMatching(/^\w*$/)
+          }),
+          publicKeys: expect.objectContaining({
+            active: expect.stringMatching(/^EOS\w*$/),
+            owner: expect.stringMatching(/^EOS\w*$/)
+          })
+        }),
+        transaction,
+      });
+      expect(ecc.privateToPublic(orejs.decrypt(account.privateKey, WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT))).toEqual(account.publicKey);
+    });
   });
 
   describe('eosBase32', () => {
