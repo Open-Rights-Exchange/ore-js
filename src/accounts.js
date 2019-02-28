@@ -90,16 +90,16 @@ function randomEosBase32() {
   return eosBase32(Math.random().toString(BASE).substr(2));
 }
 
-function generateAccountNameString() {
-  return (timestampEosBase32() + randomEosBase32()).substr(0, 12);
+function generateAccountNameString(prefix = '') {
+  return (prefix + timestampEosBase32() + randomEosBase32()).substr(0, 12);
 }
 
 // Recursively generates account names, until a uniq name is generated...
-async function generateAccountName() {
+async function generateAccountName(prefix = '') {
   // NOTE: account names MUST be base32 encoded, and be 12 characters, in compliance with the EOS standard
   // NOTE: account names can also contain only the following characters: a-z, 1-5, & '.' In regex: [a-z1-5\.]{12}
   // NOTE: account names are generated based on the current unix timestamp + some randomness, and cut to be 12 chars
-  let accountName = generateAccountNameString.bind(this)();
+  let accountName = generateAccountNameString.bind(this)(prefix);
   const nameAlreadyExists = await getNameAlreadyExists.bind(this)(accountName);
   if (nameAlreadyExists) {
     return generateAccountName.bind(this)();
@@ -180,9 +180,10 @@ async function generateAuthKeys(oreAccountName, permName, code, action, broadcas
 async function createOreAccountWithKeys(activePublicKey, ownerPublicKey, orePayerAccountName, options = {}) {
   options = {
     confirm: true,
+    accountNamePrefix: 'ore',
     ...options
   };
-  let oreAccountName = options.oreAccountName || await generateAccountName.bind(this)();
+  let oreAccountName = options.oreAccountName || await generateAccountName.bind(this)(options.accountNamePrefix);
 
   let transaction;
   if (options.confirm) {

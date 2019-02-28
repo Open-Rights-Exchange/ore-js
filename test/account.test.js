@@ -351,6 +351,17 @@ describe('account', () => {
         });
       });
 
+      describe('when defining an account name prefix', () => {
+        const options = { accountNamePrefix: 'ore' };
+
+        it('returns an account with the proper name', async () => {
+          const account = await orejs.createOreAccount(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, ORE_OWNER_ACCOUNT_KEY, ORE_PAYER_ACCOUNT_NAME, options);
+          expect(account).toEqual(expect.objectContaining({
+            oreAccountName: expect.stringMatching(/ore[a-z1-5]{9}/),
+          }));
+        });
+      });
+
       describe('when defining an eos chain', () => {
         let spyTransaction;
         let transaction;
