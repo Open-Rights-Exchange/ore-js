@@ -106,12 +106,16 @@ function mockGetInfo(_orejs = undefined, _info = {}) {
   return getInfo;
 }
 
-function mockGetTransaction(_orejs = undefined, _transaction = {}) {
+function mockGetTransaction(_orejs = undefined, success = true, _transaction = {}) {
   const mockupTransaction = jest.fn();
 
   const getTransaction = mockTransaction(_transaction);
 
-  mockupTransaction.mockImplementationOnce(() => Promise.resolve(getTransaction));
+  if(success) {
+    mockupTransaction.mockImplementationOnce(() => Promise.resolve(getTransaction));
+  } else {
+    mockupTransaction.mockImplementationOnce(() => Promise.reject(getTransaction));
+  }
   const orejs = _orejs || constructOrejs();
   orejs.eos.transact = mockupTransaction;
 
