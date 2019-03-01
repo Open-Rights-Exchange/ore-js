@@ -77,21 +77,27 @@ describe('account', () => {
     let accountName = 'accountname';
     let parentPermission = 'active';
     let options = { parentPermission };
+    let spyAccount;
+    let spyTransaction;
+    let spyInfo;
+    let spyBlock;
 
     beforeEach(() => {
       mockGetAccount(orejs, false);
       mockGetTransaction(orejs);
+
+      transaction = mockGetTransaction(orejs);
+      info = mockGetInfo(orejs);
+      block = mockGetBlock(orejs, { block_num: info.head_block_num, transactions: [{ trx: { id: transaction.transaction_id } }] });
+
+      spyTransaction = jest.spyOn(orejs.eos, 'transact');
+      spyAccount = jest.spyOn(orejs.eos.rpc, 'get_account');
+      spyInfo = jest.spyOn(orejs.eos.rpc, 'get_info');
+      spyBlock = jest.spyOn(orejs.eos.rpc, 'get_block');
     });
 
     describe('when generating a new permission', () => {
       let permissionName = 'newpermission';
-      let spyTransaction;
-      let spyAccount;
-
-      beforeEach(() => {
-        spyTransaction = jest.spyOn(orejs.eos, 'transact');
-        spyAccount = jest.spyOn(orejs.eos.rpc, 'get_account');
-      });
 
       it('returns a new key pair', async () => {
         const keypair = await orejs.createKeyPair(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, accountName, permissionName, options);
@@ -118,7 +124,9 @@ describe('account', () => {
             })
           ],
         }, mockOptions());
-        expect(spyAccount).toHaveBeenCalledWith(expect.any(String));
+        // expect(spyAccount).toHaveBeenCalledWith(expect.any(String));
+        expect(spyInfo).toHaveBeenCalledWith({});
+        expect(spyBlock).toHaveBeenCalledWith(block.block_num + 1);
         expect(ecc.privateToPublic(orejs.decrypt(keypair.privateKeys.owner, WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT))).toEqual(keypair.publicKeys.owner);
       });
 
@@ -172,14 +180,10 @@ describe('account', () => {
 
     describe('when appending keys to an pre-existing permission', () => {
       let permissionName = 'custom';
-      let spyTransaction;
-      let spyAccount;
 
       beforeEach(() => {
         options.links = [];
         mockGetAccount(orejs, false);
-        spyTransaction = jest.spyOn(orejs.eos, 'transact');
-        spyAccount = jest.spyOn(orejs.eos.rpc, 'get_account');
       });
 
       it('returns the existing and new key pair', async () => {
@@ -210,7 +214,7 @@ describe('account', () => {
             })
           ],
         }, mockOptions());
-        expect(spyAccount).toHaveBeenCalledWith(expect.any(String));
+        // expect(spyAccount).toHaveBeenCalledWith(expect.any(String));
         expect(ecc.privateToPublic(orejs.decrypt(keypair.privateKeys.owner, WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT))).toEqual(keypair.publicKeys.owner);
       });
     });
@@ -347,6 +351,17 @@ describe('account', () => {
         });
       });
 
+      describe('when defining an account name prefix', () => {
+        const options = { accountNamePrefix: 'ore' };
+
+        it('returns an account with the proper name', async () => {
+          const account = await orejs.createOreAccount(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, ORE_OWNER_ACCOUNT_KEY, ORE_PAYER_ACCOUNT_NAME, options);
+          expect(account).toEqual(expect.objectContaining({
+            oreAccountName: expect.stringMatching(/ore[a-z1-5]{9}/),
+          }));
+        });
+      });
+
       describe('when defining an eos chain', () => {
         let spyTransaction;
         let transaction;
@@ -449,6 +464,107 @@ describe('account', () => {
       });
     });
 
+  });
+
+  describe('createBridgeAccount', () => {
+    let spyTransaction;
+    let spyAccount;
+    let spyInfo;
+    let spyBlock;
+
+    beforeEach(() => {
+      mockGetAccount(orejs);
+      transaction = mockGetTransaction(orejs);
+      info = mockGetInfo(orejs);
+      block = mockGetBlock(orejs, { block_num: info.head_block_num, transactions: [{ trx: { id: transaction.transaction_id } }] });
+      spyTransaction = jest.spyOn(orejs.eos, 'transact');
+      spyAccount = jest.spyOn(orejs.eos.rpc, 'get_account');
+      spyInfo = jest.spyOn(orejs.eos.rpc, 'get_info');
+      spyBlock = jest.spyOn(orejs.eos.rpc, 'get_block');
+    });
+
+    it('returns a new account', async () => {
+      const permission = 'custom';
+      const accountName = 'eptestoretyl';
+      const dappName = 'ep.test.ore.tyl';
+      const options = { permission, origin: dappName };
+      const authorizingAccount = { accountName, permission };
+      const account = await orejs.createBridgeAccount(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, authorizingAccount, options);
+      expect(spyTransaction).toHaveBeenNthCalledWith(1, {
+        actions: [
+          mockAction({ account: 'createbridge', name: 'create', authorization: { permission }, data: {
+            memo: accountName,
+            account: expect.stringMatching(/[a-z1-5]{12}/),
+            ownerkey: expect.stringMatching(/^EOS\w*$/),
+            activekey: expect.stringMatching(/^EOS\w*$/),
+            origin: dappName
+          } }),
+        ],
+      }, mockOptions());
+      expect(spyAccount).toHaveBeenCalledWith(expect.any(String));
+      expect(spyInfo).toHaveBeenCalledWith({});
+      expect(spyBlock).toHaveBeenCalledWith(block.block_num + 1);
+      expect(account).toEqual({
+        oreAccountName: expect.stringMatching(/[a-z1-5]{12}/),
+        privateKey: expect.stringMatching(/^\{.*\}$/),
+        publicKey: expect.stringMatching(/^EOS\w*$/),
+        keys: expect.objectContaining({
+          masterPrivateKey: expect.stringMatching(/^PW\w*$/),
+          privateKeys: expect.objectContaining({
+            active: expect.stringMatching(/^\w*$/),
+            owner: expect.stringMatching(/^\w*$/)
+          }),
+          publicKeys: expect.objectContaining({
+            active: expect.stringMatching(/^EOS\w*$/),
+            owner: expect.stringMatching(/^EOS\w*$/)
+          })
+        }),
+        transaction,
+      });
+      expect(ecc.privateToPublic(orejs.decrypt(account.privateKey, WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT))).toEqual(account.publicKey);
+    });
+
+    it('returns a new account under a new contractName', async () => {
+      const permission = 'custom';
+      const accountName = 'eptestoretyl';
+      const dappName = 'ep.test.ore.tyl';
+      const contractName = 'orebridge';
+      const options = { permission, origin: dappName, contractName };
+      const authorizingAccount = { accountName, permission };
+      const account = await orejs.createBridgeAccount(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, authorizingAccount, options);
+      expect(spyTransaction).toHaveBeenNthCalledWith(1, {
+        actions: [
+          mockAction({ account: contractName, name: 'create', authorization: { permission }, data: {
+            memo: accountName,
+            account: expect.stringMatching(/[a-z1-5]{12}/),
+            ownerkey: expect.stringMatching(/^EOS\w*$/),
+            activekey: expect.stringMatching(/^EOS\w*$/),
+            origin: dappName
+          } }),
+        ],
+      }, mockOptions());
+      expect(spyAccount).toHaveBeenCalledWith(expect.any(String));
+      expect(spyInfo).toHaveBeenCalledWith({});
+      expect(spyBlock).toHaveBeenCalledWith(block.block_num + 1);
+      expect(account).toEqual({
+        oreAccountName: expect.stringMatching(/[a-z1-5]{12}/),
+        privateKey: expect.stringMatching(/^\{.*\}$/),
+        publicKey: expect.stringMatching(/^EOS\w*$/),
+        keys: expect.objectContaining({
+          masterPrivateKey: expect.stringMatching(/^PW\w*$/),
+          privateKeys: expect.objectContaining({
+            active: expect.stringMatching(/^\w*$/),
+            owner: expect.stringMatching(/^\w*$/)
+          }),
+          publicKeys: expect.objectContaining({
+            active: expect.stringMatching(/^EOS\w*$/),
+            owner: expect.stringMatching(/^EOS\w*$/)
+          })
+        }),
+        transaction,
+      });
+      expect(ecc.privateToPublic(orejs.decrypt(account.privateKey, WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT))).toEqual(account.publicKey);
+    });
   });
 
   describe('eosBase32', () => {
