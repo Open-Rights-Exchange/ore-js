@@ -328,7 +328,7 @@ async function createKeyPair(password, salt, authAccountName, permissionName, op
 
 async function createBridgeAccount(password, salt, authorizingAccount, options) {
   options = {
-    oreAccountName: await generateAccountName.bind(this)(),
+    oreAccountName: await generateAccountName.bind(this)(options.accountNamePrefix),
     confirm: true,
     ...options
   };
