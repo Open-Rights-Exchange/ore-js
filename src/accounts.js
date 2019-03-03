@@ -94,20 +94,6 @@ function generateAccountNameString(prefix = '') {
   return (prefix + timestampEosBase32() + randomEosBase32()).substr(0, 12);
 }
 
-// Recursively generates account names, until a uniq name is generated...
-async function generateAccountName(prefix = '') {
-  // NOTE: account names MUST be base32 encoded, and be 12 characters, in compliance with the EOS standard
-  // NOTE: account names can also contain only the following characters: a-z, 1-5, & '.' In regex: [a-z1-5\.]{12}
-  // NOTE: account names are generated based on the current unix timestamp + some randomness, and cut to be 12 chars
-  let accountName = generateAccountNameString.bind(this)(prefix);
-  const nameAlreadyExists = await getNameAlreadyExists.bind(this)(accountName);
-  if (nameAlreadyExists) {
-    return generateAccountName.bind(this)();
-  } else {
-    return accountName;
-  }
-}
-
 function encryptKeys(keys, password, salt) {
   const { masterPrivateKey, privateKeys, publicKeys } = keys;
   const encryptedKeys = {
@@ -381,6 +367,20 @@ function eosBase32(base32String) {
     .replace(/9/g, 'z');
 }
 
+// Recursively generates account names, until a uniq name is generated...
+async function generateAccountName(prefix = '') {
+  // NOTE: account names MUST be base32 encoded, and be 12 characters, in compliance with the EOS standard
+  // NOTE: account names can also contain only the following characters: a-z, 1-5, & '.' In regex: [a-z1-5\.]{12}
+  // NOTE: account names are generated based on the current unix timestamp + some randomness, and cut to be 12 chars
+  let accountName = generateAccountNameString.bind(this)(prefix);
+  const nameAlreadyExists = await getNameAlreadyExists.bind(this)(accountName);
+  if (nameAlreadyExists) {
+    return generateAccountName.bind(this)();
+  } else {
+    return accountName;
+  }
+}
+
 async function getNameAlreadyExists(accountName) {
   try {
     await this.eos.rpc.get_account(accountName);
@@ -396,5 +396,6 @@ module.exports = {
   createBridgeAccount,
   createOreAccount,
   eosBase32,
+  generateAccountName,
   getNameAlreadyExists
 };

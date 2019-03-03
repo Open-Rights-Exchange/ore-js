@@ -328,7 +328,7 @@ describe('account', () => {
 
         it('still returns a new account', async () => {
           const account = await orejs.createOreAccount(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, ORE_OWNER_ACCOUNT_KEY, ORE_PAYER_ACCOUNT_NAME);
-          expect(spyAccount).toHaveBeenCalledWith(expect.any(String));
+          expect(spyAccount).toHaveBeenCalledWith(expect.stringMatching(/[a-z1-5]{12}/));
           expect(account).toEqual({
             verifierAuthKey: expect.stringMatching(/^\w*$/),
             verifierAuthPublicKey: expect.stringMatching(/^EOS\w*$/),
@@ -571,6 +571,24 @@ describe('account', () => {
     it('encodes correctly', async () => {
       const accountName = await orejs.eosBase32('abcde.067899');
       expect(accountName).toEqual('abcde.vwxyzz');
+    });
+  });
+
+  describe('generateAccountName', () => {
+    let spyAccount;
+
+    beforeEach(() => {
+      mockGetAccount(orejs);
+    });
+
+    it('returns a random string', async () => {
+      const accountName = await orejs.generateAccountName();
+      expect(accountName).toEqual(expect.stringMatching(/[a-z1-5]{12}/))
+    });
+
+    it('lets us prefix account names', async () => {
+      const accountName = await orejs.generateAccountName('ore');
+      expect(accountName).toEqual(expect.stringMatching(/ore[a-z1-5]{9}/))
     });
   });
 
