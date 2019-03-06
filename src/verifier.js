@@ -2,11 +2,6 @@ const fetch = require('node-fetch')
 const hash = require("hash.js")
 const ecc = require('eosjs-ecc')
 
-// sign the input data with the user keys
-async function sign(data) {
-    return ecc.sign(data.toString(), this.config.keyProvider[0]);
-}
-
 // hash the parameter values to be sent to the verifier
 function hashParams(params) {
     let hashedParams = {}
@@ -51,13 +46,7 @@ async function getAccessTokenFromVerifier(verifierEndpoint, instrument, right, h
         throw new Error(`${errorTitle}: ${error.message}`);
     }
 
-    const {
-        endpoint,
-        oreAccessToken,
-        method,
-        additionalParameters,
-        accessTokenTimeout
-    } = await result.json();
+    const { endpoint, oreAccessToken, method, additionalParameters, accessTokenTimeout } = await result.json();
 
 
     if (!oreAccessToken) {
@@ -72,17 +61,10 @@ async function getAccessTokenFromVerifier(verifierEndpoint, instrument, right, h
         throw new Error(`${errorTitle}: ${errorMessage}`);
     }
 
-    return {
-        endpoint,
-        oreAccessToken,
-        method,
-        additionalParameters,
-        accessTokenTimeout
-    };
+    return { endpoint, oreAccessToken, method, additionalParameters, accessTokenTimeout };
 }
 
 module.exports = {
-    sign,
     getAccessTokenFromVerifier,
     hashParams,
 }

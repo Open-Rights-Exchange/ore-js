@@ -6,12 +6,11 @@ const cpu = require('./tokens/cpu');
 const crypto = require('./modules/crypto');
 const eos = require('./eos');
 const instrument = require('./instrument');
-const offer = require('./apimarket/offer');
 const ore = require('./tokens/ore');
 const oreStandardToken = require('./orestandardtoken');
 const rightsRegistry = require('./rightsregistry');
-const voucher = require('./apimarket/voucher');
 const usageLog = require('./usagelog');
+const verifier = require('./verifier');
 
 class Orejs {
   constructor(config = {}) {
@@ -23,19 +22,25 @@ class Orejs {
     Object.assign(this, crypto);
     Object.assign(this, eos);
     Object.assign(this, instrument);
-    Object.assign(this, offer);
     Object.assign(this, ore);
     Object.assign(this, oreStandardToken);
     Object.assign(this, rightsRegistry);
     Object.assign(this, usageLog);
-    Object.assign(this, voucher);
+    Object.assign(this, verifier);
   }
 
   constructEos(config) {
     this.config = config;
-    const rpc = new eosjs.JsonRpc(config.httpEndpoint, { fetch: config.fetch || fetch });
-    const signatureProvider = new eosjs.JsSignatureProvider(config.keyProvider || []);
-    this.eos = new eosjs.Api({ chainId: config.chainId, rpc, signatureProvider, textEncoder: new TextEncoder(), textDecoder: new TextDecoder() });
+    this.chainName = config.chainName || 'ore'; // ore || eos
+    this.rpc = new eosjs.JsonRpc(config.httpEndpoint, { fetch: config.fetch || fetch });
+    this.signatureProvider = config.signatureProvider || new eosjs.JsSignatureProvider(config.privateKeys || []);
+    this.eos = new eosjs.Api({
+      chainId: config.chainId,
+      rpc: this.rpc,
+      signatureProvider: this.signatureProvider,
+      textEncoder: new TextEncoder(),
+      textDecoder: new TextDecoder()
+    });
   }
 }
 

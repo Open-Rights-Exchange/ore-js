@@ -1,3 +1,14 @@
+/* Private */
+
+// NOTE: More than a simple wrapper for eos.rpc.get_info
+// NOTE: Saves state from get_info, which can be used by other methods
+// NOTE: For example, newaccount will have different field names, depending on the server_version_string
+async function getInfo() {
+  const info = await this.eos.rpc.get_info({});
+  this.chainInfo = info;
+  return info;
+}
+
 /* Public */
 
 function hasTransaction(block, transactionId) {
@@ -16,13 +27,19 @@ function hasTransaction(block, transactionId) {
 // NOTE: blocksToCheck = the number of blocks to check, after committing the transaction, before giving up
 // NOTE: checkInterval = the time between block checks in MS
 // NOTE: getBlockAttempts = the number of failed attempts at retrieving a particular block, before giving up
-function awaitTransaction(func, blocksToCheck = 12, checkInterval = 400, getBlockAttempts = 5) {
+function awaitTransaction(func, blocksToCheck = 20, checkInterval = 400, getBlockAttempts = 5) {
   return new Promise(async (resolve, reject) => {
     // check the current head block num...
-    const preCommitInfo = await this.eos.rpc.get_info({});
+    const preCommitInfo = await getInfo.bind(this)();
     const preCommitHeadBlockNum = preCommitInfo.head_block_num;
     // make the transaction...
-    const transaction = await func();
+    //const transaction = await func();
+    let transaction;
+    try {
+      transaction = await func();
+    } catch (error) {
+      reject(new Error(`Await Transaction Failure: ${JSON.stringify(error)}`));
+    }
     // keep checking for the transaction in future blocks...
     let blockNumToCheck = preCommitHeadBlockNum + 1;
     let blockToCheck;
@@ -78,11 +95,13 @@ async function checkPubKeytoAccount(account, publicKey) {
   return false;
 }
 
-function transact(actions, blocksBehind = 3, expireSeconds = 30) {
+// NOTE: setting the broadcast parameter to false allows us to receive signed transactions, without submitting them
+function transact(actions, broadcast = true, blocksBehind = 3, expireSeconds = 30) {
   return this.eos.transact({
     actions
   }, {
     blocksBehind,
+    broadcast,
     expireSeconds,
   });
 }

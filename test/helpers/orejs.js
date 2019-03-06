@@ -9,7 +9,6 @@ function constructOrejs(config) {
   const orejs = new Orejs({
     httpEndpoint: ORE_NETWORK_URI,
     keyProvider: [ORE_OWNER_ACCOUNT_KEY],
-    sign: true,
     ...config,
   });
 
@@ -21,19 +20,36 @@ function mockGetAbi(_orejs = undefined) {
 
   const getAbi = { code: mockCode(), abi: JSON.parse(mockAbi()) };
 
-  mockupAbi.mockReturnValue(getAbi);
+  mockupAbi.mockImplementationOnce(() => Promise.resolve(getAbi));
   const orejs = _orejs || constructOrejs();
   orejs.eos.rpc.get_raw_code_and_abi = mockupAbi;
 
   return getAbi;
 }
 
-function mockGetAccount(_orejs = undefined, _account = {}) {
+function mockGetAccount(_orejs = undefined, withInitialCheck = true, _account = {}) {
   const mockupAccount = jest.fn();
 
   const getAccount = JSON.parse(mockAccount(_account)[0])[0];
 
-  mockupAccount.mockReturnValue(getAccount);
+  if (withInitialCheck) {
+    mockupAccount.mockImplementationOnce(() => Promise.reject(false));
+  }
+  mockupAccount.mockImplementationOnce(() => Promise.resolve(getAccount));
+  const orejs = _orejs || constructOrejs();
+  orejs.eos.rpc.get_account = mockupAccount;
+
+  return getAccount;
+}
+
+function mockGetAccountWithAlreadyExistingAccount(_orejs = undefined, _account = {}) {
+  const mockupAccount = jest.fn();
+
+  const getAccount = JSON.parse(mockAccount(_account)[0])[0];
+
+  mockupAccount.mockImplementationOnce(() => Promise.resolve(getAccount));
+  mockupAccount.mockImplementationOnce(() => Promise.reject(false));
+  mockupAccount.mockImplementationOnce(() => Promise.resolve(getAccount));
   const orejs = _orejs || constructOrejs();
   orejs.eos.rpc.get_account = mockupAccount;
 
@@ -45,7 +61,7 @@ function mockGetBlock(_orejs = undefined, _block = {}) {
 
   const getBlock = JSON.parse(mockBlock(_block)[0])[0];
 
-  mockupBlock.mockReturnValue(getBlock);
+  mockupBlock.mockImplementation(() => Promise.resolve(getBlock));
   const orejs = _orejs || constructOrejs();
   orejs.eos.rpc.get_block = mockupBlock;
 
@@ -57,7 +73,7 @@ function mockGetBlockError(_orejs = undefined) {
 
   const getBlock = mockError();
 
-  mockupBlock.mockImplementation(() => {
+  mockupBlock.mockImplementationOnce(() => {
     throw getBlock;
   });
   const orejs = _orejs || constructOrejs();
@@ -71,7 +87,7 @@ function mockGetCurrency(_orejs = undefined, _currency = '1.0000 CPU') {
 
   const getCurrency = _currency;
 
-  mockupCurrency.mockReturnValue(getCurrency);
+  mockupCurrency.mockImplementationOnce(() => Promise.resolve(getCurrency));
   const orejs = _orejs || constructOrejs();
   orejs.eos.rpc.get_currency_balance = mockupCurrency;
 
@@ -83,19 +99,23 @@ function mockGetInfo(_orejs = undefined, _info = {}) {
 
   const getInfo = JSON.parse(mockInfo(_info)[0])[0];
 
-  mockupInfo.mockReturnValue(getInfo);
+  mockupInfo.mockImplementationOnce(() => Promise.resolve(getInfo));
   const orejs = _orejs || constructOrejs();
   orejs.eos.rpc.get_info = mockupInfo;
 
   return getInfo;
 }
 
-function mockGetTransaction(_orejs = undefined, _transaction = {}) {
+function mockGetTransaction(_orejs = undefined, success = true, _transaction = {}) {
   const mockupTransaction = jest.fn();
 
   const getTransaction = mockTransaction(_transaction);
 
-  mockupTransaction.mockReturnValue(getTransaction);
+  if(success) {
+    mockupTransaction.mockImplementationOnce(() => Promise.resolve(getTransaction));
+  } else {
+    mockupTransaction.mockImplementationOnce(() => Promise.reject(getTransaction));
+  }
   const orejs = _orejs || constructOrejs();
   orejs.eos.transact = mockupTransaction;
 
@@ -106,6 +126,7 @@ module.exports = {
   constructOrejs,
   mockGetAbi,
   mockGetAccount,
+  mockGetAccountWithAlreadyExistingAccount,
   mockGetBlock,
   mockGetBlockError,
   mockGetCurrency,
