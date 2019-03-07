@@ -585,6 +585,27 @@ describe('account', () => {
     });
   });
 
+  describe('generateEncryptedKeys', () => {
+    let password = 'password';
+    let salt = 'salt';
+
+    it('returns encrypted keys', async () => {
+      let keys = await orejs.generateEncryptedKeys(password, salt);
+      expect(keys).toEqual(
+        expect.objectContaining({
+          privateKeys: expect.objectContaining({
+            active: expect.stringMatching(/^\{.*\}$/),
+            owner: expect.stringMatching(/^\{.*\}$/)
+          }),
+          publicKeys: expect.objectContaining({
+            active: expect.stringMatching(/^EOS\w*$/),
+            owner: expect.stringMatching(/^EOS\w*$/)
+          })
+        })
+      );
+    });
+  });
+
   describe('getNameAlreadyExists', async () => {
     let accountName;
 
