@@ -7,6 +7,12 @@ const { constructOrejs, mockGetAccount, mockGetAccountWithAlreadyExistingAccount
 
 describe('createbridge', () => {
   let spyTransaction;
+  let contractName = "createbridge";
+  let accountName = 'eosio';
+  let permission = 'active';
+  let authorizingAccount = {accountName, permission};
+  let appName = Math.random().toString();
+
 
   beforeAll(() => {
     orejs = constructOrejs();
@@ -19,8 +25,6 @@ describe('createbridge', () => {
     });
 
     it('initialises createbridge', () => {
-      const contractName = "createbridge";
-      const permission = 'active';
       const symbol = "SYS";
       const precision = 4;
       const newAccountContract = "eosio";
@@ -47,11 +51,6 @@ describe('createbridge', () => {
     });
 
     it('registers an app with createbridge', () => {
-        const contractName = "createbridge";
-        const accountName = 'eosio';
-        const permission = 'active';
-        const authorizingAccount = {accountName, permission};
-        const appName = Math.random().toString();
         const ram = 4096;
         const net = "1.0000 SYS";
         const cpu = "1.0000 SYS";
@@ -86,12 +85,7 @@ describe('createbridge', () => {
     });
 
     it('whitelist an account as a custodian for an app', () => {
-      const contractName = "createbridge";
-      const accountName = 'eosio';
-      const permission = 'active';
-      const authorizingAccount = {accountName, permission};
       const whitelistAccount = 'app.oreid';
-      const appName = Math.random().toString();
       const options = {contractName};
       orejs.whitelist(authorizingAccount, whitelistAccount, appName,options);
       expect(spyTransaction).toHaveBeenCalledWith({
@@ -113,11 +107,6 @@ describe('createbridge', () => {
     });
 
     it('transfers the contribution amount from the contributor to createbridge', () => {
-      const contractName = "eosio.token";
-      const accountName = 'eosio';
-      const permission = 'active';
-      const authorizingAccount = {accountName, permission};
-      const appName = Math.random().toString();
       const amount = "1.000 SYS";
       const ramPercentage = 50;
       const totalAccounts = 10;
@@ -143,11 +132,6 @@ describe('createbridge', () => {
     });
 
     it('reclaims the contributor\'s remaining core token balance from createbridge', () => {
-      const contractName = "createbridge";
-      const accountName = 'eosio';
-      const permission = 'active';
-      const authorizingAccount = {accountName, permission};
-      const appName = Math.random().toString();
       const symbol = 'SYS';
       const options = {contractName};
       orejs.reclaim(authorizingAccount, appName, symbol,options);
@@ -163,11 +147,6 @@ describe('createbridge', () => {
     })
 
     it('reclaims the contributor\'s remaining app token balance from createbridge', () => {
-      const contractName = "createbridge";
-      const accountName = 'eosio';
-      const permission = 'active';
-      const authorizingAccount = {accountName, permission};
-      const appName = Math.random().toString();
       // example app token
       const symbol = 'EX';
       const options = {contractName};
