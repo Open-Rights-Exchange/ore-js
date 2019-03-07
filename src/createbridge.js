@@ -69,6 +69,34 @@ function define(appAccount, appName, ram = 4096, net, cpu, options){
       return this.transact(actions, broadcast);
 }
 
+// Creates a new user account. It also airdrops custom dapp tokens to the new user account if an app owner has opted for airdrops
+// authorizingAccount = an object with account name and permission of the account paying for the balance left after getting the donation from the app contributors 
+// keys               = owner key and active key for the new account  
+// origin             = the string representing the app to create the new user account for. For ex- everipedia.org, lumeos
+async function createNewAccount(authorizingAccount, keys, options) {
+    const { accountName, permission } = authorizingAccount;
+    const { origin, oreAccountName, contractName = 'createbridge', broadcast = true } = options;
+  
+    const actions = [{
+      account: contractName,
+      name: 'create',
+      authorization: [{
+        actor: accountName,
+        permission,
+      }],
+      data: {
+        memo: accountName,
+        account: oreAccountName,
+        ownerkey: keys.publicKeys.owner,
+        activekey: keys.publicKeys.active,
+        origin
+      }
+    }];
+  
+    return this.transact(actions, broadcast);
+  }
+  
+
 // Contributes to account creation for an app by transferring the amount to createbridge with the app name in the memo field
 // contributor   = an object with account name and permission contributing towards an app
 // appName       = name of the app to contribute
@@ -125,6 +153,7 @@ function reclaim(appAccount, appName, symbol, options){
 
 module.exports = {
     init,
+    createNewAccount,
     define,
     transfer,
     reclaim
