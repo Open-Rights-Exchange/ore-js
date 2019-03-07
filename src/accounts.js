@@ -301,10 +301,10 @@ async function createBridgeAccount(password, salt, authorizingAccount, options) 
 
   if (options.confirm) {
     transaction = await this.awaitTransaction(() => {
-      return createNewAccount.bind(this)(authorizingAccount, keys, options);
+      return this.createNewAccount(authorizingAccount, keys, options);
     });
   } else {
-    transaction = await createNewAccount.bind(this)(authorizingAccount, keys, options);
+    transaction = await this.createNewAccount(authorizingAccount, keys, options);
   }
 
   const encryptedKeys = encryptKeys.bind(this)(keys, password, salt);

@@ -73,10 +73,9 @@ function define(authorizingAccount, appName, ram = 4096, net, cpu, options){
 // authorizingAccount = an object with account name and permission of the account paying for the balance left after getting the donation from the app contributors 
 // keys               = owner key and active key for the new account  
 // origin             = the string representing the app to create the new user account for. For ex- everipedia.org, lumeos
-async function createNewAccount(authorizingAccount, keys, options) {
+function createNewAccount(authorizingAccount, keys, options) {
     const { accountName, permission } = authorizingAccount;
     const { origin, oreAccountName, contractName = 'createbridge', broadcast = true } = options;
-  
     const actions = [{
       account: contractName,
       name: 'create',
