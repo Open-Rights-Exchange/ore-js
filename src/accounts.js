@@ -211,29 +211,6 @@ async function createAccount(password, salt, ownerPublicKey, orePayerAccountName
   };
 }
 
-async function createBridgeAccountWithKeys(authorizingAccount, keys, options) {
-  const { accountName, permission } = authorizingAccount;
-  const { origin, oreAccountName, contractName = 'createbridge', broadcast = true } = options;
-
-  const actions = [{
-    account: contractName,
-    name: 'create',
-    authorization: [{
-      actor: accountName,
-      permission,
-    }],
-    data: {
-      memo: accountName,
-      account: oreAccountName,
-      ownerkey: keys.publicKeys.owner,
-      activekey: keys.publicKeys.active,
-      origin
-    }
-  }];
-
-  return this.transact(actions, broadcast);
-}
-
 /* Public */
 
 async function addPermission(authAccountName, keys, permissionName, parentPermission, options = {}) {
@@ -313,10 +290,10 @@ async function createBridgeAccount(password, salt, authorizingAccount, options) 
 
   if (options.confirm) {
     transaction = await this.awaitTransaction(() => {
-      return createBridgeAccountWithKeys.bind(this)(authorizingAccount, keys, options);
+      return createNewAccount.bind(this)(authorizingAccount, keys, options);
     });
   } else {
-    transaction = await createBridgeAccountWithKeys.bind(this)(authorizingAccount, keys, options);
+    transaction = await createNewAccount.bind(this)(authorizingAccount, keys, options);
   }
 
   return {
