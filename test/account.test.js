@@ -222,14 +222,13 @@ describe('account', () => {
     describe('when adding an pre-defined key pair', () => {
       let permissionName = 'custom';
       let keys = {
-        masterPrivateKey: 'PW5HwnCgUkikSr7eFL1RGiALnJBr4oP4eK7Mq7ynjedKbxjt2oX3o',
         privateKeys: {
-          owner: '5HugrGmD5Vbgdef1kvJgqWtjXyqxP1uYzB54rF7raGRij39an9N',
-          active: '5JuSXobBCwGJEYkpDyv1ENdqGAYoaprEnfEujuZmj52huk1WBfh'
+          owner: '{"iv":"xr5XTgow76QCpEe8Tij7xw==","v":1,"iter":10000,"ks":128,"ts":64,"mode":"gcm","adata":"","cipher":"aes","ct":"2YAap55e6O8gwZ6m33UjEjxqw1GU+cZbVrYP7TDRFiF0axe1XJ2W+uvhgG5ArEga8GO8cnNf+6KaFaQ="}',
+          active: '{"iv":"whCS0NVLJv+5xFxm/udHaw==","v":1,"iter":10000,"ks":128,"ts":64,"mode":"gcm","adata":"","cipher":"aes","ct":"G7So6hZeuqp3eZT4aj3w/C5lhXIJ8Z+9dTUCQNAhSWMVB9S+k+IHoUGQKgAi1cz3vnQ3VH4DdJobec4="}'
         },
         publicKeys: {
-          owner: 'EOS5Dcydoh8BfHdoEcj1YfsiTUZm4Dghxx6W916GaUUpqHmNwfy1b',
-          active: 'EOS521jAgBCgtWskTS8SSthM1uJnDABAnVqeW9W3Z2yeShX6U2sgF'
+          owner: 'EOS8ekDXRqcWGYXHDZp246B8VF9DTwkuz13u5tpPnMdptE2SE9sVf',
+          active: 'EOS6iGJBT4PPuhm5zKiKUiFNi7eYqLFofZqMYDyZyKHfNt5fuRLF2'
         }
       }
 
@@ -302,10 +301,9 @@ describe('account', () => {
           privateKey: expect.stringMatching(/^\{.*\}$/),
           publicKey: expect.stringMatching(/^EOS\w*$/),
           keys: expect.objectContaining({
-            masterPrivateKey: expect.stringMatching(/^PW\w*$/),
             privateKeys: expect.objectContaining({
-              active: expect.stringMatching(/^\w*$/),
-              owner: expect.stringMatching(/^\w*$/)
+              active: expect.stringMatching(/^\{.*\}$/),
+              owner: expect.stringMatching(/^\{.*\}$/)
             }),
             publicKeys: expect.objectContaining({
               active: expect.stringMatching(/^EOS\w*$/),
@@ -336,10 +334,9 @@ describe('account', () => {
             privateKey: expect.stringMatching(/^\{.*\}$/),
             publicKey: expect.stringMatching(/^EOS\w*$/),
             keys: expect.objectContaining({
-              masterPrivateKey: expect.stringMatching(/^PW\w*$/),
               privateKeys: expect.objectContaining({
-                active: expect.stringMatching(/^\w*$/),
-                owner: expect.stringMatching(/^\w*$/)
+                active: expect.stringMatching(/^\{.*\}$/),
+                owner: expect.stringMatching(/^\{.*\}$/)
               }),
               publicKeys: expect.objectContaining({
                 active: expect.stringMatching(/^EOS\w*$/),
@@ -401,10 +398,9 @@ describe('account', () => {
             privateKey: expect.stringMatching(/^\{.*\}$/),
             publicKey: expect.stringMatching(/^EOS\w*$/),
             keys: expect.objectContaining({
-              masterPrivateKey: expect.stringMatching(/^PW\w*$/),
               privateKeys: expect.objectContaining({
-                active: expect.stringMatching(/^\w*$/),
-                owner: expect.stringMatching(/^\w*$/)
+                active: expect.stringMatching(/^\{.*\}$/),
+                owner: expect.stringMatching(/^\{.*\}$/)
               }),
               publicKeys: expect.objectContaining({
                 active: expect.stringMatching(/^EOS\w*$/),
@@ -449,10 +445,9 @@ describe('account', () => {
           privateKey: expect.stringMatching(/^\{.*\}$/),
           publicKey: expect.stringMatching(/^EOS\w*$/),
           keys: expect.objectContaining({
-            masterPrivateKey: expect.stringMatching(/^PW\w*$/),
             privateKeys: expect.objectContaining({
-              active: expect.stringMatching(/^\w*$/),
-              owner: expect.stringMatching(/^\w*$/)
+              active: expect.stringMatching(/^\{.*\}$/),
+              owner: expect.stringMatching(/^\{.*\}$/)
             }),
             publicKeys: expect.objectContaining({
               active: expect.stringMatching(/^EOS\w*$/),
@@ -509,10 +504,9 @@ describe('account', () => {
         privateKey: expect.stringMatching(/^\{.*\}$/),
         publicKey: expect.stringMatching(/^EOS\w*$/),
         keys: expect.objectContaining({
-          masterPrivateKey: expect.stringMatching(/^PW\w*$/),
           privateKeys: expect.objectContaining({
-            active: expect.stringMatching(/^\w*$/),
-            owner: expect.stringMatching(/^\w*$/)
+            active: expect.stringMatching(/^\{.*\}$/),
+            owner: expect.stringMatching(/^\{.*\}$/)
           }),
           publicKeys: expect.objectContaining({
             active: expect.stringMatching(/^EOS\w*$/),
@@ -551,10 +545,9 @@ describe('account', () => {
         privateKey: expect.stringMatching(/^\{.*\}$/),
         publicKey: expect.stringMatching(/^EOS\w*$/),
         keys: expect.objectContaining({
-          masterPrivateKey: expect.stringMatching(/^PW\w*$/),
           privateKeys: expect.objectContaining({
-            active: expect.stringMatching(/^\w*$/),
-            owner: expect.stringMatching(/^\w*$/)
+            active: expect.stringMatching(/^\{.*\}$/),
+            owner: expect.stringMatching(/^\{.*\}$/)
           }),
           publicKeys: expect.objectContaining({
             active: expect.stringMatching(/^EOS\w*$/),
