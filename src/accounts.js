@@ -95,15 +95,14 @@ function generateAccountNameString(prefix = '') {
 }
 
 function encryptKeys(keys, password, salt) {
-  const { masterPrivateKey, privateKeys, publicKeys } = keys;
+  const { privateKeys, publicKeys } = keys;
   const encryptedKeys = {
-    masterPrivateKey,
-    privateKeys: { ...privateKeys },
+    privateKeys: {
+      owner: this.encrypt(keys.privateKeys.owner, password, salt).toString(),
+      active: this.encrypt(keys.privateKeys.active, password, salt).toString()
+    },
     publicKeys: { ...publicKeys }
   };
-  encryptedKeys.masterPrivateKey = this.encrypt(keys.masterPrivateKey, password, salt).toString();
-  encryptedKeys.privateKeys.owner = this.encrypt(keys.privateKeys.owner, password, salt).toString();
-  encryptedKeys.privateKeys.active = this.encrypt(keys.privateKeys.active, password, salt).toString();
   return encryptedKeys;
 }
 
@@ -180,24 +179,15 @@ async function createOreAccountWithKeys(activePublicKey, ownerPublicKey, orePaye
   return { oreAccountName, transaction };
 }
 
-async function generateOreAccountAndKeys(ownerPublicKey, orePayerAccountName, options = {}) {
-  const keys = options.keys || await Keygen.generateMasterKeys();
+async function generateOreAccountAndEncryptedKeys(password, salt, ownerPublicKey, orePayerAccountName, options = {}) {
+  const keys = options.keys || await generateEncryptedKeys.bind(this)(password, salt);
 
   const {
     oreAccountName,
     transaction,
   } = await createOreAccountWithKeys.bind(this)(keys.publicKeys.active, ownerPublicKey, orePayerAccountName, options);
 
-  return { keys, oreAccountName, transaction };
-}
-
-async function generateOreAccountAndEncryptedKeys(password, salt, ownerPublicKey, orePayerAccountName, options = {}) {
-  const {
-    keys, oreAccountName, transaction,
-  } = await generateOreAccountAndKeys.bind(this)(ownerPublicKey, orePayerAccountName, options);
-
-  const encryptedKeys = encryptKeys.bind(this)(keys, password, salt);
-  return { encryptedKeys, oreAccountName, transaction, keys };
+  return { oreAccountName, transaction, keys };
 }
 
 // Creates an account, without verifier auth keys
@@ -209,13 +199,13 @@ async function createAccount(password, salt, ownerPublicKey, orePayerAccountName
   const { broadcast } = options;
 
   const {
-    encryptedKeys, oreAccountName, transaction, keys,
+    oreAccountName, transaction, keys,
   } = await generateOreAccountAndEncryptedKeys.bind(this)(password, salt, ownerPublicKey, orePayerAccountName, options);
 
   return {
     oreAccountName,
-    privateKey: encryptedKeys.privateKeys.active,
-    publicKey: encryptedKeys.publicKeys.active,
+    privateKey: keys.privateKeys.active,
+    publicKey: keys.publicKeys.active,
     keys,
     transaction,
   };
@@ -294,7 +284,7 @@ async function createKeyPair(password, salt, authAccountName, permissionName, op
   options = {
     confirm: true,
     parentPermission: 'active',
-    keys: await Keygen.generateMasterKeys(),
+    keys: await generateEncryptedKeys.bind(this)(password, salt),
     ...options
   };
 
@@ -308,8 +298,7 @@ async function createKeyPair(password, salt, authAccountName, permissionName, op
     await addPermission.bind(this)(authAccountName, [keys.publicKeys.active], permissionName, parentPermission, options);
   }
 
-  const encryptedKeys = encryptKeys.bind(this)(keys, password, salt);
-  return encryptedKeys;
+  return keys;
 }
 
 async function createBridgeAccount(password, salt, authorizingAccount, options) {
@@ -320,7 +309,7 @@ async function createBridgeAccount(password, salt, authorizingAccount, options) 
   };
 
   let transaction;
-  const keys = options.keys || await Keygen.generateMasterKeys();
+  const keys = options.keys || await generateEncryptedKeys.bind(this)(password, salt);
 
   if (options.confirm) {
     transaction = await this.awaitTransaction(() => {
@@ -330,12 +319,10 @@ async function createBridgeAccount(password, salt, authorizingAccount, options) 
     transaction = await createBridgeAccountWithKeys.bind(this)(authorizingAccount, keys, options);
   }
 
-  const encryptedKeys = encryptKeys.bind(this)(keys, password, salt);
-
   return {
     oreAccountName: options.oreAccountName,
-    privateKey: encryptedKeys.privateKeys.active,
-    publicKey: encryptedKeys.publicKeys.active,
+    privateKey: keys.privateKeys.active,
+    publicKey: keys.publicKeys.active,
     keys,
     transaction,
   };
@@ -381,6 +368,12 @@ async function generateAccountName(prefix = '') {
   }
 }
 
+async function generateEncryptedKeys(password, salt) {
+  const keys = await Keygen.generateMasterKeys();
+  const encryptedKeys = encryptKeys.bind(this)(keys, password, salt);
+  return encryptedKeys;
+}
+
 async function getNameAlreadyExists(accountName) {
   try {
     await this.eos.rpc.get_account(accountName);
@@ -397,5 +390,6 @@ module.exports = {
   createOreAccount,
   eosBase32,
   generateAccountName,
+  generateEncryptedKeys,
   getNameAlreadyExists
 };
