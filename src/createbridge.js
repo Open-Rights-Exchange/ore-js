@@ -1,6 +1,3 @@
-
-
-
 /* Public */
 
 // Initializes createbridge with the following details:
@@ -10,24 +7,23 @@
 // newAccountContract   = the contract to call for new account action 
 // minimumRAM           = minimum bytes of RAM to put in a new account created on the chain 
 function init(symbol, precision, newAccountContract, minimumRAM, options){
-    const { contractName = "createbridge", permission = "active", broadcast = true} = options;
-    const chainSymbol = precision + "," + symbol;
-
-    const actions = [{
-        account: contractName,
-        name: 'init',
-        authorization: [{
-          actor: contractName,
-          permission,
-        }],
-        data: {
-            symbol: chainSymbol,
-            newaccountcontract: newAccountContract,
-            minimumram: minimumRAM,
-        }
-      }];
+  const { contractName = "createbridge", permission = "active", broadcast = true } = options;
+  const chainSymbol = precision + "," + symbol;
+  const actions = [{
+    account: contractName,
+    name: 'init',
+    authorization: [{
+      actor: contractName,
+      permission,
+    }],
+    data: {
+      symbol: chainSymbol,
+      newaccountcontract: newAccountContract,
+      minimumram: minimumRAM,
+    }
+  }];
     
-    return this.transact(actions, broadcast);
+  return this.transact(actions, broadcast);
 }
 
 // Registers an app with the createbridge contract. Called with the following parameter:
@@ -40,33 +36,31 @@ function init(symbol, precision, newAccountContract, minimumRAM, options){
 // airdropToken             = total number of tokens to be airdropped
 // airdroplimit             = number of tokens to be airdropped to the newly created account
 function define(authorizingAccount, appName, ram = 4096, net, cpu, options){
-    const {airdropContract, airdropToken, airdropLimit, contractName = "createbridge", broadcast = true} = options;
-    const {accountName, permission = "active"} = authorizingAccount;
-
-    const airdrop = {
-        contract: airdropContract,
-        tokens: airdropToken,
-        limit: airdropLimit
-    };
-
-    const actions = [{
-        account: contractName,
-        name: 'define',
-        authorization: [{
-          actor: accountName,
-          permission,
-        }],
-        data: {
-            owner: accountName,
-            dapp: appName,
-            ram_bytes: ram,
-            net,
-            cpu,
-            airdrop,
-        }
-      }];
+  const { airdropContract, airdropToken, airdropLimit, contractName = "createbridge", broadcast = true } = options;
+  const { accountName, permission = "active" } = authorizingAccount;
+  const airdrop = {
+    contract: airdropContract,
+    tokens: airdropToken,
+    limit: airdropLimit
+  };
+  const actions = [{
+    account: contractName,
+    name: 'define',
+    authorization: [{
+      actor: accountName,
+      permission,
+    }],
+    data: {
+      owner: accountName,
+      dapp: appName,
+      ram_bytes: ram,
+      net,
+      cpu,
+      airdrop,
+    }
+  }];
     
-      return this.transact(actions, broadcast);
+  return this.transact(actions, broadcast);
 }
 
 // Creates a new user account. It also airdrops custom dapp tokens to the new user account if an app owner has opted for airdrops
@@ -74,49 +68,48 @@ function define(authorizingAccount, appName, ram = 4096, net, cpu, options){
 // keys               = owner key and active key for the new account  
 // origin             = the string representing the app to create the new user account for. For ex- everipedia.org, lumeos
 function createNewAccount(authorizingAccount, keys, options) {
-    const { accountName, permission } = authorizingAccount;
-    const { origin, oreAccountName, contractName = 'createbridge', broadcast = true } = options;
-    const actions = [{
-      account: contractName,
-      name: 'create',
-      authorization: [{
-        actor: accountName,
-        permission,
-      }],
-      data: {
-        memo: accountName,
-        account: oreAccountName,
-        ownerkey: keys.publicKeys.owner,
-        activekey: keys.publicKeys.active,
-        origin
-      }
-    }];
+  const { accountName, permission } = authorizingAccount;
+  const { origin, oreAccountName, contractName = 'createbridge', broadcast = true } = options;
+  const actions = [{
+    account: contractName,
+    name: 'create',
+    authorization: [{
+      actor: accountName,
+      permission,
+    }],
+    data: {
+      memo: accountName,
+      account: oreAccountName,
+      ownerkey: keys.publicKeys.owner,
+      activekey: keys.publicKeys.active,
+      origin
+    }
+  }];
   
-    return this.transact(actions, broadcast);
-  }
+  return this.transact(actions, broadcast);
+}
   
 // Owner account of an app can whitelist other accounts. 
 // authorizingAccount   = an object with account name and permission contributing towards an app
 // whitelistAccount     = account name to be whitelisted to create accounts on behalf of the app
 function whitelist(authorizingAccount, whitelistAccount, appName, options){
-    const { contractName = "createbridge", broadcast = true } = options;
-    const { accountName, permission = "active" } = authorizingAccount
+  const { contractName = "createbridge", broadcast = true } = options;
+  const { accountName, permission = "active" } = authorizingAccount
+  const actions = [{
+    account: contractName,
+    name: 'whitelist',
+    authorization: [{
+      actor: accountName,
+      permission,
+    }],
+    data: {
+      owner: accountName,
+      account: whitelistAccount,
+      dapp: appName,
+    }
+  }];
 
-    const actions = [{
-        account: contractName,
-        name: 'whitelist',
-        authorization: [{
-            actor: accountName,
-            permission,
-          }],
-          data: {
-              owner: accountName,
-              account: whitelistAccount,
-              dapp: appName,
-          }
-    }];
-
-    return this.transact(actions, broadcast);
+  return this.transact(actions, broadcast);
 }
 
 // Contributes to account creation for an app by transferring the amount to createbridge with the app name in the memo field
@@ -126,26 +119,25 @@ function whitelist(authorizingAccount, whitelistAccount, appName, options){
 // ramPercentage = RAM% per account the contributor wants to subsidize
 // totalAccounts = max accounts that can be created with the provided contribution (optional)
 function transfer(authorizingAccount , appName, amount, ramPercentage, totalAccounts=-1,options){
-    const { contractName = "eosio.token", createbridgeAccountName = "createbridge", broadcast = true } = options;
-    const { accountName, permission = "active" } = authorizingAccount;
-    const memo = appName + "," + ramPercentage + "," + totalAccounts;
+  const { contractName = "eosio.token", createbridgeAccountName = "createbridge", broadcast = true } = options;
+  const { accountName, permission = "active" } = authorizingAccount;
+  const memo = appName + "," + ramPercentage + "," + totalAccounts;
+  const actions = [{
+    account: contractName,
+    name: 'transfer',
+    authorization: [{
+      actor: accountName,
+      permission,
+    }],
+    data: {
+      from: accountName,
+      to: createbridgeAccountName,
+      quantity: amount,
+      memo, 
+    }
+  }];
 
-    const actions = [{
-        account: contractName,
-        name: 'transfer',
-        authorization: [{
-            actor: accountName,
-            permission,
-        }],
-        data: {
-            from: accountName,
-            to: createbridgeAccountName,
-            quantity: amount,
-            memo, 
-        }
-    }];
-
-    return this.transact(actions, broadcast);
+  return this.transact(actions, broadcast);
 }
 
 // Transfers the remaining balance of a contributor from createbridge back to the contributor
@@ -153,24 +145,23 @@ function transfer(authorizingAccount , appName, amount, ramPercentage, totalAcco
 // appName    = the app name for which the account is trying to reclaim the balance
 // symbol     = symbol of the tokens to be reclaimed.
 function reclaim(authorizingAccount, appName, symbol, options){
-    const { contractName = "createbridge", broadcast = true } = options;
-    const { accountName, permission = "active" } = authorizingAccount
-
-    const actions = [{
-        account: contractName,
-        name: 'reclaim',
-        authorization: [{
-          actor: accountName,
-          permission,
-        }],
-        data: {
-            reclaimer: accountName,
-            dapp: appName,
-            sym: symbol,
-        }
-      }];
+  const { contractName = "createbridge", broadcast = true } = options;
+  const { accountName, permission = "active" } = authorizingAccount
+  const actions = [{
+    account: contractName,
+    name: 'reclaim',
+    authorization: [{
+      actor: accountName,
+      permission,
+    }],
+    data: {
+      reclaimer: accountName,
+      app: appName,
+      sym: symbol,
+    }
+  }];
       
-    return this.transact(actions, broadcast);
+  return this.transact(actions, broadcast);
 }
 
 module.exports = {

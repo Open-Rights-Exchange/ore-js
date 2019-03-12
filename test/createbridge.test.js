@@ -2,8 +2,7 @@
 const { Keygen } = require('eosjs-keygen');
 const ecc = require('eosjs-ecc');
 const { mockAction, mockOptions } = require('./helpers/eos');
-const { constructOrejs, mockGetAccount, mockGetAccountWithAlreadyExistingAccount, mockGetInfo, mockGetBlock,
-  mockGetTransaction } = require('./helpers/orejs');
+const { constructOrejs, mockGetTransaction } = require('./helpers/orejs');
 
 describe('createbridge', () => {
   let spyTransaction;
