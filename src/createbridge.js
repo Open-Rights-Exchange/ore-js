@@ -156,7 +156,7 @@ function reclaim(authorizingAccount, appName, symbol, options){
     }],
     data: {
       reclaimer: accountName,
-      app: appName,
+      dapp: appName,
       sym: symbol,
     }
   }];

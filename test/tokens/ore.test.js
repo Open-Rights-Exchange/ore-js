@@ -50,7 +50,7 @@ describe('ore', () => {
         mockGetInfo(orejs);
         mockGetBlock(orejs);
         const result = await orejs.approveOre(ORE_OWNER_ACCOUNT_NAME, ORE_TESTA_ACCOUNT_NAME, oreBalance, memo);
-        expect(spyTransaction).toHaveBeenCalledWith({ actions: [mockAction({ account: 'token.ore', name: 'approve' })] }, mockOptions());
+        expect(spyTransaction).toHaveBeenCalledWith({ actions: [mockAction({ account: 'eosio.token', name: 'approve' })] }, mockOptions());
       });
     });
 
@@ -80,7 +80,7 @@ describe('ore', () => {
     describe('when authorized', () => {
       it('returns', async () => {
         const result = await orejs.transferOre(ORE_OWNER_ACCOUNT_NAME, ORE_TESTA_ACCOUNT_NAME, oreBalance);
-        expect(spyTransaction).toHaveBeenCalledWith({ actions: [mockAction({ account: 'token.ore', name: 'transfer' })] }, mockOptions());
+        expect(spyTransaction).toHaveBeenCalledWith({ actions: [mockAction({ account: 'eosio.token', name: 'transfer' })] }, mockOptions());
       });
     });
 
