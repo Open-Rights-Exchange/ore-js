@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/Open-Rights-Exchange/ore-js/tree/dev.svg?style=svg)](https://circleci.com/gh/Open-Rights-Exchange/ore-js/tree/dev)
+[![CircleCI](https://circleci.com/gh/Open-Rights-Exchange/ore-js.svg?style=svg)](https://circleci.com/gh/Open-Rights-Exchange/ore-js)
 
 # OREJS Spec
 

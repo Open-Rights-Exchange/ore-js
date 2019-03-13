@@ -3,6 +3,7 @@ const eosjs = require('eosjs');
 const { TextDecoder, TextEncoder } = require('text-encoding');
 const accounts = require('./accounts');
 const cpu = require('./tokens/cpu');
+const creatbridge = require('./createbridge');
 const crypto = require('./modules/crypto');
 const eos = require('./eos');
 const instrument = require('./instrument');
@@ -19,6 +20,7 @@ class Orejs {
     /* Mixins */
     Object.assign(this, accounts);
     Object.assign(this, cpu);
+    Object.assign(this, creatbridge);
     Object.assign(this, crypto);
     Object.assign(this, eos);
     Object.assign(this, instrument);
