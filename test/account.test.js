@@ -222,14 +222,13 @@ describe('account', () => {
     describe('when adding an pre-defined key pair', () => {
       let permissionName = 'custom';
       let keys = {
-        masterPrivateKey: 'PW5HwnCgUkikSr7eFL1RGiALnJBr4oP4eK7Mq7ynjedKbxjt2oX3o',
         privateKeys: {
-          owner: '5HugrGmD5Vbgdef1kvJgqWtjXyqxP1uYzB54rF7raGRij39an9N',
-          active: '5JuSXobBCwGJEYkpDyv1ENdqGAYoaprEnfEujuZmj52huk1WBfh'
+          owner: '{"iv":"xr5XTgow76QCpEe8Tij7xw==","v":1,"iter":10000,"ks":128,"ts":64,"mode":"gcm","adata":"","cipher":"aes","ct":"2YAap55e6O8gwZ6m33UjEjxqw1GU+cZbVrYP7TDRFiF0axe1XJ2W+uvhgG5ArEga8GO8cnNf+6KaFaQ="}',
+          active: '{"iv":"whCS0NVLJv+5xFxm/udHaw==","v":1,"iter":10000,"ks":128,"ts":64,"mode":"gcm","adata":"","cipher":"aes","ct":"G7So6hZeuqp3eZT4aj3w/C5lhXIJ8Z+9dTUCQNAhSWMVB9S+k+IHoUGQKgAi1cz3vnQ3VH4DdJobec4="}'
         },
         publicKeys: {
-          owner: 'EOS5Dcydoh8BfHdoEcj1YfsiTUZm4Dghxx6W916GaUUpqHmNwfy1b',
-          active: 'EOS521jAgBCgtWskTS8SSthM1uJnDABAnVqeW9W3Z2yeShX6U2sgF'
+          owner: 'EOS8ekDXRqcWGYXHDZp246B8VF9DTwkuz13u5tpPnMdptE2SE9sVf',
+          active: 'EOS6iGJBT4PPuhm5zKiKUiFNi7eYqLFofZqMYDyZyKHfNt5fuRLF2'
         }
       }
 
@@ -302,10 +301,9 @@ describe('account', () => {
           privateKey: expect.stringMatching(/^\{.*\}$/),
           publicKey: expect.stringMatching(/^EOS\w*$/),
           keys: expect.objectContaining({
-            masterPrivateKey: expect.stringMatching(/^PW\w*$/),
             privateKeys: expect.objectContaining({
-              active: expect.stringMatching(/^\w*$/),
-              owner: expect.stringMatching(/^\w*$/)
+              active: expect.stringMatching(/^\{.*\}$/),
+              owner: expect.stringMatching(/^\{.*\}$/)
             }),
             publicKeys: expect.objectContaining({
               active: expect.stringMatching(/^EOS\w*$/),
@@ -336,10 +334,9 @@ describe('account', () => {
             privateKey: expect.stringMatching(/^\{.*\}$/),
             publicKey: expect.stringMatching(/^EOS\w*$/),
             keys: expect.objectContaining({
-              masterPrivateKey: expect.stringMatching(/^PW\w*$/),
               privateKeys: expect.objectContaining({
-                active: expect.stringMatching(/^\w*$/),
-                owner: expect.stringMatching(/^\w*$/)
+                active: expect.stringMatching(/^\{.*\}$/),
+                owner: expect.stringMatching(/^\{.*\}$/)
               }),
               publicKeys: expect.objectContaining({
                 active: expect.stringMatching(/^EOS\w*$/),
@@ -358,6 +355,20 @@ describe('account', () => {
           const account = await orejs.createOreAccount(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, ORE_OWNER_ACCOUNT_KEY, ORE_PAYER_ACCOUNT_NAME, options);
           expect(account).toEqual(expect.objectContaining({
             oreAccountName: expect.stringMatching(/ore[a-z1-5]{9}/),
+          }));
+        });
+      });
+
+      describe('when pre-defining keys', () => {
+        const key = 'EOS5vTStKDUDbLHu4hSi8iFrmaJET88HHcL5oVBYQ1wd2aeMHgHs2';
+        const options = { keys: { publicKeys: { owner: key } } }
+
+        it('returns an account with the specified key', async () => {
+          const account = await orejs.createOreAccount(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, ORE_OWNER_ACCOUNT_KEY, ORE_PAYER_ACCOUNT_NAME, options);
+          expect(account).toEqual(expect.objectContaining({
+            keys: expect.objectContaining({
+              publicKeys: expect.objectContaining({ owner: key })
+            }),
           }));
         });
       });
@@ -401,10 +412,9 @@ describe('account', () => {
             privateKey: expect.stringMatching(/^\{.*\}$/),
             publicKey: expect.stringMatching(/^EOS\w*$/),
             keys: expect.objectContaining({
-              masterPrivateKey: expect.stringMatching(/^PW\w*$/),
               privateKeys: expect.objectContaining({
-                active: expect.stringMatching(/^\w*$/),
-                owner: expect.stringMatching(/^\w*$/)
+                active: expect.stringMatching(/^\{.*\}$/),
+                owner: expect.stringMatching(/^\{.*\}$/)
               }),
               publicKeys: expect.objectContaining({
                 active: expect.stringMatching(/^EOS\w*$/),
@@ -449,10 +459,9 @@ describe('account', () => {
           privateKey: expect.stringMatching(/^\{.*\}$/),
           publicKey: expect.stringMatching(/^EOS\w*$/),
           keys: expect.objectContaining({
-            masterPrivateKey: expect.stringMatching(/^PW\w*$/),
             privateKeys: expect.objectContaining({
-              active: expect.stringMatching(/^\w*$/),
-              owner: expect.stringMatching(/^\w*$/)
+              active: expect.stringMatching(/^\{.*\}$/),
+              owner: expect.stringMatching(/^\{.*\}$/)
             }),
             publicKeys: expect.objectContaining({
               active: expect.stringMatching(/^EOS\w*$/),
@@ -509,10 +518,9 @@ describe('account', () => {
         privateKey: expect.stringMatching(/^\{.*\}$/),
         publicKey: expect.stringMatching(/^EOS\w*$/),
         keys: expect.objectContaining({
-          masterPrivateKey: expect.stringMatching(/^PW\w*$/),
           privateKeys: expect.objectContaining({
-            active: expect.stringMatching(/^\w*$/),
-            owner: expect.stringMatching(/^\w*$/)
+            active: expect.stringMatching(/^\{.*\}$/),
+            owner: expect.stringMatching(/^\{.*\}$/)
           }),
           publicKeys: expect.objectContaining({
             active: expect.stringMatching(/^EOS\w*$/),
@@ -551,10 +559,9 @@ describe('account', () => {
         privateKey: expect.stringMatching(/^\{.*\}$/),
         publicKey: expect.stringMatching(/^EOS\w*$/),
         keys: expect.objectContaining({
-          masterPrivateKey: expect.stringMatching(/^PW\w*$/),
           privateKeys: expect.objectContaining({
-            active: expect.stringMatching(/^\w*$/),
-            owner: expect.stringMatching(/^\w*$/)
+            active: expect.stringMatching(/^\{.*\}$/),
+            owner: expect.stringMatching(/^\{.*\}$/)
           }),
           publicKeys: expect.objectContaining({
             active: expect.stringMatching(/^EOS\w*$/),
@@ -589,6 +596,70 @@ describe('account', () => {
     it('lets us prefix account names', async () => {
       const accountName = await orejs.generateAccountName('ore');
       expect(accountName).toEqual(expect.stringMatching(/ore[a-z1-5]{9}/))
+    });
+  });
+
+  describe('generateEncryptedKeys', async () => {
+    const password = 'password';
+    const salt = 'salt';
+
+    it('returns a full set of keys', async () => {
+      const keys = await orejs.generateEncryptedKeys(password, salt);
+      expect(keys).toEqual(expect.objectContaining({
+        privateKeys: expect.objectContaining({
+          active: expect.stringMatching(/^\{.*\}$/),
+          owner: expect.stringMatching(/^\{.*\}$/)
+        }),
+        publicKeys: expect.objectContaining({
+          active: expect.stringMatching(/^EOS\w*$/),
+          owner: expect.stringMatching(/^EOS\w*$/)
+        })
+      }));
+    });
+
+    describe('when partially defining keys', () => {
+      const publicKey = 'EOS8MoQ6DPdM9SWsaKbYTu1P54tLvdxrZY8DQ5uUrwQ9LMtoByCwm';
+      const predefinedKeys = { publicKeys: { owner: publicKey } };
+
+      it('returns the both the specified and non-specified keys', async () => {
+        const keys = await orejs.generateEncryptedKeys(password, salt, predefinedKeys);
+        expect(keys).toEqual(expect.objectContaining({
+          publicKeys: expect.objectContaining({
+            active: expect.stringMatching(/^EOS\w*$/),
+            owner: expect.stringMatching(publicKey)
+          })
+        }));
+      });
+    });
+
+    describe('when defining unencrypted keys', () => {
+      const privateKey = '5KC9gtjqTQHLchEZAu4QUif8MNKoZPZENEJmsiapvxDAJCZpzGK';
+      const predefinedKeys = { privateKeys: { owner: privateKey } };
+
+      it('returns the key encrypted', async () => {
+        const keys = await orejs.generateEncryptedKeys(password, salt, predefinedKeys);
+        expect(keys).toEqual(expect.objectContaining({
+          privateKeys: expect.objectContaining({
+            active: expect.stringMatching(/^\{.*\}$/),
+            owner: expect.stringMatching(/^\{.*\}$/)
+          })
+        }));
+      });
+    });
+
+    describe('when defining encrypted keys', () => {
+      const privateKey = '{"iv":"xr5XTgow76QCpEe8Tij7xw==","v":1,"iter":10000,"ks":128,"ts":64,"mode":"gcm","adata":"","cipher":"aes","ct":"2YAap55e6O8gwZ6m33UjEjxqw1GU+cZbVrYP7TDRFiF0axe1XJ2W+uvhgG5ArEga8GO8cnNf+6KaFaQ="}';
+      const predefinedKeys = { privateKeys: { owner: privateKey } };
+
+      it('returns the key', async () => {
+        const keys = await orejs.generateEncryptedKeys(password, salt, predefinedKeys);
+        expect(keys).toEqual(expect.objectContaining({
+          privateKeys: expect.objectContaining({
+            active: expect.stringMatching(/^\{.*\}$/),
+            owner: expect.stringContaining(privateKey)
+          })
+        }));
+      });
     });
   });
 
