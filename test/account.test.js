@@ -655,8 +655,8 @@ describe('account', () => {
         const keys = await orejs.generateEncryptedKeys(password, salt, predefinedKeys);
         expect(keys).toEqual(expect.objectContaining({
           privateKeys: expect.objectContaining({
-            active: expect.stringMatching(/^\{.*\}$/)
-            //owner: expect.stringContaining(privateKey)
+            active: expect.stringMatching(/^\{.*\}$/),
+            owner: expect.stringContaining(privateKey)
           })
         }));
       });
