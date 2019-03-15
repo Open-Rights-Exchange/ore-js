@@ -359,6 +359,20 @@ describe('account', () => {
         });
       });
 
+      describe('when pre-defining keys', () => {
+        const key = 'EOS5vTStKDUDbLHu4hSi8iFrmaJET88HHcL5oVBYQ1wd2aeMHgHs2';
+        const options = { keys: { publicKeys: { owner: key } } }
+
+        it('returns an account with the specified key', async () => {
+          const account = await orejs.createOreAccount(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, ORE_OWNER_ACCOUNT_KEY, ORE_PAYER_ACCOUNT_NAME, options);
+          expect(account).toEqual(expect.objectContaining({
+            keys: expect.objectContaining({
+              publicKeys: expect.objectContaining({ owner: key })
+            }),
+          }));
+        });
+      });
+
       describe('when defining an eos chain', () => {
         let spyTransaction;
         let transaction;
@@ -634,6 +648,40 @@ describe('account', () => {
       it('returns false', async () => {
         const nameAlreadyExists = await orejs.getNameAlreadyExists(accountName);
         expect(nameAlreadyExists).toEqual(false);
+      });
+    });
+  });
+
+  describe('generateEncryptedKeys', async () => {
+    const password = 'password';
+    const salt = 'salt';
+
+    it('returns a full set of keys', async () => {
+      const keys = await orejs.generateEncryptedKeys(password, salt);
+      expect(keys).toEqual(expect.objectContaining({
+        privateKeys: expect.objectContaining({
+          active: expect.stringMatching(/^\{.*\}$/),
+          owner: expect.stringMatching(/^\{.*\}$/)
+        }),
+        publicKeys: expect.objectContaining({
+          active: expect.stringMatching(/^EOS\w*$/),
+          owner: expect.stringMatching(/^EOS\w*$/)
+        })
+      }));
+    });
+
+    describe('when partially defining keys', () => {
+      const key = 'EOS5vTStKDUDbLHu4hSi8iFrmaJET88HHcL5oVBYQ1wd2aeMHgHs2';
+      const predefinedKeys = { publicKeys: { owner: key } };
+
+      it('returns the both the specified and non-specified keys', async () => {
+        const keys = await orejs.generateEncryptedKeys(password, salt, predefinedKeys);
+        expect(keys).toEqual(expect.objectContaining({
+          publicKeys: expect.objectContaining({
+            active: expect.stringMatching(/^EOS\w*$/),
+            owner: expect.stringMatching(key)
+          })
+        }));
       });
     });
   });
