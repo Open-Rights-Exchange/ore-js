@@ -94,12 +94,19 @@ function generateAccountNameString(prefix = '') {
   return (prefix + timestampEosBase32() + randomEosBase32()).substr(0, 12);
 }
 
+function encrypted(key) {
+  if (key.match(/^\{.*\}$/)) {
+    return true;
+  }
+  return false;
+}
+
 function encryptKeys(keys, password, salt) {
   const { privateKeys, publicKeys } = keys;
   const encryptedKeys = {
     privateKeys: {
-      owner: this.encrypt(keys.privateKeys.owner, password, salt).toString(),
-      active: this.encrypt(keys.privateKeys.active, password, salt).toString()
+      owner: encrypted(keys.privateKeys.owner) ? keys.privateKeys.owner : this.encrypt(keys.privateKeys.owner, password, salt).toString(),
+      active: encrypted(keys.privateKeys.active) ? keys.privateKeys.active : this.encrypt(keys.privateKeys.active, password, salt).toString()
     },
     publicKeys: { ...publicKeys }
   };
@@ -180,7 +187,7 @@ async function createOreAccountWithKeys(activePublicKey, ownerPublicKey, orePaye
 }
 
 async function generateOreAccountAndEncryptedKeys(password, salt, ownerPublicKey, orePayerAccountName, options = {}) {
-  const keys = options.keys || await generateEncryptedKeys.bind(this)(password, salt);
+  const keys = await generateEncryptedKeys.bind(this)(password, salt, options.keys);
 
   const {
     oreAccountName,
@@ -257,6 +264,7 @@ async function addPermission(authAccountName, keys, permissionName, parentPermis
   return this.transact(actions, broadcast);
 }
 
+// NOTE: When setting keys for `createKeyPair`, all keys are completely overriden, not just partially
 async function createKeyPair(password, salt, authAccountName, permissionName, options = {}) {
   options = {
     confirm: true,
@@ -286,7 +294,7 @@ async function createBridgeAccount(password, salt, authorizingAccount, options) 
   };
 
   let transaction;
-  const keys = options.keys || await generateEncryptedKeys.bind(this)(password, salt);
+  const keys = await generateEncryptedKeys.bind(this)(password, salt, options.keys);
 
   if (options.confirm) {
     transaction = await this.awaitTransaction(() => {
@@ -345,8 +353,20 @@ async function generateAccountName(prefix = '') {
   }
 }
 
-async function generateEncryptedKeys(password, salt) {
-  const keys = await Keygen.generateMasterKeys();
+async function generateEncryptedKeys(password, salt, predefinedKeys = {}) {
+  let keys = await Keygen.generateMasterKeys();
+  const { publicKeys = {}, privateKeys = {} } = predefinedKeys;
+  keys = {
+    ...keys,
+    publicKeys: {
+      ...keys.publicKeys,
+      ...publicKeys
+    },
+    privateKeys: {
+      ...keys.privateKeys,
+      ...privateKeys
+    }
+  }
   const encryptedKeys = encryptKeys.bind(this)(keys, password, salt);
   return encryptedKeys;
 }
