@@ -94,12 +94,19 @@ function generateAccountNameString(prefix = '') {
   return (prefix + timestampEosBase32() + randomEosBase32()).substr(0, 12);
 }
 
+function encrypted(key) {
+  if (key.match(/^\{.*\}$/)) {
+    return true;
+  }
+  return false;
+}
+
 function encryptKeys(keys, password, salt) {
   const { privateKeys, publicKeys } = keys;
   const encryptedKeys = {
     privateKeys: {
-      owner: this.encrypt(keys.privateKeys.owner, password, salt).toString(),
-      active: this.encrypt(keys.privateKeys.active, password, salt).toString()
+      owner: encrypted(keys.privateKeys.owner) ? keys.privateKeys.owner : this.encrypt(keys.privateKeys.owner, password, salt).toString(),
+      active: encrypted(keys.privateKeys.active) ? keys.privateKeys.active : this.encrypt(keys.privateKeys.active, password, salt).toString()
     },
     publicKeys: { ...publicKeys }
   };
