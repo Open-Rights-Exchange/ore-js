@@ -340,13 +340,13 @@ function eosBase32(base32String) {
 }
 
 // Recursively generates account names, until a uniq name is generated...
-async function generateAccountName(prefix = '', ignoreExistingName = false) {
+async function generateAccountName(prefix = '', checkIfNameUsedOnChain = true) {
   // NOTE: account names MUST be base32 encoded, and be 12 characters, in compliance with the EOS standard
   // NOTE: account names can also contain only the following characters: a-z, 1-5, & '.' In regex: [a-z1-5\.]{12}
   // NOTE: account names are generated based on the current unix timestamp + some randomness, and cut to be 12 chars
   let accountName = generateAccountNameString.bind(this)(prefix);
   let nameAlreadyExists = false;
-  if (!ignoreExistingName) {
+  if (checkIfNameUsedOnChain) {
     nameAlreadyExists = await getNameAlreadyExists.bind(this)(accountName);
   }
   if (nameAlreadyExists) {

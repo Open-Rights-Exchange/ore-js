@@ -601,7 +601,7 @@ describe('account', () => {
     });
 
     it('does not always have to check for pre-existing names', async () => {
-      const accountName = await orejs.generateAccountName('ore', true);
+      const accountName = await orejs.generateAccountName('ore', false);
       expect(accountMock).not.toHaveBeenCalled();
       expect(accountName).toEqual(expect.stringMatching(/ore[a-z1-5]{9}/))
     });
