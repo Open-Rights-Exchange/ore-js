@@ -583,18 +583,26 @@ describe('account', () => {
 
   describe('generateAccountName', () => {
     let spyAccount;
+    let accountMock;
 
     beforeEach(() => {
-      mockGetAccount(orejs);
+      accountMock = mockGetAccount(orejs);
     });
 
     it('returns a random string', async () => {
       const accountName = await orejs.generateAccountName();
+      expect(accountMock).toHaveBeenCalled();
       expect(accountName).toEqual(expect.stringMatching(/[a-z1-5]{12}/))
     });
 
     it('lets us prefix account names', async () => {
       const accountName = await orejs.generateAccountName('ore');
+      expect(accountName).toEqual(expect.stringMatching(/ore[a-z1-5]{9}/))
+    });
+
+    it('does not always have to check for pre-existing names', async () => {
+      const accountName = await orejs.generateAccountName('ore', false);
+      expect(accountMock).not.toHaveBeenCalled();
       expect(accountName).toEqual(expect.stringMatching(/ore[a-z1-5]{9}/))
     });
   });
