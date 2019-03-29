@@ -39,7 +39,7 @@ function mockGetAccount(_orejs = undefined, withInitialCheck = true, _account = 
   const orejs = _orejs || constructOrejs();
   orejs.eos.rpc.get_account = mockupAccount;
 
-  return getAccount;
+  return mockupAccount;
 }
 
 function mockGetAccountWithAlreadyExistingAccount(_orejs = undefined, _account = {}) {
