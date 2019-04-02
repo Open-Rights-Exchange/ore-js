@@ -390,6 +390,7 @@ module.exports = {
   createOreAccount,
   eosBase32,
   generateAccountName,
+  generateAccountNameString,
   generateEncryptedKeys,
   getNameAlreadyExists
 };
