@@ -29,7 +29,7 @@ describe('eos', () => {
       await orejs.awaitTransaction(async () => {
         await setTimeout(() => true, 10);
         return transaction;
-      }, 10, 10);
+      }, {blocksToCheck: 10, checkInterval: 10});
       expect(spyInfo).toHaveBeenCalledWith({});
       expect(spyBlock).toHaveBeenCalledWith(block.block_num + 1);
     });
@@ -46,7 +46,7 @@ describe('eos', () => {
         const result = orejs.awaitTransaction(async () => {
           await setTimeout(() => true, 10);
           return transaction;
-        }, 2, 10);
+        }, {blocksToCheck: 2, checkInterval: 10});
         await expect(result).rejects.toThrow(/Await Transaction Timeout/);
       });
     });

@@ -4,6 +4,12 @@ const ACCOUNT_NAME_MAX_LENGTH = 12;
 const BASE = 31; // Base 31 allows us to leave out '.', as it's used for account scope
 
 /* Private */
+// gets the input values(blocksToCheck, checkInterval, getBlockAttempts) required for the awaitTranaction method
+function getAwaitTransactionOptions(options){
+const awaitTransactionOptions = {};
+({blocksToCheck: awaitTransactionOptions.blocksToCheck, checkInterval: awaitTransactionOptions.checkInterval, getBlockAttempts: awaitTransactionOptions.getBlockAttempts} = options);
+return awaitTransactionOptions
+}
 
 function newAccountTransaction(name, ownerPublicKey, activePublicKey, orePayerAccountName, options = {}) {
   const { broadcast, bytes, permission, stakedCpu, stakedNet, transfer, tokenSymbol } = {
@@ -179,7 +185,10 @@ async function createOreAccountWithKeys(activePublicKey, ownerPublicKey, orePaye
 
   let transaction;
   if (options.confirm) {
-    transaction = await this.awaitTransaction(() => newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, options));
+    const awaitTransactionOptions = getAwaitTransactionOptions(options);
+    transaction = await this.awaitTransaction(() => {
+      return newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, options)
+    }, awaitTransactionOptions);
   } else {
     transaction = await newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, options);
   }
@@ -276,9 +285,10 @@ async function createKeyPair(password, salt, authAccountName, permissionName, op
   const { keys, parentPermission } = options;
 
   if (options.confirm) {
+    const awaitTransactionOptions = getAwaitTransactionOptions(options);
     await this.awaitTransaction(() => {
       return addPermission.bind(this)(authAccountName, [keys.publicKeys.active], permissionName, parentPermission, options);
-    });
+    }, awaitTransactionOptions);
   } else {
     await addPermission.bind(this)(authAccountName, [keys.publicKeys.active], permissionName, parentPermission, options);
   }
@@ -297,9 +307,10 @@ async function createBridgeAccount(password, salt, authorizingAccount, options) 
   const keys = await generateEncryptedKeys.bind(this)(password, salt, options.keys);
 
   if (options.confirm) {
+    const awaitTransactionOptions = getAwaitTransactionOptions(options);
     transaction = await this.awaitTransaction(() => {
       return this.createNewAccount(authorizingAccount, keys, options);
-    });
+    },awaitTransactionOptions);
   } else {
     transaction = await this.createNewAccount(authorizingAccount, keys, options);
   }
