@@ -27,7 +27,8 @@ function hasTransaction(block, transactionId) {
 // NOTE: blocksToCheck = the number of blocks to check, after committing the transaction, before giving up
 // NOTE: checkInterval = the time between block checks in MS
 // NOTE: getBlockAttempts = the number of failed attempts at retrieving a particular block, before giving up
-function awaitTransaction(func, blocksToCheck = 20, checkInterval = 400, getBlockAttempts = 5) {
+function awaitTransaction(func, options = {}) {
+  const { blocksToCheck = 20, checkInterval = 400, getBlockAttempts = 5 } = options;
   return new Promise(async (resolve, reject) => {
     // check the current head block num...
     const preCommitInfo = await getInfo.bind(this)();
