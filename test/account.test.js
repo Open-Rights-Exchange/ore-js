@@ -264,7 +264,7 @@ describe('account', () => {
 
       it('returns a new account', async () => {
         const permission = 'custom';
-        const options = { permission };
+        const options = { permission, blocksToCheck: 20, checkInterval: 500 };
         const account = await orejs.createOreAccount(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, ORE_OWNER_ACCOUNT_KEY, ORE_PAYER_ACCOUNT_NAME, options);
         expect(spyTransaction).toHaveBeenNthCalledWith(1, {
           actions: [
@@ -496,7 +496,7 @@ describe('account', () => {
       const permission = 'custom';
       const accountName = 'eptestoretyl';
       const dappName = 'ep.test.ore.tyl';
-      const options = { permission, origin: dappName };
+      const options = { permission, origin: dappName, blocksToCheck: 50 };
       const authorizingAccount = { accountName, permission };
       const account = await orejs.createBridgeAccount(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, authorizingAccount, options);
       expect(spyTransaction).toHaveBeenNthCalledWith(1, {
