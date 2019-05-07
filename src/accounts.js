@@ -229,7 +229,7 @@ async function createAccount(password, salt, ownerPublicKey, orePayerAccountName
 
 // returns a list of actions to link to an app permission 
 // every { contract, action } input pair is linked to the app permission
-async function getLinkActions(links, permission, authAccountName, authPermission){
+async function composeLinkActions(links, permission, authAccountName, authPermission){
   const actions = [];
   links.forEach(link => {
     const { code, type } = link;
@@ -284,7 +284,7 @@ async function addPermission(authAccountName, keys, permissionName, parentPermis
   }];
 
   // add action permission for every { contract, action } pair passed in
-  const linkActions = await getLinkActions(links, permission, authAccountName, authPermission);
+  const linkActions = await composeLinkActions(links, permission, authAccountName, authPermission);
   actions = {
     actions,
     ...linkActions
@@ -295,7 +295,7 @@ async function addPermission(authAccountName, keys, permissionName, parentPermis
 
 // links actions for a given account to an app permission
 async function linkActionsToPermission(links, permission, authAccountName, authPermission) {
-  const actions = await getLinkActions(links, permission, authAccountName, authPermission);
+  const actions = await composeLinkActions(links, permission, authAccountName, authPermission);
 
   return this.transact(actions, broadcast);
 }
