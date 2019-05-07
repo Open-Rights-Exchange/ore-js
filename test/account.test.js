@@ -22,10 +22,10 @@ describe('account', () => {
   // NOTE: The functionality of addPermission is only partially tested directly.
   // NOTE: Additional functionality is tested via createKeyPair
   describe('addPermission', () => {
-    const accountName = 'accountname';
+    let accountName = 'accountname';
     let keys;
-    const parentPermission = 'active';
-    const options = { authPermission: parentPermission };
+    let parentPermission = 'active';
+    let options = { authPermission: parentPermission };
 
     beforeEach(async () => {
       keys = await Keygen.generateMasterKeys();
@@ -34,7 +34,7 @@ describe('account', () => {
     });
 
     describe('when removing an existing permission', () => {
-      const permissionName = 'newpermission';
+      let permissionName = 'newpermission';
       let spyTransaction;
       let spyAccount;
 
@@ -44,7 +44,7 @@ describe('account', () => {
       });
 
       it('returns the transaction', async () => {
-        const permissionTransaction = await orejs.addPermission(accountName, [keys.publicKeys.active], permissionName, parentPermission, options);
+        const permissionTransaction =  await orejs.addPermission(accountName, [keys.publicKeys.active], permissionName, parentPermission, options);
         expect(spyTransaction).toHaveBeenNthCalledWith(1, {
           actions: [
             mockAction({
@@ -64,19 +64,19 @@ describe('account', () => {
                 },
                 parent: parentPermission,
                 permission: permissionName,
-              },
-            }),
+              }
+            })
           ],
         }, mockOptions());
         expect(spyAccount).toHaveBeenCalledWith(expect.any(String));
       });
-    });
+    })
   });
 
   describe('createKeyPair', () => {
-    const accountName = 'accountname';
-    const parentPermission = 'active';
-    const options = { parentPermission };
+    let accountName = 'accountname';
+    let parentPermission = 'active';
+    let options = { parentPermission };
     let spyAccount;
     let spyTransaction;
     let spyInfo;
@@ -97,7 +97,7 @@ describe('account', () => {
     });
 
     describe('when generating a new permission', () => {
-      const permissionName = 'newpermission';
+      let permissionName = 'newpermission';
 
       it('returns a new key pair', async () => {
         const keypair = await orejs.createKeyPair(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, accountName, permissionName, options);
@@ -120,8 +120,8 @@ describe('account', () => {
                 },
                 parent: parentPermission,
                 permission: permissionName,
-              },
-            }),
+              }
+            })
           ],
         }, mockOptions());
         // expect(spyAccount).toHaveBeenCalledWith(expect.any(String));
@@ -131,8 +131,8 @@ describe('account', () => {
       });
 
       describe('when passing in links', () => {
-        const code = 'contract';
-        const type = 'action';
+        let code = 'contract';
+        let type = 'action';
 
         beforeEach(() => {
           options.links = [{ code, type }];
@@ -159,7 +159,7 @@ describe('account', () => {
                   },
                   parent: parentPermission,
                   permission: permissionName,
-                },
+                }
               }),
               mockAction({
                 account: 'eosio',
@@ -170,8 +170,8 @@ describe('account', () => {
                   code,
                   type,
                   requirement: permissionName,
-                },
-              }),
+                }
+              })
             ],
           }, mockOptions());
         });
@@ -179,7 +179,7 @@ describe('account', () => {
     });
 
     describe('when appending keys to an pre-existing permission', () => {
-      const permissionName = 'custom';
+      let permissionName = 'custom';
 
       beforeEach(() => {
         options.links = [];
@@ -189,28 +189,30 @@ describe('account', () => {
       it('returns the existing and new key pair', async () => {
         const keypair = await orejs.createKeyPair(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, accountName, permissionName, options);
         expect(spyTransaction).toHaveBeenNthCalledWith(1, {
-          actions: [{
-            account: 'eosio',
-            name: 'updateauth',
-            authorization: [{ actor: accountName, permission: parentPermission }],
-            data: {
-              account: accountName,
-              auth: {
-                accounts: [],
-                keys: [{
-                  key: expect.any(String),
-                  weight: 1,
-                }, {
-                  key: expect.any(String),
-                  weight: 1,
-                }],
-                threshold: 1,
-                waits: [],
-              },
-              parent: parentPermission,
-              permission: permissionName,
-            },
-          }],
+          actions: [
+            mockAction({
+              account: 'eosio',
+              name: 'updateauth',
+              authorization: { actor: accountName, permission: parentPermission },
+              data: {
+                account: accountName,
+                auth: {
+                  accounts: [],
+                  keys: [{
+                    key: expect.any(String),
+                    weight: 1,
+                  },{
+                    key: expect.any(String),
+                    weight: 1,
+                  }],
+                  threshold: 1,
+                  waits: [],
+                },
+                parent: parentPermission,
+                permission: permissionName,
+              }
+            })
+          ],
         }, mockOptions());
         // expect(spyAccount).toHaveBeenCalledWith(expect.any(String));
         expect(ecc.privateToPublic(orejs.decrypt(keypair.privateKeys.owner, WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT))).toEqual(keypair.publicKeys.owner);
@@ -218,17 +220,17 @@ describe('account', () => {
     });
 
     describe('when adding an pre-defined key pair', () => {
-      const permissionName = 'custom';
-      const keys = {
+      let permissionName = 'custom';
+      let keys = {
         privateKeys: {
           owner: '{"iv":"xr5XTgow76QCpEe8Tij7xw==","v":1,"iter":10000,"ks":128,"ts":64,"mode":"gcm","adata":"","cipher":"aes","ct":"2YAap55e6O8gwZ6m33UjEjxqw1GU+cZbVrYP7TDRFiF0axe1XJ2W+uvhgG5ArEga8GO8cnNf+6KaFaQ="}',
-          active: '{"iv":"whCS0NVLJv+5xFxm/udHaw==","v":1,"iter":10000,"ks":128,"ts":64,"mode":"gcm","adata":"","cipher":"aes","ct":"G7So6hZeuqp3eZT4aj3w/C5lhXIJ8Z+9dTUCQNAhSWMVB9S+k+IHoUGQKgAi1cz3vnQ3VH4DdJobec4="}',
+          active: '{"iv":"whCS0NVLJv+5xFxm/udHaw==","v":1,"iter":10000,"ks":128,"ts":64,"mode":"gcm","adata":"","cipher":"aes","ct":"G7So6hZeuqp3eZT4aj3w/C5lhXIJ8Z+9dTUCQNAhSWMVB9S+k+IHoUGQKgAi1cz3vnQ3VH4DdJobec4="}'
         },
         publicKeys: {
           owner: 'EOS8ekDXRqcWGYXHDZp246B8VF9DTwkuz13u5tpPnMdptE2SE9sVf',
-          active: 'EOS6iGJBT4PPuhm5zKiKUiFNi7eYqLFofZqMYDyZyKHfNt5fuRLF2',
-        },
-      };
+          active: 'EOS6iGJBT4PPuhm5zKiKUiFNi7eYqLFofZqMYDyZyKHfNt5fuRLF2'
+        }
+      }
 
       beforeEach(() => {
         options.keys = keys;
@@ -239,7 +241,7 @@ describe('account', () => {
         expect(ecc.privateToPublic(orejs.decrypt(keypair.privateKeys.owner, WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT))).toEqual(keypair.publicKeys.owner);
         expect(keypair.publicKeys.owner).toEqual(keys.publicKeys.owner);
       });
-    });
+    })
   });
 
   describe('createOreAccount', () => {
@@ -266,10 +268,7 @@ describe('account', () => {
         const account = await orejs.createOreAccount(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, ORE_OWNER_ACCOUNT_KEY, ORE_PAYER_ACCOUNT_NAME, options);
         expect(spyTransaction).toHaveBeenNthCalledWith(1, {
           actions: [
-            mockAction({ account: 'eosio',
-name: 'newaccount',
-authorization: { permission },
-data: {
+            mockAction({ account: 'eosio', name: 'newaccount', authorization: { permission }, data: {
               creator: ORE_PAYER_ACCOUNT_NAME,
               name: expect.any(String),
               newact: expect.any(String),
@@ -277,10 +276,7 @@ data: {
               active: expect.any(Object),
             } }),
             mockAction({ account: 'eosio', name: 'buyrambytes', authorization: { permission } }),
-            mockAction({ account: 'eosio',
-name: 'delegatebw',
-authorization: { permission },
-data: {
+            mockAction({ account: 'eosio', name: 'delegatebw', authorization: { permission }, data: {
               from: ORE_PAYER_ACCOUNT_NAME,
               receiver: expect.any(String),
               stake_net_quantity: '0.1000 SYS',
@@ -307,12 +303,12 @@ data: {
           keys: expect.objectContaining({
             privateKeys: expect.objectContaining({
               active: expect.stringMatching(/^\{.*\}$/),
-              owner: expect.stringMatching(/^\{.*\}$/),
+              owner: expect.stringMatching(/^\{.*\}$/)
             }),
             publicKeys: expect.objectContaining({
               active: expect.stringMatching(/^EOS\w*$/),
-              owner: expect.stringMatching(/^EOS\w*$/),
-            }),
+              owner: expect.stringMatching(/^EOS\w*$/)
+            })
           }),
           transaction,
         });
@@ -340,12 +336,12 @@ data: {
             keys: expect.objectContaining({
               privateKeys: expect.objectContaining({
                 active: expect.stringMatching(/^\{.*\}$/),
-                owner: expect.stringMatching(/^\{.*\}$/),
+                owner: expect.stringMatching(/^\{.*\}$/)
               }),
               publicKeys: expect.objectContaining({
                 active: expect.stringMatching(/^EOS\w*$/),
-                owner: expect.stringMatching(/^EOS\w*$/),
-              }),
+                owner: expect.stringMatching(/^EOS\w*$/)
+              })
             }),
             transaction,
           });
@@ -365,13 +361,13 @@ data: {
 
       describe('when pre-defining keys', () => {
         const key = 'EOS5vTStKDUDbLHu4hSi8iFrmaJET88HHcL5oVBYQ1wd2aeMHgHs2';
-        const options = { keys: { publicKeys: { owner: key } } };
+        const options = { keys: { publicKeys: { owner: key } } }
 
         it('returns an account with the specified key', async () => {
           const account = await orejs.createOreAccount(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, ORE_OWNER_ACCOUNT_KEY, ORE_PAYER_ACCOUNT_NAME, options);
           expect(account).toEqual(expect.objectContaining({
             keys: expect.objectContaining({
-              publicKeys: expect.objectContaining({ owner: key }),
+              publicKeys: expect.objectContaining({ owner: key })
             }),
           }));
         });
@@ -398,9 +394,7 @@ data: {
             actions: [
               mockAction({ account: 'eosio', name: 'newaccount' }),
               mockAction({ account: 'eosio', name: 'buyrambytes' }),
-              mockAction({ account: 'eosio',
-name: 'delegatebw',
-data: {
+              mockAction({ account: 'eosio', name: 'delegatebw', data: {
                 from: ORE_PAYER_ACCOUNT_NAME,
                 receiver: expect.any(String),
                 stake_net_quantity: '0.1000 EOS',
@@ -420,12 +414,12 @@ data: {
             keys: expect.objectContaining({
               privateKeys: expect.objectContaining({
                 active: expect.stringMatching(/^\{.*\}$/),
-                owner: expect.stringMatching(/^\{.*\}$/),
+                owner: expect.stringMatching(/^\{.*\}$/)
               }),
               publicKeys: expect.objectContaining({
                 active: expect.stringMatching(/^EOS\w*$/),
-                owner: expect.stringMatching(/^EOS\w*$/),
-              }),
+                owner: expect.stringMatching(/^EOS\w*$/)
+              })
             }),
             transaction,
           });
@@ -433,7 +427,7 @@ data: {
       });
 
       describe('when the chain fails to create a new account', async () => {
-        const options = { confirm: true };
+        let options = { confirm: true };
 
         beforeEach(() => {
           transaction = mockGetTransaction(orejs, false);
@@ -442,7 +436,7 @@ data: {
         it('returns a failure', async () => {
           try {
             const account = await orejs.createOreAccount(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, ORE_OWNER_ACCOUNT_KEY, ORE_PAYER_ACCOUNT_NAME, options);
-          } catch (error) {
+          } catch(error) {
             expect(error.message).toMatch(/^Await Transaction Failure: .*/);
           }
         });
@@ -451,9 +445,9 @@ data: {
 
     describe('when defining the accountName', () => {
       beforeEach(() => {
-        const transaction = mockGetTransaction(orejs);
-        const info = mockGetInfo(orejs);
-        const block = mockGetBlock(orejs, { block_num: info.head_block_num, transactions: [{ trx: { id: transaction.transaction_id } }] });
+        let transaction = mockGetTransaction(orejs);
+        let info = mockGetInfo(orejs);
+        let block = mockGetBlock(orejs, { block_num: info.head_block_num, transactions: [{ trx: { id: transaction.transaction_id } }] });
       });
 
       it('returns a new account with the expected accountName', async () => {
@@ -467,17 +461,18 @@ data: {
           keys: expect.objectContaining({
             privateKeys: expect.objectContaining({
               active: expect.stringMatching(/^\{.*\}$/),
-              owner: expect.stringMatching(/^\{.*\}$/),
+              owner: expect.stringMatching(/^\{.*\}$/)
             }),
             publicKeys: expect.objectContaining({
               active: expect.stringMatching(/^EOS\w*$/),
-              owner: expect.stringMatching(/^EOS\w*$/),
-            }),
+              owner: expect.stringMatching(/^EOS\w*$/)
+            })
           }),
           transaction,
         });
       });
     });
+
   });
 
   describe('createBridgeAccount', () => {
@@ -506,15 +501,12 @@ data: {
       const account = await orejs.createBridgeAccount(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, authorizingAccount, options);
       expect(spyTransaction).toHaveBeenNthCalledWith(1, {
         actions: [
-          mockAction({ account: 'createbridge',
-name: 'create',
-authorization: { permission },
-data: {
+          mockAction({ account: 'createbridge', name: 'create', authorization: { permission }, data: {
             memo: accountName,
             account: expect.stringMatching(/[a-z1-5]{12}/),
             ownerkey: expect.stringMatching(/^EOS\w*$/),
             activekey: expect.stringMatching(/^EOS\w*$/),
-            origin: dappName,
+            origin: dappName
           } }),
         ],
       }, mockOptions());
@@ -528,12 +520,12 @@ data: {
         keys: expect.objectContaining({
           privateKeys: expect.objectContaining({
             active: expect.stringMatching(/^\{.*\}$/),
-            owner: expect.stringMatching(/^\{.*\}$/),
+            owner: expect.stringMatching(/^\{.*\}$/)
           }),
           publicKeys: expect.objectContaining({
             active: expect.stringMatching(/^EOS\w*$/),
-            owner: expect.stringMatching(/^EOS\w*$/),
-          }),
+            owner: expect.stringMatching(/^EOS\w*$/)
+          })
         }),
         transaction,
       });
@@ -550,15 +542,12 @@ data: {
       const account = await orejs.createBridgeAccount(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, authorizingAccount, options);
       expect(spyTransaction).toHaveBeenNthCalledWith(1, {
         actions: [
-          mockAction({ account: contractName,
-name: 'create',
-authorization: { permission },
-data: {
+          mockAction({ account: contractName, name: 'create', authorization: { permission }, data: {
             memo: accountName,
             account: expect.stringMatching(/[a-z1-5]{12}/),
             ownerkey: expect.stringMatching(/^EOS\w*$/),
             activekey: expect.stringMatching(/^EOS\w*$/),
-            origin: dappName,
+            origin: dappName
           } }),
         ],
       }, mockOptions());
@@ -572,12 +561,12 @@ data: {
         keys: expect.objectContaining({
           privateKeys: expect.objectContaining({
             active: expect.stringMatching(/^\{.*\}$/),
-            owner: expect.stringMatching(/^\{.*\}$/),
+            owner: expect.stringMatching(/^\{.*\}$/)
           }),
           publicKeys: expect.objectContaining({
             active: expect.stringMatching(/^EOS\w*$/),
-            owner: expect.stringMatching(/^EOS\w*$/),
-          }),
+            owner: expect.stringMatching(/^EOS\w*$/)
+          })
         }),
         transaction,
       });
@@ -603,18 +592,18 @@ data: {
     it('returns a random string', async () => {
       const accountName = await orejs.generateAccountName();
       expect(accountMock).toHaveBeenCalled();
-      expect(accountName).toEqual(expect.stringMatching(/[a-z1-5]{12}/));
+      expect(accountName).toEqual(expect.stringMatching(/[a-z1-5]{12}/))
     });
 
     it('lets us prefix account names', async () => {
       const accountName = await orejs.generateAccountName('ore');
-      expect(accountName).toEqual(expect.stringMatching(/ore[a-z1-5]{9}/));
+      expect(accountName).toEqual(expect.stringMatching(/ore[a-z1-5]{9}/))
     });
 
     it('does not always have to check for pre-existing names', async () => {
       const accountName = await orejs.generateAccountName('ore', false);
       expect(accountMock).not.toHaveBeenCalled();
-      expect(accountName).toEqual(expect.stringMatching(/ore[a-z1-5]{9}/));
+      expect(accountName).toEqual(expect.stringMatching(/ore[a-z1-5]{9}/))
     });
   });
 
@@ -627,12 +616,12 @@ data: {
       expect(keys).toEqual(expect.objectContaining({
         privateKeys: expect.objectContaining({
           active: expect.stringMatching(/^\{.*\}$/),
-          owner: expect.stringMatching(/^\{.*\}$/),
+          owner: expect.stringMatching(/^\{.*\}$/)
         }),
         publicKeys: expect.objectContaining({
           active: expect.stringMatching(/^EOS\w*$/),
-          owner: expect.stringMatching(/^EOS\w*$/),
-        }),
+          owner: expect.stringMatching(/^EOS\w*$/)
+        })
       }));
     });
 
@@ -645,8 +634,8 @@ data: {
         expect(keys).toEqual(expect.objectContaining({
           publicKeys: expect.objectContaining({
             active: expect.stringMatching(/^EOS\w*$/),
-            owner: expect.stringMatching(publicKey),
-          }),
+            owner: expect.stringMatching(publicKey)
+          })
         }));
       });
     });
@@ -660,8 +649,8 @@ data: {
         expect(keys).toEqual(expect.objectContaining({
           privateKeys: expect.objectContaining({
             active: expect.stringMatching(/^\{.*\}$/),
-            owner: expect.stringMatching(/^\{.*\}$/),
-          }),
+            owner: expect.stringMatching(/^\{.*\}$/)
+          })
         }));
       });
     });
@@ -675,8 +664,8 @@ data: {
         expect(keys).toEqual(expect.objectContaining({
           privateKeys: expect.objectContaining({
             active: expect.stringMatching(/^\{.*\}$/),
-            owner: expect.stringContaining(privateKey),
-          }),
+            owner: expect.stringContaining(privateKey)
+          })
         }));
       });
     });
@@ -690,6 +679,7 @@ data: {
     });
 
     describe('when the name already exists', async () => {
+
       beforeEach(() => {
         mockGetAccountWithAlreadyExistingAccount(orejs);
       });
@@ -701,6 +691,7 @@ data: {
     });
 
     describe('when the name does not yet exist', async () => {
+
       beforeEach(() => {
         mockGetAccount(orejs);
       });
