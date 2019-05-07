@@ -229,6 +229,12 @@ async function createAccount(password, salt, ownerPublicKey, orePayerAccountName
 
 /* Public */
 
+async function checkIfAccountHasPermission(oreAccountName, permName) {
+  const perms = await getAccountPermissions.bind(this)(oreAccountName);
+  // check if the account already has a permission
+  return !!(perms.find(perm => perm.perm_name === permName));
+}
+
 async function addPermission(authAccountName, keys, permissionName, parentPermission, options = {}) {
   options = {
     authPermission: 'active',
@@ -236,8 +242,9 @@ async function addPermission(authAccountName, keys, permissionName, parentPermis
   }
   const { authPermission, links = [], broadcast = true } = options;
   const perm = await appendPermission.bind(this)(authAccountName, keys, permissionName, parentPermission);
-  const { perm_name:permission, parent, required_auth:auth } = perm;
-  const actions = [{
+  const { perm_name: permission, parent, required_auth: auth } = perm;
+  // add account permission
+  let actions = [{
     account: 'eosio',
     name: 'updateauth',
     authorization: [{
@@ -252,23 +259,19 @@ async function addPermission(authAccountName, keys, permissionName, parentPermis
     },
   }];
 
-  links.forEach(link => {
-    const { code, type } = link;
-    actions.push({
-      account: 'eosio',
-      name: 'linkauth',
-      authorization: [{
-        actor: authAccountName,
-        permission: authPermission,
-      }],
-      data: {
-        account: authAccountName,
-        code,
-        type,
-        requirement: permission,
-      }
-    });
-  });
+  // add action permission for every { contract, action } pair passed in
+  const linkActions = await getLinkActions(links, permission, authAccountName, authPermission);
+  actions = {
+    actions,
+    ...linkActions
+  };
+
+  return this.transact(actions, broadcast);
+}
+
+// links actions for a given account to an app permission
+async function linkActionsToPermission(links, permission, authAccountName, authPermission) {
+  const actions = await getLinkActions(links, permission, authAccountName, authPermission);
 
   return this.transact(actions, broadcast);
 }
@@ -396,6 +399,7 @@ async function getNameAlreadyExists(accountName) {
 
 module.exports = {
   addPermission,
+  checkIfAccountHasPermission,
   createKeyPair,
   createBridgeAccount,
   createOreAccount,
@@ -403,5 +407,6 @@ module.exports = {
   generateAccountName,
   generateAccountNameString,
   generateEncryptedKeys,
-  getNameAlreadyExists
+  getNameAlreadyExists,
+  linkActionsToPermission,
 };
