@@ -227,31 +227,10 @@ async function createAccount(password, salt, ownerPublicKey, orePayerAccountName
   };
 }
 
-/* Public */
-
-async function addPermission(authAccountName, keys, permissionName, parentPermission, options = {}) {
-  options = {
-    authPermission: 'active',
-    ...options
-  }
-  const { authPermission, links = [], broadcast = true } = options;
-  const perm = await appendPermission.bind(this)(authAccountName, keys, permissionName, parentPermission);
-  const { perm_name:permission, parent, required_auth:auth } = perm;
-  const actions = [{
-    account: 'eosio',
-    name: 'updateauth',
-    authorization: [{
-      actor: authAccountName,
-      permission: authPermission,
-    }],
-    data: {
-      account: authAccountName,
-      permission,
-      parent,
-      auth,
-    },
-  }];
-
+// returns a list of actions to link to an app permission 
+// every { contract, action } input pair is linked to the app permission
+async function composeLinkActions(links, permission, authAccountName, authPermission){
+  const actions = [];
   links.forEach(link => {
     const { code, type } = link;
     actions.push({
@@ -269,6 +248,54 @@ async function addPermission(authAccountName, keys, permissionName, parentPermis
       }
     });
   });
+  return actions;
+}
+
+/* Public */
+
+// gets the account details from the chain network and checks if the account has a specific permission
+async function checkIfAccountHasPermission(oreAccountName, permName) {
+  const perms = await getAccountPermissions.bind(this)(oreAccountName);
+  return !!(perms.find(perm => perm.perm_name === permName));
+}
+
+async function addPermission(authAccountName, keys, permissionName, parentPermission, options = {}) {
+  options = {
+    authPermission: 'active',
+    ...options
+  }
+  const { authPermission, links = [], broadcast = true } = options;
+  const perm = await appendPermission.bind(this)(authAccountName, keys, permissionName, parentPermission);
+  const { perm_name: permission, parent, required_auth: auth } = perm;
+  // add account permission
+  let actions = [{
+    account: 'eosio',
+    name: 'updateauth',
+    authorization: [{
+      actor: authAccountName,
+      permission: authPermission,
+    }],
+    data: {
+      account: authAccountName,
+      permission,
+      parent,
+      auth,
+    },
+  }];
+
+  // add action permission for every { contract, action } pair passed in
+  const linkActions = await composeLinkActions(links, permission, authAccountName, authPermission);
+  actions = {
+    actions,
+    ...linkActions
+  };
+
+  return this.transact(actions, broadcast);
+}
+
+// links actions for a given account to an app permission
+async function linkActionsToPermission(links, permission, authAccountName, authPermission) {
+  const actions = await composeLinkActions(links, permission, authAccountName, authPermission);
 
   return this.transact(actions, broadcast);
 }
@@ -396,6 +423,7 @@ async function getNameAlreadyExists(accountName) {
 
 module.exports = {
   addPermission,
+  checkIfAccountHasPermission,
   createKeyPair,
   createBridgeAccount,
   createOreAccount,
@@ -403,5 +431,6 @@ module.exports = {
   generateAccountName,
   generateAccountNameString,
   generateEncryptedKeys,
-  getNameAlreadyExists
+  getNameAlreadyExists,
+  linkActionsToPermission,
 };
