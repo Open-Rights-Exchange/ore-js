@@ -253,7 +253,7 @@ async function composeLinkActions(links, permission, authAccountName, authPermis
 
 /* Public */
 
-// gets the account details from the blockchain netwotk and checks if the account has a specific permission
+// gets the account details from the chain network and checks if the account has a specific permission
 async function checkIfAccountHasPermission(oreAccountName, permName) {
   const perms = await getAccountPermissions.bind(this)(oreAccountName);
   return !!(perms.find(perm => perm.perm_name === permName));
