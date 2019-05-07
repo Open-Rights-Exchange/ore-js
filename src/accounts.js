@@ -285,16 +285,13 @@ async function addPermission(authAccountName, keys, permissionName, parentPermis
 
   // add action permission for every { contract, action } pair passed in
   const linkActions = await composeLinkActions(links, permission, authAccountName, authPermission);
-  actions = {
-    actions,
-    ...linkActions
-  };
+  const allActions = actions.concat(linkActions);
 
-  return this.transact(actions, broadcast);
+  return this.transact(allActions, broadcast);
 }
 
 // links actions for a given account to an app permission
-async function linkActionsToPermission(links, permission, authAccountName, authPermission) {
+async function linkActionsToPermission(links, permission, authAccountName, authPermission, broadcast = true) {
   const actions = await composeLinkActions(links, permission, authAccountName, authPermission);
 
   return this.transact(actions, broadcast);
