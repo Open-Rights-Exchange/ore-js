@@ -227,6 +227,30 @@ async function createAccount(password, salt, ownerPublicKey, orePayerAccountName
   };
 }
 
+// returns a list of actions to link to an app permission 
+// every { contract, action } input pair is linked to the app permission
+async function getLinkActions(links, permission, authAccountName, authPermission){
+  const actions = [];
+  links.forEach(link => {
+    const { code, type } = link;
+    actions.push({
+      account: 'eosio',
+      name: 'linkauth',
+      authorization: [{
+        actor: authAccountName,
+        permission: authPermission,
+      }],
+      data: {
+        account: authAccountName,
+        code,
+        type,
+        requirement: permission,
+      }
+    });
+  });
+  return actions;
+}
+
 /* Public */
 
 async function checkIfAccountHasPermission(oreAccountName, permName) {
