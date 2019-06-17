@@ -44,5 +44,5 @@ module.exports = {
   getCpuBalance,
   getApprovedCpuBalance,
   transferCpu,
-  transferCpufrom,
+  transferCpufrom
 };
