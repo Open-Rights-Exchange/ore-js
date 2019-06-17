@@ -17,7 +17,11 @@
         "code": 600
       }
     ],
-    "comma-dangle": ["error", "never"]
+    "comma-dangle": ["error", "never"],
+    "no-use-before-define": 0,
+    "no-param-reassign": 0,
+    "prefer-destructuring": 0,
+    "camelcase": 0
   },
   "globals": {
     "Web3": false

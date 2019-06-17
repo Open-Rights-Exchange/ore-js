@@ -7,7 +7,7 @@ function isActive(instrument) {
   const startTime = instrument.start_time;
   const endTime = instrument.end_time;
   const currentTime = Math.floor(Date.now() / 1000);
-  return (currentTime > startTime && (currentTime < endTime || endTime == 0));
+  return (currentTime > startTime && (currentTime < endTime || endTime === 0));
 }
 
 function hasCategory(instrument, category) {

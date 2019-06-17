@@ -7,6 +7,7 @@ function hashParams(params) {
   const hashedParams = {};
   Object.keys(params).map((key) => {
     hashedParams[key] = hash.sha256().update(params[key]).digest('hex');
+    return null; // get rid of lint error no return
   });
   return hashedParams;
 }
