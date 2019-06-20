@@ -1,5 +1,7 @@
 const fetch = require('node-fetch');
 const eosjs = require('eosjs');
+// JsSignatureProvider is used in Frontend only, not safe for private keys and signing
+const { JsSignatureProvider } = require('eosjs/dist/eosjs-jssig');
 const { TextDecoder, TextEncoder } = require('text-encoding');
 const accounts = require('./accounts');
 const cpu = require('./tokens/cpu');
@@ -35,7 +37,7 @@ class Orejs {
     this.config = config;
     this.chainName = config.chainName || 'ore'; // ore || eos
     this.rpc = new eosjs.JsonRpc(config.httpEndpoint, { fetch: config.fetch || fetch });
-    this.signatureProvider = config.signatureProvider || new eosjs.JsSignatureProvider(config.privateKeys || []);
+    this.signatureProvider = config.signatureProvider || new JsSignatureProvider(config.privateKeys || []);
     this.eos = new eosjs.Api({
       chainId: config.chainId,
       rpc: this.rpc,
