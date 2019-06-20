@@ -1,4 +1,4 @@
-const { Keygen } = require('eosjs-keygen');
+import { Keygen } from 'eosjs-keygen';
 
 const ACCOUNT_NAME_MAX_LENGTH = 12;
 const BASE = 31; // Base 31 allows us to leave out '.', as it's used for account scope
@@ -410,7 +410,7 @@ async function getNameAlreadyExists(accountName) {
   }
 }
 
-module.exports = {
+export default {
   addPermission,
   checkIfAccountHasPermission,
   createKeyPair,

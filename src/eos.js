@@ -107,7 +107,7 @@ function transact(actions, broadcast = true, blocksBehind = 3, expireSeconds = 3
   });
 }
 
-module.exports = {
+export default {
   awaitTransaction,
   getAllTableRows,
   hasTransaction,

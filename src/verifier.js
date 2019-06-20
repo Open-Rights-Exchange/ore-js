@@ -1,6 +1,6 @@
-const fetch = require('node-fetch');
-const hash = require('hash.js');
-const ecc = require('eosjs-ecc');
+import fetch from 'node-fetch';
+import hash from 'hash.js';
+import ecc from 'eosjs-ecc';
 
 // hash the parameter values to be sent to the verifier
 function hashParams(params) {
@@ -63,7 +63,7 @@ async function getAccessTokenFromVerifier(verifierEndpoint, instrument, right, h
   return { endpoint, oreAccessToken, method, additionalParameters, accessTokenTimeout };
 }
 
-module.exports = {
+export default {
   getAccessTokenFromVerifier,
   hashParams
 };

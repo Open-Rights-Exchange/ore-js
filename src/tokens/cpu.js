@@ -38,7 +38,7 @@ function transferCpufrom(approvedAccountName, fromAccountName, toAccountName, cp
   return this.transferFrom(approvedAccountName, fromAccountName, toAccountName, amount, CONTRACT_NAME, memo);
 }
 
-module.exports = {
+export default {
   issueCpu,
   approveCpu,
   getCpuBalance,

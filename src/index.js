@@ -1,22 +1,19 @@
 // JsSignatureProvider is used in Frontend only, not safe for private keys and signing
 import { JsSignatureProvider } from 'eosjs/dist/eosjs-jssig';
-import { accounts } from './accounts';
-
-const fetch = require('node-fetch');
-const eosjs = require('eosjs');
-
-const { TextDecoder, TextEncoder } = require('text-encoding');
-
-const cpu = require('./tokens/cpu');
-const creatbridge = require('./createbridge');
-const crypto = require('./modules/crypto');
-const eos = require('./eos');
-const instrument = require('./instrument');
-const ore = require('./tokens/ore');
-const oreStandardToken = require('./orestandardtoken');
-const rightsRegistry = require('./rightsregistry');
-const usageLog = require('./usagelog');
-const verifier = require('./verifier');
+import fetch from 'node-fetch';
+import eosjs from 'eosjs';
+import { TextDecoder, TextEncoder } from 'text-encoding';
+import accounts from './accounts';
+import creatbridge from './createbridge';
+import crypto from './modules/crypto';
+import eos from './eos';
+import instrument from './instrument';
+import ore from './tokens/ore';
+import oreStandardToken from './orestandardtoken';
+import rightsRegistry from './rightsregistry';
+import usageLog from './usagelog';
+import verifier from './verifier';
+import cpu from './tokens/cpu';
 
 class Orejs {
   constructor(config = {}) {
@@ -51,8 +48,10 @@ class Orejs {
   }
 }
 
-module.exports = {
+const generateAccountNameString = accounts.generateAccountNameString;
+
+export default {
   crypto,
-  generateAccountNameString: accounts.generateAccountNameString,
+  generateAccountNameString,
   Orejs
 };

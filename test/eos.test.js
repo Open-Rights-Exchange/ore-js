@@ -1,7 +1,7 @@
 /* global ORE_TESTA_ACCOUNT_NAME:true */
 /* global ORE_NETWORK_URI:true */
-const { mockBlock, mockInfo } = require('./helpers/fetch');
-const { constructOrejs, mockGetAccount, mockGetInfo, mockGetBlock, mockGetBlockError, mockGetTransaction } = require('./helpers/orejs');
+import { mockBlock, mockInfo } from './helpers/fetch';
+import { constructOrejs, mockGetAccount, mockGetInfo, mockGetBlock, mockGetBlockError, mockGetTransaction } from './helpers/orejs';
 
 describe('eos', () => {
   let orejs;
@@ -16,7 +16,7 @@ describe('eos', () => {
     let block;
     let spyInfo;
     let spyBlock;
-    
+
     beforeAll(() => {
       transaction = mockGetTransaction(orejs);
       info = mockGetInfo(orejs);
@@ -29,7 +29,7 @@ describe('eos', () => {
       await orejs.awaitTransaction(async () => {
         await setTimeout(() => true, 10);
         return transaction;
-      }, {blocksToCheck: 10, checkInterval: 10});
+      }, { blocksToCheck: 10, checkInterval: 10 });
       expect(spyInfo).toHaveBeenCalledWith({});
       expect(spyBlock).toHaveBeenCalledWith(block.block_num + 1);
     });
@@ -46,7 +46,7 @@ describe('eos', () => {
         const result = orejs.awaitTransaction(async () => {
           await setTimeout(() => true, 10);
           return transaction;
-        }, {blocksToCheck: 2, checkInterval: 10});
+        }, { blocksToCheck: 2, checkInterval: 10 });
         await expect(result).rejects.toThrow(/Await Transaction Timeout/);
       });
     });
@@ -78,15 +78,15 @@ describe('eos', () => {
       transactionId = 'asdf';
       transaction = {
         trx: {
-          id: transactionId,
-        },
+          id: transactionId
+        }
       };
     });
 
     describe('when the block includes the transaction', () => {
       beforeAll(() => {
         block = {
-          transactions: [transaction],
+          transactions: [transaction]
         };
       });
 
@@ -99,7 +99,7 @@ describe('eos', () => {
     describe('when the block does not include the transaction', () => {
       beforeAll(() => {
         block = {
-          transactions: [],
+          transactions: []
         };
       });
 

@@ -2,14 +2,14 @@
 /* global ORE_OWNER_ACCOUNT_KEY:true */
 /* global ORE_PAYER_ACCOUNT_NAME:true */
 
-const { Orejs } = require('../../src');
-const { mockAccount, mockAbi, mockBlock, mockCode, mockError, mockInfo, mockTransaction } = require('./fetch');
+import { Orejs } from '../../src';
+import { mockAccount, mockAbi, mockBlock, mockCode, mockError, mockInfo, mockTransaction } from './fetch';
 
 function constructOrejs(config) {
   const orejs = new Orejs({
     httpEndpoint: ORE_NETWORK_URI,
     keyProvider: [ORE_OWNER_ACCOUNT_KEY],
-    ...config,
+    ...config
   });
 
   return orejs;
@@ -111,7 +111,7 @@ function mockGetTransaction(_orejs = undefined, success = true, _transaction = {
 
   const getTransaction = mockTransaction(_transaction);
 
-  if(success) {
+  if (success) {
     mockupTransaction.mockImplementationOnce(() => Promise.resolve(getTransaction));
   } else {
     mockupTransaction.mockImplementationOnce(() => Promise.reject(getTransaction));
@@ -122,7 +122,7 @@ function mockGetTransaction(_orejs = undefined, success = true, _transaction = {
   return getTransaction;
 }
 
-module.exports = {
+export default {
   constructOrejs,
   mockGetAbi,
   mockGetAccount,
@@ -131,5 +131,5 @@ module.exports = {
   mockGetBlockError,
   mockGetCurrency,
   mockGetInfo,
-  mockGetTransaction,
+  mockGetTransaction
 };

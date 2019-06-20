@@ -1,8 +1,8 @@
 /* global ORE_TESTA_ACCOUNT_NAME:true */
 /* global ORE_NETWORK_URI:true */
 
-const { expectFetch, mock, mockInstruments } = require('./helpers/fetch');
-const { constructOrejs } = require('./helpers/orejs');
+import { expectFetch, mock, mockInstruments } from './helpers/fetch';
+import { constructOrejs } from './helpers/orejs';
 
 describe('usagelog', () => {
   let orejs;
@@ -25,7 +25,7 @@ describe('usagelog', () => {
       fetch.mockResponses(
         mockInstruments([
           { owner: ORE_TESTA_ACCOUNT_NAME, instrument: { rights: [{ right_name: rightName }] } },
-          { owner: ORE_TESTA_ACCOUNT_NAME, instrument: { rights: [{ right_name: rightName }] } },
+          { owner: ORE_TESTA_ACCOUNT_NAME, instrument: { rights: [{ right_name: rightName }] } }
         ]),
         mock({ rows: [{ right_name: rightName, total_cpu: `${totalCpu}.0000 CPU`, total_count: totalCount }] }),
         mock({ rows: [{ right_name: rightName, total_cpu: `${totalCpu}.0000 CPU`, total_count: totalCount }] }),

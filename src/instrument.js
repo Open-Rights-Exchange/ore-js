@@ -151,7 +151,7 @@ function sortInstruments(instruments, rightName, sortOrder = 'cheapestThenMostRe
   return sortedInstruments[sortedInstruments.length - 1];
 }
 
-module.exports = {
+export default {
   getRight,
   getAllInstruments,
   findInstruments,

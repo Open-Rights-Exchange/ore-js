@@ -2,9 +2,9 @@
 /* global ORE_OWNER_ACCOUNT_NAME:true */
 /* global ORE_TESTA_ACCOUNT_NAME:true */
 /* global ORE_TESTB_ACCOUNT_NAME:true */
-const { expectFetch, mock, mockInfo } = require('../helpers/fetch');
-const { mockAction, mockOptions } = require('../helpers/eos');
-const { constructOrejs, mockGetBlock, mockGetInfo, mockGetTransaction } = require('../helpers/orejs');
+import { expectFetch, mock, mockInfo } from '../helpers/fetch';
+import { mockAction, mockOptions } from '../helpers/eos';
+import { constructOrejs, mockGetBlock, mockGetInfo, mockGetTransaction } from '../helpers/orejs';
 
 describe('cpu', () => {
   let orejs;
@@ -82,8 +82,8 @@ describe('cpu', () => {
         fetch.mockResponses(mock([`${cpuBalance}.0000 CPU`]), mock({
           rows: [{
             to: ORE_TESTA_ACCOUNT_NAME,
-            quantity: '10.0000 CPU',
-          }],
+            quantity: '10.0000 CPU'
+          }]
         }));
         orejs = constructOrejs({ fetch });
         transaction = mockGetTransaction(orejs);
@@ -103,8 +103,8 @@ describe('cpu', () => {
         fetch.mockResponses(mock({
           rows: [{
             to: ORE_TESTB_ACCOUNT_NAME,
-            quantity: '0.0000 CPU',
-          }],
+            quantity: '0.0000 CPU'
+          }]
         }));
         orejs = constructOrejs({ fetch });
       });

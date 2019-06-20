@@ -1,4 +1,4 @@
-const sjcl = require('sjcl');
+import sjcl from 'sjcl';
 
 // PRIVATE
 
@@ -38,7 +38,7 @@ function encrypt(unencrypted, password, salt) {
   return encryptWithKey(unencrypted, deriveKey(password, salt));
 }
 
-module.exports = {
+export default {
   decrypt,
   decryptWithKey,
   deriveKey,

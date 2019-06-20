@@ -2,7 +2,7 @@ function mockAuthorization(_authorization = {}) {
   return {
     actor: expect.any(String),
     permission: expect.any(String),
-    ..._authorization,
+    ..._authorization
   };
 }
 
@@ -15,7 +15,7 @@ function mockAction(_action = {}) {
     name: expect.any(String),
     authorization: [mockAuthorization(authorization)],
     data: expect.any(Object),
-    ..._action,
+    ..._action
   };
 }
 
@@ -24,12 +24,12 @@ function mockOptions(_options = {}) {
     blocksBehind: 3,
     broadcast: true,
     expireSeconds: 30,
-    ..._options,
+    ..._options
   };
 }
 
-module.exports = {
+export default {
   mockAction,
   mockAuthorization,
-  mockOptions,
+  mockOptions
 };

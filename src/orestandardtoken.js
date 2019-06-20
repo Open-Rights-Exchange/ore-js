@@ -159,7 +159,7 @@ function transferFrom(approvedAccountName, fromAccountName, toAccountName, token
   }], broadcast);
 }
 
-module.exports = {
+export default {
   approveTransfer,
   createToken,
   getAmount,

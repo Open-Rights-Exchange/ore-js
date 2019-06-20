@@ -20,6 +20,6 @@ function setRightsInRegistry(oreAccountName, rightData, broadcast = true) {
   }], broadcast);
 }
 
-module.exports = {
+export default {
   setRightsInRegistry
 };

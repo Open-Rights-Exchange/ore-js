@@ -164,7 +164,7 @@ function reclaim(authorizingAccount, appName, symbol, options) {
   return this.transact(actions, broadcast);
 }
 
-module.exports = {
+export default {
   init,
   createNewAccount,
   define,

@@ -18,7 +18,7 @@ function transferOre(fromAccountName, toAccountName, oreAmount, memo = '') {
   return this.transferToken(fromAccountName, toAccountName, amount, CONTRACT_NAME, memo);
 }
 
-module.exports = {
+export default {
   issueOre,
   getOreBalance,
   transferOre

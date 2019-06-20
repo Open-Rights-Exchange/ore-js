@@ -96,7 +96,7 @@ async function updateUsageLog(verifierEndpoint, instrumentId, rightName, oreAcce
 }
 
 
-module.exports = {
+export default {
   getCallStats,
   getRightStats,
   getInstrumentsByRight,
