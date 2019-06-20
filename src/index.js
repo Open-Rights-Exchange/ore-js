@@ -1,9 +1,12 @@
+// JsSignatureProvider is used in Frontend only, not safe for private keys and signing
+import { JsSignatureProvider } from 'eosjs/dist/eosjs-jssig';
+import { accounts } from './accounts';
+
 const fetch = require('node-fetch');
 const eosjs = require('eosjs');
-// JsSignatureProvider is used in Frontend only, not safe for private keys and signing
-const { JsSignatureProvider } = require('eosjs/dist/eosjs-jssig');
+
 const { TextDecoder, TextEncoder } = require('text-encoding');
-const accounts = require('./accounts');
+
 const cpu = require('./tokens/cpu');
 const creatbridge = require('./createbridge');
 const crypto = require('./modules/crypto');
