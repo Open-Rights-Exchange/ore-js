@@ -53,5 +53,6 @@ const generateAccountNameString = accounts.generateAccountNameString;
 export default {
   crypto,
   generateAccountNameString,
-  Orejs
+  Orejs,
+  JsSignatureProvider
 };
