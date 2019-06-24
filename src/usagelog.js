@@ -25,12 +25,12 @@ async function getCallStats(instrumentId, rightName) {
     json: true,
     scope: instrumentId,
     table: LOG_COUNT_TABLE_NAME,
-    limit: -1,
+    limit: -1
   });
 
   const rightProperties = {
     totalCalls: 0,
-    totalCpuUsage: 0,
+    totalCpuUsage: 0
   };
 
   const rightObject = await result.rows.find(right => right.right_name === rightName);
@@ -55,7 +55,7 @@ async function getRightStats(rightName, owner) {
       code: INSTR_CONTRACT_NAME,
       scope: INSTR_CONTRACT_NAME,
       table: INSTR_TABLE_NAME,
-      limit: -1,
+      limit: -1
     });
   }
 
@@ -71,7 +71,7 @@ async function getRightStats(rightName, owner) {
 
   return {
     totalCpuUsage: value.reduce((a, b) => a + parseFloat(b.totalCpuUsage), 0),
-    totalCalls: value.reduce((a, b) => a + parseFloat(b.totalCalls), 0),
+    totalCalls: value.reduce((a, b) => a + parseFloat(b.totalCalls), 0)
   };
 }
 
@@ -92,7 +92,7 @@ async function updateUsageLog(verifierEndpoint, instrumentId, rightName, oreAcce
       'Content-Type': 'application/json'
     }
   };
-  await fetch(verifierEndpoint + "/update-usage", options);
+  await fetch(`${verifierEndpoint}/update-usage`, options);
 }
 
 

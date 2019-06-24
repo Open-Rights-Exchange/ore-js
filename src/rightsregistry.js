@@ -9,17 +9,17 @@ function setRightsInRegistry(oreAccountName, rightData, broadcast = true) {
     name: 'upsertright',
     authorization: [{
       actor: oreAccountName,
-      permission: 'active',
+      permission: 'active'
     }],
     data: {
       issuer: oreAccountName,
       right_name,
       urls,
-      issuer_whitelist,
-    },
+      issuer_whitelist
+    }
   }], broadcast);
 }
 
 module.exports = {
-  setRightsInRegistry,
+  setRightsInRegistry
 };

@@ -49,5 +49,5 @@ class Orejs {
 module.exports = {
   crypto,
   generateAccountNameString: accounts.generateAccountNameString,
-  Orejs,
+  Orejs
 };

@@ -21,5 +21,5 @@ function transferOre(fromAccountName, toAccountName, oreAmount, memo = '') {
 module.exports = {
   issueOre,
   getOreBalance,
-  transferOre,
+  transferOre
 };

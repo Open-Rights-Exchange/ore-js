@@ -42,5 +42,5 @@ module.exports = {
   decrypt,
   decryptWithKey,
   deriveKey,
-  encrypt,
+  encrypt
 };
