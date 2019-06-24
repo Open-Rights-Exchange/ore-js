@@ -27,12 +27,12 @@ function createToken(toAccountName, ownerAccountName, tokenAmount, contractName,
     name: 'create',
     authorization: [{
       actor: ownerAccountName,
-      permission,
+      permission
     }],
     data: {
       issuer: toAccountName,
-      maximum_supply: tokenAmount,
-    },
+      maximum_supply: tokenAmount
+    }
   }], broadcast);
 }
 
@@ -42,13 +42,13 @@ function issueToken(toAccountName, tokenAmount, ownerAccountName, contractName, 
     name: 'issue',
     authorization: [{
       actor: ownerAccountName,
-      permission,
+      permission
     }],
     data: {
       to: toAccountName,
       quantity: tokenAmount,
-      memo,
-    },
+      memo
+    }
   }], broadcast);
 }
 
@@ -60,14 +60,14 @@ function approveTransfer(fromAccountName, toAccountName, tokenAmount, contractNa
     name: 'approve',
     authorization: [{
       actor: fromAccountName,
-      permission,
+      permission
     }],
     data: {
       from: fromAccountName,
       to: toAccountName,
       quantity: tokenAmount,
-      memo,
-    },
+      memo
+    }
   }], broadcast);
 }
 
@@ -79,7 +79,7 @@ async function getApprovedAccount(accountName, contractName) {
     json: true,
     scope: accountName,
     table: ALLOWANCE_TABLE,
-    limit: -1,
+    limit: -1
   });
   return approvedAccounts.rows;
 }
@@ -112,12 +112,12 @@ function retireToken(ownerAccountName, tokenAmount, contractName, memo = '', per
     name: 'retire',
     authorization: [{
       actor: ownerAccountName,
-      permission,
+      permission
     }],
     data: {
       quantity: tokenAmount,
-      memo,
-    },
+      memo
+    }
   }], broadcast);
 }
 
@@ -128,14 +128,14 @@ function transferToken(fromAccountName, toAccountName, tokenAmount, contractName
     name: 'transfer',
     authorization: [{
       actor: fromAccountName,
-      permission,
+      permission
     }],
     data: {
       from: fromAccountName,
       to: toAccountName,
       quantity: tokenAmount,
-      memo,
-    },
+      memo
+    }
   }], broadcast);
 }
 
@@ -147,15 +147,15 @@ function transferFrom(approvedAccountName, fromAccountName, toAccountName, token
     name: 'transferFrom',
     authorization: [{
       actor: approvedAccountName,
-      permission,
+      permission
     }],
     data: {
       sender: approvedAccountName,
       from: fromAccountName,
       to: toAccountName,
       quantity: tokenAmount,
-      memo,
-    },
+      memo
+    }
   }], broadcast);
 }
 
@@ -169,5 +169,5 @@ module.exports = {
   issueToken,
   retireToken,
   transferToken,
-  transferFrom,
+  transferFrom
 };
