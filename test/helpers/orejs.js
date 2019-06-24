@@ -9,7 +9,7 @@ function constructOrejs(config) {
   const orejs = new Orejs({
     httpEndpoint: ORE_NETWORK_URI,
     keyProvider: [ORE_OWNER_ACCOUNT_KEY],
-    ...config,
+    ...config
   });
 
   return orejs;
@@ -111,7 +111,7 @@ function mockGetTransaction(_orejs = undefined, success = true, _transaction = {
 
   const getTransaction = mockTransaction(_transaction);
 
-  if(success) {
+  if (success) {
     mockupTransaction.mockImplementationOnce(() => Promise.resolve(getTransaction));
   } else {
     mockupTransaction.mockImplementationOnce(() => Promise.reject(getTransaction));
@@ -131,5 +131,5 @@ module.exports = {
   mockGetBlockError,
   mockGetCurrency,
   mockGetInfo,
-  mockGetTransaction,
+  mockGetTransaction
 };

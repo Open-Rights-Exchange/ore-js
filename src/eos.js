@@ -34,7 +34,7 @@ function awaitTransaction(func, options = {}) {
     const preCommitInfo = await getInfo.bind(this)();
     const preCommitHeadBlockNum = preCommitInfo.head_block_num;
     // make the transaction...
-    //const transaction = await func();
+    // const transaction = await func();
     let transaction;
     try {
       transaction = await func();
@@ -79,7 +79,7 @@ async function getAllTableRows(params, key_field = 'id', json = true) {
     json,
     lower_bound: params.lower_bound || lowerBound,
     scope: params.scope || params.code,
-    limit: params.limit || limit,
+    limit: params.limit || limit
   };
   results = await this.eos.rpc.get_table_rows(parameters);
   return results.rows;
@@ -103,7 +103,7 @@ function transact(actions, broadcast = true, blocksBehind = 3, expireSeconds = 3
   }, {
     blocksBehind,
     broadcast,
-    expireSeconds,
+    expireSeconds
   });
 }
 
@@ -112,5 +112,5 @@ module.exports = {
   getAllTableRows,
   hasTransaction,
   checkPubKeytoAccount,
-  transact,
+  transact
 };

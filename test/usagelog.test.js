@@ -25,7 +25,7 @@ describe('usagelog', () => {
       fetch.mockResponses(
         mockInstruments([
           { owner: ORE_TESTA_ACCOUNT_NAME, instrument: { rights: [{ right_name: rightName }] } },
-          { owner: ORE_TESTA_ACCOUNT_NAME, instrument: { rights: [{ right_name: rightName }] } },
+          { owner: ORE_TESTA_ACCOUNT_NAME, instrument: { rights: [{ right_name: rightName }] } }
         ]),
         mock({ rows: [{ right_name: rightName, total_cpu: `${totalCpu}.0000 CPU`, total_count: totalCount }] }),
         mock({ rows: [{ right_name: rightName, total_cpu: `${totalCpu}.0000 CPU`, total_count: totalCount }] }),
