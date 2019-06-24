@@ -50,7 +50,7 @@ class Orejs {
 
 const generateAccountNameString = accounts.generateAccountNameString;
 
-export default {
+export {
   crypto,
   generateAccountNameString,
   Orejs,
