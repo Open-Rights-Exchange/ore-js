@@ -4,7 +4,7 @@ import fetch from 'node-fetch';
 import eosjs from 'eosjs';
 import { TextDecoder, TextEncoder } from 'text-encoding';
 import accounts from './accounts';
-import creatbridge from './createbridge';
+import createbridge from './createbridge';
 import crypto from './modules/crypto';
 import eos from './eos';
 import instrument from './instrument';
@@ -22,7 +22,7 @@ class Orejs {
     /* Mixins */
     Object.assign(this, accounts);
     Object.assign(this, cpu);
-    Object.assign(this, creatbridge);
+    Object.assign(this, createbridge);
     Object.assign(this, crypto);
     Object.assign(this, eos);
     Object.assign(this, instrument);
