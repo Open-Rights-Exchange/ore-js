@@ -1,5 +1,4 @@
 import { Api, JsonRpc } from 'eosjs';
-// JsSignatureProvider is used in Frontend only, not safe for private keys and signing
 import { JsSignatureProvider } from 'eosjs/dist/eosjs-jssig';
 import fetch from 'node-fetch';
 import { TextDecoder, TextEncoder } from 'text-encoding';
