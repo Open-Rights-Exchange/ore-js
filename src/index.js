@@ -1,7 +1,7 @@
+import { Api, JsonRpc } from 'eosjs';
 // JsSignatureProvider is used in Frontend only, not safe for private keys and signing
 import { JsSignatureProvider } from 'eosjs/dist/eosjs-jssig';
 import fetch from 'node-fetch';
-import eosjs from 'eosjs';
 import { TextDecoder, TextEncoder } from 'text-encoding';
 import accounts from './accounts';
 import createbridge from './createbridge';
@@ -36,9 +36,9 @@ class Orejs {
   constructEos(config) {
     this.config = config;
     this.chainName = config.chainName || 'ore'; // ore || eos
-    this.rpc = new eosjs.JsonRpc(config.httpEndpoint, { fetch: config.fetch || fetch });
+    this.rpc = new JsonRpc(config.httpEndpoint, { fetch: config.fetch || fetch });
     this.signatureProvider = config.signatureProvider || new JsSignatureProvider(config.privateKeys || []);
-    this.eos = new eosjs.Api({
+    this.eos = new Api({
       chainId: config.chainId,
       rpc: this.rpc,
       signatureProvider: this.signatureProvider,
