@@ -170,7 +170,7 @@ async function appendPermission(oreAccountName, keys, permName, parent = 'active
 async function generateAuthKeys(oreAccountName, permName, code, action, broadcast) {
   const authKeys = await Keygen.generateMasterKeys();
   const options = { broadcast, authPermission: 'owner', links: [{ code, type: action }] };
-  await addPermission.bind(this)(oreAccountName, [authKeys.publicKeys.active], permName, 'active', options);
+  await addPermission.bind(this)(oreAccountName, [authKeys.publicKeys.active], permName, 'active', false, options);
   return authKeys;
 }
 
@@ -256,14 +256,22 @@ async function checkIfAccountHasPermission(oreAccountName, permName) {
   return !!(perms.find(perm => perm.perm_name === permName));
 }
 
-async function addPermission(authAccountName, keys, permissionName, parentPermission, options = {}) {
+async function addPermission(authAccountName, keys, permissionName, parentPermission, overridePermission = false, options = {}) {
+  let perm;
   options = {
     authPermission: 'active',
     ...options
   };
   const { authPermission, links = [], broadcast = true } = options;
-  const perm = await appendPermission.bind(this)(authAccountName, keys, permissionName, parentPermission);
+
+  if (overridePermission) {
+    perm = await newPermission.bind(this)(keys, permissionName, parentPermission);
+  } else {
+    perm = await appendPermission.bind(this)(authAccountName, keys, permissionName, parentPermission);
+  }
+
   const { perm_name: permission, parent, required_auth: auth } = perm;
+
   // add account permission
   const actions = [{
     account: 'eosio',
@@ -294,6 +302,44 @@ async function linkActionsToPermission(links, permission, authAccountName, authP
   return this.transact(actions, broadcast);
 }
 
+// If account already exists, check if active keys on-chain are null. If so, the account name is usable
+// If account already exists but active keys are not null, throw an error
+async function checkIfAccountNameUsable(accountName) {
+  let key = null;
+  const permissions = await getAccountPermissions.bind(this)(accountName);
+  const activePermission = permissions.find(perm => perm.perm_name === 'active');
+  const { required_auth: requiredAuth } = activePermission;
+  const { keys } = requiredAuth;
+  key = keys.find(k => k.key === this.unusedAccountPubKey);
+  // only unusedAccountPubKey should exist in the active key
+  if (!this.isNullOrEmpty(key) && keys.length === 1) {
+    return true;
+  }
+  throw new Error(`Account already in use: ${accountName}`);
+}
+
+// replace the unusedAccountPubKey with the new user's key for the active permission
+async function reuseAccount(authAccountName, keys, authPermission = 'owner', parentPermission = 'owner', permissionName = 'active', options = {}) {
+  let transaction = null;
+  try {
+    options = {
+      confirm: true,
+      authPermission,
+      ...options
+    };
+
+    if (options.confirm) {
+      const awaitTransactionOptions = getAwaitTransactionOptions(options);
+      transaction = await this.awaitTransaction(() => addPermission.bind(this)(authAccountName, [keys.publicKeys.active], permissionName, parentPermission, true, options), awaitTransactionOptions);
+    } else {
+      transaction = await addPermission.bind(this)(authAccountName, [keys.publicKeys.active], permissionName, parentPermission, true, options);
+    }
+  } catch (error) {
+    throw new Error(`Error in reuseAccount:  ${error}`);
+  }
+  return transaction;
+}
+
 // NOTE: When setting keys for `createKeyPair`, all keys are completely overriden, not just partially
 async function createKeyPair(password, salt, authAccountName, permissionName, options = {}) {
   options = {
@@ -307,33 +353,69 @@ async function createKeyPair(password, salt, authAccountName, permissionName, op
 
   if (options.confirm) {
     const awaitTransactionOptions = getAwaitTransactionOptions(options);
-    await this.awaitTransaction(() => addPermission.bind(this)(authAccountName, [keys.publicKeys.active], permissionName, parentPermission, options), awaitTransactionOptions);
+    await this.awaitTransaction(() => addPermission.bind(this)(authAccountName, [keys.publicKeys.active], permissionName, parentPermission, false, options), awaitTransactionOptions);
   } else {
-    await addPermission.bind(this)(authAccountName, [keys.publicKeys.active], permissionName, parentPermission, options);
+    await addPermission.bind(this)(authAccountName, [keys.publicKeys.active], permissionName, parentPermission, false, options);
   }
 
   return keys;
 }
 
-async function createBridgeAccount(password, salt, authorizingAccount, options) {
-  options = {
-    oreAccountName: await generateAccountName.bind(this)(options.accountNamePrefix),
-    confirm: true,
-    ...options
-  };
-
-  let transaction;
+async function createBridgeAccount(password, salt, authorizingAccount, newAccountName = null, options) {
+  let oreAccountName = null;
+  let isAccountUsable = false;
+  let transaction = null;
+  let transactionOptions;
+  let nameAlreadyExists = false;
+  const { confirm } = options;
   const keys = await generateEncryptedKeys.bind(this)(password, salt, options.keys);
 
-  if (options.confirm) {
-    const awaitTransactionOptions = getAwaitTransactionOptions(options);
-    transaction = await this.awaitTransaction(() => this.createNewAccount(authorizingAccount, keys, options), awaitTransactionOptions);
+  if (!this.isNullOrEmpty(newAccountName)) {
+    nameAlreadyExists = await getNameAlreadyExists.bind(this)(newAccountName);
+  }
+
+  // call create new account if the new account name doesn't exist on chain or is null/undefined
+  if (this.isNullOrEmpty(newAccountName) || !nameAlreadyExists) {
+    try {
+      if (!nameAlreadyExists) {
+        oreAccountName = newAccountName;
+      } else {
+        oreAccountName = await generateAccountName.bind(this)(options.accountNamePrefix);
+      }
+      transactionOptions = {
+        oreAccountName,
+        confirm: true,
+        ...options
+      };
+      if (confirm) {
+        const awaitTransactionOptions = getAwaitTransactionOptions(options);
+        transaction = await this.awaitTransaction(async () => this.createNewAccount(authorizingAccount, keys, transactionOptions), awaitTransactionOptions);
+      } else {
+        transaction = await this.createNewAccount(authorizingAccount, keys, options);
+      }
+    } catch (error) {
+      return new Error(`Error creating bridge account: ${newAccountName} ${error}`);
+    }
   } else {
-    transaction = await this.createNewAccount(authorizingAccount, keys, options);
+    // add the new active key to the newAccountName if the account name exists already on the chain with the active key set to unusedAccountPubKey
+    try {
+      isAccountUsable = await checkIfAccountNameUsable.bind(this)(newAccountName);
+      if (isAccountUsable) {
+        oreAccountName = newAccountName;
+        transactionOptions = {
+          oreAccountName,
+          confirm: true,
+          ...options
+        };
+        transaction = await reuseAccount.bind(this)(oreAccountName, keys, 'owner', 'owner', 'active', transactionOptions);
+      }
+    } catch (error) {
+      throw new Error(`Error creating bridge account: Provided account name cannot be used for the new account:  ${newAccountName} ${error}`);
+    }
   }
 
   return {
-    oreAccountName: options.oreAccountName,
+    oreAccountName,
     privateKey: keys.privateKeys.active,
     publicKey: keys.publicKeys.active,
     keys,
