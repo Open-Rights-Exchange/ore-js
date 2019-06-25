@@ -8,6 +8,7 @@ const cpu = require('./tokens/cpu');
 const createbridge = require('./createbridge');
 const crypto = require('./modules/crypto');
 const eos = require('./eos');
+const helpers = require('./helpers');
 const instrument = require('./instrument');
 const ore = require('./tokens/ore');
 const oreStandardToken = require('./orestandardtoken');
@@ -25,6 +26,7 @@ class Orejs {
     Object.assign(this, createbridge);
     Object.assign(this, crypto);
     Object.assign(this, eos);
+    Object.assign(this, helpers);
     Object.assign(this, instrument);
     Object.assign(this, ore);
     Object.assign(this, oreStandardToken);
@@ -36,6 +38,7 @@ class Orejs {
   constructEos(config) {
     this.config = config;
     this.chainName = config.chainName || 'ore'; // ore || eos
+    this.unusedAccountPubKey = config.unusedAccountPubKey || null;
     this.rpc = new JsonRpc(config.httpEndpoint, { fetch: config.fetch || fetch });
     this.signatureProvider = config.signatureProvider || new JsSignatureProvider(config.privateKeys || []);
     this.eos = new Api({
