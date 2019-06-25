@@ -1,9 +1,11 @@
+import { Api, JsonRpc } from 'eosjs';
+import { JsSignatureProvider } from 'eosjs/dist/eosjs-jssig';
+
 const fetch = require('node-fetch');
-const eosjs = require('eosjs');
 const { TextDecoder, TextEncoder } = require('text-encoding');
 const accounts = require('./accounts');
 const cpu = require('./tokens/cpu');
-const creatbridge = require('./createbridge');
+const createbridge = require('./createbridge');
 const crypto = require('./modules/crypto');
 const eos = require('./eos');
 const instrument = require('./instrument');
@@ -20,7 +22,7 @@ class Orejs {
     /* Mixins */
     Object.assign(this, accounts);
     Object.assign(this, cpu);
-    Object.assign(this, creatbridge);
+    Object.assign(this, createbridge);
     Object.assign(this, crypto);
     Object.assign(this, eos);
     Object.assign(this, instrument);
@@ -34,9 +36,9 @@ class Orejs {
   constructEos(config) {
     this.config = config;
     this.chainName = config.chainName || 'ore'; // ore || eos
-    this.rpc = new eosjs.JsonRpc(config.httpEndpoint, { fetch: config.fetch || fetch });
-    this.signatureProvider = config.signatureProvider || new eosjs.JsSignatureProvider(config.privateKeys || []);
-    this.eos = new eosjs.Api({
+    this.rpc = new JsonRpc(config.httpEndpoint, { fetch: config.fetch || fetch });
+    this.signatureProvider = config.signatureProvider || new JsSignatureProvider(config.privateKeys || []);
+    this.eos = new Api({
       chainId: config.chainId,
       rpc: this.rpc,
       signatureProvider: this.signatureProvider,
@@ -46,8 +48,11 @@ class Orejs {
   }
 }
 
+const generateAccountNameString = accounts.generateAccountNameString;
+
 module.exports = {
   crypto,
-  generateAccountNameString: accounts.generateAccountNameString,
-  Orejs
+  generateAccountNameString,
+  Orejs,
+  JsSignatureProvider
 };
