@@ -1,5 +1,5 @@
 /* Private */
-import { RpcError } from 'eosjs';
+const { RpcError } = require('eosjs');
 
 // NOTE: More than a simple wrapper for eos.rpc.get_info
 // NOTE: Saves state from get_info, which can be used by other methods
