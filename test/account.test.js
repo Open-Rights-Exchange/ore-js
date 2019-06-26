@@ -434,7 +434,7 @@ describe('account', () => {
         });
       });
 
-      describe('when the chain fails to create a new account', async () => {
+      describe('when the chain fails to create a new account', () => {
         const options = { confirm: true };
 
         beforeEach(() => {
@@ -620,7 +620,7 @@ describe('account', () => {
     });
   });
 
-  describe('generateEncryptedKeys', async () => {
+  describe('generateEncryptedKeys', () => {
     const password = 'password';
     const salt = 'salt';
 
@@ -684,14 +684,14 @@ describe('account', () => {
     });
   });
 
-  describe('getNameAlreadyExists', async () => {
+  describe('getNameAlreadyExists', () => {
     let accountName;
 
     beforeEach(() => {
       accountName = 'thenameiwant';
     });
 
-    describe('when the name already exists', async () => {
+    describe('when the name already exists', () => {
       beforeEach(() => {
         mockGetAccountWithAlreadyExistingAccount(orejs);
       });
@@ -702,7 +702,7 @@ describe('account', () => {
       });
     });
 
-    describe('when the name does not yet exist', async () => {
+    describe('when the name does not yet exist', () => {
       beforeEach(() => {
         mockGetAccount(orejs);
       });

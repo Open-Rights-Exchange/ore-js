@@ -1,4 +1,5 @@
 /* Private */
+const { RpcError } = require('eosjs');
 
 // NOTE: More than a simple wrapper for eos.rpc.get_info
 // NOTE: Saves state from get_info, which can be used by other methods
@@ -39,7 +40,15 @@ function awaitTransaction(func, options = {}) {
     try {
       transaction = await func();
     } catch (error) {
-      reject(new Error(`Await Transaction Failure: ${JSON.stringify(error)}`));
+      let errString = '';
+
+      if (error instanceof RpcError) {
+        errString = JSON.stringify(error.json);
+      } else {
+        errString = JSON.stringify(error);
+      }
+
+      reject(new Error(`Await Transaction Failure: ${errString}`));
     }
     // keep checking for the transaction in future blocks...
     let blockNumToCheck = preCommitHeadBlockNum + 1;
