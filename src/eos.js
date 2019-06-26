@@ -1,4 +1,5 @@
 /* Private */
+const { RpcError } = require('eosjs');
 
 // NOTE: More than a simple wrapper for eos.rpc.get_info
 // NOTE: Saves state from get_info, which can be used by other methods
@@ -34,12 +35,20 @@ function awaitTransaction(func, options = {}) {
     const preCommitInfo = await getInfo.bind(this)();
     const preCommitHeadBlockNum = preCommitInfo.head_block_num;
     // make the transaction...
-    //const transaction = await func();
+    // const transaction = await func();
     let transaction;
     try {
       transaction = await func();
     } catch (error) {
-      reject(new Error(`Await Transaction Failure: ${JSON.stringify(error)}`));
+      let errString = '';
+
+      if (error instanceof RpcError) {
+        errString = JSON.stringify(error.json);
+      } else {
+        errString = JSON.stringify(error);
+      }
+
+      reject(new Error(`Await Transaction Failure: ${errString}`));
     }
     // keep checking for the transaction in future blocks...
     let blockNumToCheck = preCommitHeadBlockNum + 1;
@@ -79,7 +88,7 @@ async function getAllTableRows(params, key_field = 'id', json = true) {
     json,
     lower_bound: params.lower_bound || lowerBound,
     scope: params.scope || params.code,
-    limit: params.limit || limit,
+    limit: params.limit || limit
   };
   results = await this.eos.rpc.get_table_rows(parameters);
   return results.rows;
@@ -103,7 +112,7 @@ function transact(actions, broadcast = true, blocksBehind = 3, expireSeconds = 3
   }, {
     blocksBehind,
     broadcast,
-    expireSeconds,
+    expireSeconds
   });
 }
 
@@ -112,5 +121,5 @@ module.exports = {
   getAllTableRows,
   hasTransaction,
   checkPubKeytoAccount,
-  transact,
+  transact
 };
