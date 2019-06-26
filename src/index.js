@@ -1,5 +1,5 @@
-import { Api, JsonRpc } from 'eosjs';
-import { JsSignatureProvider } from 'eosjs/dist/eosjs-jssig';
+const { Api, JsonRpc } = require('eosjs');
+const { JsSignatureProvider } = require('eosjs/dist/eosjs-jssig');
 
 const fetch = require('node-fetch');
 const { TextDecoder, TextEncoder } = require('text-encoding');
