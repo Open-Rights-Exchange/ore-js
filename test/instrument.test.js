@@ -89,7 +89,7 @@ describe('instrument', () => {
       rightName = 'company.somebody.licenseApi';
     });
 
-    describe('when multiple rights exist', async () => {
+    describe('when multiple rights exist', () => {
       beforeEach(() => {
         rights = [{
           right_name: 'company.left.licenseApi'
@@ -113,7 +113,7 @@ describe('instrument', () => {
       });
     });
 
-    describe('when the right does not exist', async () => {
+    describe('when the right does not exist', () => {
       beforeEach(() => {
         rights = [{
           right_name: 'company.left.licenseApi'
