@@ -318,6 +318,7 @@ async function checkIfAccountNameUsable(accountName) {
 }
 
 // replace the unusedAccountPubKey with the new user's key for the active permission
+// any account with active key set to unusedAccountPubKey means that account can be reused
 async function reuseAccount(authAccountName, keys, authPermission = 'owner', parentPermission = 'owner', permissionName = 'active', options = {}) {
   let transaction = null;
   try {
@@ -419,58 +420,55 @@ async function createBridgeAccount(password, salt, authorizingAccount, options) 
 
 // Creates an account, with verifier auth keys for ORE, and without for EOS
 async function createOreAccount(password, salt, ownerPublicKey, orePayerAccountName, options = {}) {
-  let oreAccountName = null;
+  let oreAccountName;
+  let transaction;
+  let verifierAuthKey;
+  let verifierAuthPublicKey;
   let isAccountUsable = false;
-  let transaction = null;
-  let verifierAuthKey = null;
-  let verifierAuthPublicKey = null;
-  let nameAlreadyExists = true;
 
-  let keys = await generateEncryptedKeys.bind(this)(password, salt, options.keys);
+  const keys = await generateEncryptedKeys.bind(this)(password, salt, options.keys);
 
   const { broadcast, confirm = true, oreAccountName: newAccountName } = options;
+  const nameAlreadyExists = await getNameAlreadyExists.bind(this)(newAccountName);
 
-  if (!this.isNullOrEmpty(newAccountName)) {
+  if (!this.isNullOrEmpty(newAccountName) && nameAlreadyExists) {
     oreAccountName = newAccountName;
-    nameAlreadyExists = await getNameAlreadyExists.bind(this)(newAccountName);
     // if the new account name already exists, check if the active key matches the unused active public key
-    if (nameAlreadyExists) {
-      try {
-        isAccountUsable = await checkIfAccountNameUsable.bind(this)(newAccountName);
-        if (isAccountUsable) {
-          transaction = await reuseAccount.bind(this)(oreAccountName, keys, 'owner', 'owner', 'active', options);
-        }
-      } catch (error) {
-        throw new Error(`Error creating account: Provided account name cannot be used for the new account:  ${newAccountName} ${error}`);
+    try {
+      isAccountUsable = await checkIfAccountNameUsable.bind(this)(newAccountName);
+      if (isAccountUsable) {
+        transaction = await reuseAccount.bind(this)(oreAccountName, keys, 'owner', 'owner', 'active', options);
       }
-    } else {
-      // if the new account name doesn't exist, create it
-      try {
-        const { active: activePublicKey } = keys.publicKeys;
-        if (confirm) {
-          const awaitTransactionOptions = getAwaitTransactionOptions(options);
-          transaction = await this.awaitTransaction(() => newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, options), awaitTransactionOptions);
-        } else {
-          transaction = await newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, options);
-        }
-        if (this.chainName === 'ore') {
-          const verifierAuthKeys = await generateAuthKeys.bind(this)(oreAccountName, 'authverifier', 'token.ore', 'approve', broadcast);
-          verifierAuthKey = verifierAuthKeys.privateKeys.active;
-          verifierAuthPublicKey = verifierAuthKeys.publicKeys.active;
-        }
-      } catch (error) {
-        throw new Error(`Error creating account: ${newAccountName} ${error}`);
-      }
+    } catch (error) {
+      throw new Error(`Error creating account: Provided account name cannot be used for the new account:  ${newAccountName} ${error}`);
     }
-  } else {
-    const returnInfo = await createAccount.bind(this)(password, salt, ownerPublicKey, orePayerAccountName, options);
-    ({ oreAccountName, keys, transaction } = returnInfo);
+  }
 
-    if (this.chainName === 'ore') {
-      const verifierAuthKeys = await generateAuthKeys.bind(this)(oreAccountName, 'authverifier', 'token.ore', 'approve', broadcast);
-      verifierAuthKey = verifierAuthKeys.privateKeys.active;
-      verifierAuthPublicKey = verifierAuthKeys.publicKeys.active;
+  // if no new account name is passed in, generate a new account name and create it
+  // or if the new account name passed in doesn't exist on chain yet, create the account
+  if (!nameAlreadyExists || this.isNullOrEmpty(newAccountName)) {
+    try {
+      const { active: activePublicKey } = keys.publicKeys;
+      if (!this.isNullOrEmpty(newAccountName) && !nameAlreadyExists) {
+        oreAccountName = newAccountName;
+      } else {
+        oreAccountName = await generateAccountName.bind(this)(options.accountNamePrefix);
+      }
+      if (confirm) {
+        const awaitTransactionOptions = getAwaitTransactionOptions(options);
+        transaction = await this.awaitTransaction(() => newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, options), awaitTransactionOptions);
+      } else {
+        transaction = await newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, options);
+      }
+    } catch (error) {
+      throw new Error(`Error creating account: ${newAccountName} ${error}`);
     }
+  }
+
+  if (this.chainName === 'ore') {
+    const verifierAuthKeys = await generateAuthKeys.bind(this)(oreAccountName, 'authverifier', 'token.ore', 'approve', broadcast);
+    verifierAuthKey = verifierAuthKeys.privateKeys.active;
+    verifierAuthPublicKey = verifierAuthKeys.publicKeys.active;
   }
 
   return {
