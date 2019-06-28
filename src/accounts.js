@@ -209,7 +209,8 @@ async function createAccount(password, salt, ownerPublicKey, orePayerAccountName
     broadcast: true,
     ...options
   };
-  const { broadcast, oreAccountName: newAccountName } = options;
+  const { broadcast } = options;
+
   const {
     oreAccountName, transaction, keys
   } = await generateOreAccountAndEncryptedKeys.bind(this)(password, salt, ownerPublicKey, orePayerAccountName, options);
@@ -318,7 +319,6 @@ async function checkIfAccountNameUsable(accountName) {
 }
 
 // replace the unusedAccountPubKey with the new user's key for the active permission
-// any account with active key set to unusedAccountPubKey means that account can be reused
 async function reuseAccount(authAccountName, keys, authPermission = 'owner', parentPermission = 'owner', permissionName = 'active', options = {}) {
   let transaction = null;
   try {
@@ -365,50 +365,57 @@ async function createBridgeAccount(password, salt, authorizingAccount, options) 
   let oreAccountName = null;
   let isAccountUsable = false;
   let transaction = null;
+  let transactionOptions;
+  let nameAlreadyExists = true;
 
   const { confirm = true, oreAccountName: newAccountName } = options;
   const keys = await generateEncryptedKeys.bind(this)(password, salt, options.keys);
-  const nameAlreadyExists = await getNameAlreadyExists.bind(this)(newAccountName);
 
-  // if the new account name passed in already exists, check if the active key matches the unused active public key
-  if (!this.isNullOrEmpty(newAccountName) && nameAlreadyExists) {
-    oreAccountName = newAccountName;
+  if (!this.isNullOrEmpty(newAccountName)) {
+    nameAlreadyExists = await getNameAlreadyExists.bind(this)(newAccountName);
+  }
+
+  if (!this.isNullOrEmpty(newAccountName)) {
+    // add the new active key to the newAccountName if the account name exists already on the chain with the active key set to unusedAccountPubKey
     try {
       isAccountUsable = await checkIfAccountNameUsable.bind(this)(newAccountName);
       if (isAccountUsable) {
-        transaction = await reuseAccount.bind(this)(oreAccountName, keys, 'owner', 'owner', 'active', options);
+        oreAccountName = newAccountName;
+        transactionOptions = {
+          oreAccountName,
+          confirm,
+          ...options
+        };
+        transaction = await reuseAccount.bind(this)(oreAccountName, keys, 'owner', 'owner', 'active', transactionOptions);
       }
     } catch (error) {
       throw new Error(`Error creating bridge account: Provided account name cannot be used for the new account:  ${newAccountName} ${error}`);
     }
-  }
-
-  // if no new account name is passed in, generate a new account name and create it
-  // or if the new account name passed in doesn't exist on chain yet, create the account
-  if (!nameAlreadyExists || this.isNullOrEmpty(newAccountName)) {
+  } else {
+    // call create new account if the new account name doesn't exist on chain or is null/undefined
     try {
-      if (!this.isNullOrEmpty(newAccountName) && !nameAlreadyExists) {
+      if (!nameAlreadyExists) {
         oreAccountName = newAccountName;
       } else {
         oreAccountName = await generateAccountName.bind(this)(options.accountNamePrefix);
       }
-      options = {
-        ...options,
+
+      transactionOptions = {
         oreAccountName,
-        confirm
+        confirm,
+        ...options
       };
 
       if (confirm) {
         const awaitTransactionOptions = getAwaitTransactionOptions(options);
-        transaction = await this.awaitTransaction(async () => this.createNewAccount(authorizingAccount, keys, options), awaitTransactionOptions);
+        transaction = await this.awaitTransaction(async () => this.createNewAccount(authorizingAccount, keys, transactionOptions), awaitTransactionOptions);
       } else {
-        transaction = await this.createNewAccount(authorizingAccount, keys, options);
+        transaction = await this.createNewAccount(authorizingAccount, keys, transactionOptions);
       }
     } catch (error) {
       throw new Error(`Error creating bridge account: ${newAccountName} ${error}`);
     }
   }
-
   return {
     oreAccountName,
     privateKey: keys.privateKeys.active,
@@ -420,66 +427,18 @@ async function createBridgeAccount(password, salt, authorizingAccount, options) 
 
 // Creates an account, with verifier auth keys for ORE, and without for EOS
 async function createOreAccount(password, salt, ownerPublicKey, orePayerAccountName, options = {}) {
-  let oreAccountName;
-  let transaction;
-  let verifierAuthKey;
-  let verifierAuthPublicKey;
-  let isAccountUsable = false;
+  const { broadcast } = options;
 
-  const keys = await generateEncryptedKeys.bind(this)(password, salt, options.keys);
-
-  const { broadcast, confirm = true, oreAccountName: newAccountName } = options;
-  const nameAlreadyExists = await getNameAlreadyExists.bind(this)(newAccountName);
-
-  if (!this.isNullOrEmpty(newAccountName) && nameAlreadyExists) {
-    oreAccountName = newAccountName;
-    // if the new account name already exists, check if the active key matches the unused active public key
-    try {
-      isAccountUsable = await checkIfAccountNameUsable.bind(this)(newAccountName);
-      if (isAccountUsable) {
-        transaction = await reuseAccount.bind(this)(oreAccountName, keys, 'owner', 'owner', 'active', options);
-      }
-    } catch (error) {
-      throw new Error(`Error creating account: Provided account name cannot be used for the new account:  ${newAccountName} ${error}`);
-    }
-  }
-
-  // if no new account name is passed in, generate a new account name and create it
-  // or if the new account name passed in doesn't exist on chain yet, create the account
-  if (!nameAlreadyExists || this.isNullOrEmpty(newAccountName)) {
-    try {
-      const { active: activePublicKey } = keys.publicKeys;
-      if (!this.isNullOrEmpty(newAccountName) && !nameAlreadyExists) {
-        oreAccountName = newAccountName;
-      } else {
-        oreAccountName = await generateAccountName.bind(this)(options.accountNamePrefix);
-      }
-      if (confirm) {
-        const awaitTransactionOptions = getAwaitTransactionOptions(options);
-        transaction = await this.awaitTransaction(() => newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, options), awaitTransactionOptions);
-      } else {
-        transaction = await newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, options);
-      }
-    } catch (error) {
-      throw new Error(`Error creating account: ${newAccountName} ${error}`);
-    }
-  }
+  const returnInfo = await createAccount.bind(this)(password, salt, ownerPublicKey, orePayerAccountName, options);
 
   if (this.chainName === 'ore') {
-    const verifierAuthKeys = await generateAuthKeys.bind(this)(oreAccountName, 'authverifier', 'token.ore', 'approve', broadcast);
-    verifierAuthKey = verifierAuthKeys.privateKeys.active;
-    verifierAuthPublicKey = verifierAuthKeys.publicKeys.active;
+    const verifierAuthKeys = await generateAuthKeys.bind(this)(returnInfo.oreAccountName, 'authverifier', 'token.ore', 'approve', broadcast);
+
+    returnInfo.verifierAuthKey = verifierAuthKeys.privateKeys.active;
+    returnInfo.verifierAuthPublicKey = verifierAuthKeys.publicKeys.active;
   }
 
-  return {
-    oreAccountName,
-    privateKey: keys.privateKeys.active,
-    publicKey: keys.publicKeys.active,
-    keys,
-    transaction,
-    verifierAuthKey,
-    verifierAuthPublicKey
-  };
+  return returnInfo;
 }
 
 function eosBase32(base32String) {
