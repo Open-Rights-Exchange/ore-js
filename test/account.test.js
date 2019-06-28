@@ -44,7 +44,7 @@ describe('account', () => {
       });
 
       it('returns the transaction', async () => {
-        const permissionTransaction = await orejs.addPermission(accountName, [keys.publicKeys.active], permissionName, parentPermission, options);
+        const permissionTransaction = await orejs.addPermission(accountName, [keys.publicKeys.active], permissionName, parentPermission, false, options);
         expect(spyTransaction).toHaveBeenNthCalledWith(1, {
           actions: [
             mockAction({
