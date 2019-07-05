@@ -371,7 +371,7 @@ async function createBridgeAccount(password, salt, authorizingAccount, options) 
   const nameAlreadyExists = await getNameAlreadyExists.bind(this)(newAccountName);
 
   // if the new account name passed in already exists, check if the active key matches the unused active public key
-  if (!this.isNullOrEmpty(newAccountName) && nameAlreadyExists) {
+  if (nameAlreadyExists) {
     oreAccountName = newAccountName;
     try {
       isAccountUsable = await checkIfAccountNameUsable.bind(this)(newAccountName);
@@ -431,7 +431,7 @@ async function createOreAccount(password, salt, ownerPublicKey, orePayerAccountN
   const { broadcast, confirm = true, oreAccountName: newAccountName } = options;
   const nameAlreadyExists = await getNameAlreadyExists.bind(this)(newAccountName);
 
-  if (!this.isNullOrEmpty(newAccountName) && nameAlreadyExists) {
+  if (nameAlreadyExists) {
     oreAccountName = newAccountName;
     // if the new account name already exists, check if the active key matches the unused active public key
     try {
