@@ -11,29 +11,24 @@ function getAwaitTransactionOptions(options) {
   return awaitTransactionOptions;
 }
 
-function newAccountTransaction(name, ownerPublicKey, activePublicKey, orePayerAccountName, options = {}) {
-  const { broadcast, bytes, permission, stakedCpu, stakedNet, transfer, tokenSymbol } = {
+function newAccountTransaction(name, ownerPublicKey, activePublicKey, orePayerAccountName, pricekey, referral = '', options = {}) {
+  const { broadcast, tier, permission, tokenSymbol } = {
     broadcast: true,
-    bytes: 2048,
     permission: 'active',
-    stakedCpu: '0.1000',
-    stakedNet: '0.1000',
-    tokenSymbol: this.chainName === 'ore' ? 'SYS' : 'EOS',
-    transfer: false,
+    tokenSymbol: this.chainName === 'ore' ? 'ORE' : 'EOS',
     ...options
   };
 
   const actions = [{
-    account: 'eosio',
-    name: 'newaccount',
+    account: 'system.ore',
+    name: 'createoreacc',
     authorization: [{
       actor: orePayerAccountName,
       permission
     }],
     data: {
       creator: orePayerAccountName,
-      name,
-      newact: name, // Some versions of the system contract are running a different version of the newaccount code
+      newname: name, // Some versions of the system contract are running a different version of the newaccount code
       owner: {
         threshold: 1,
         keys: [{
@@ -51,7 +46,9 @@ function newAccountTransaction(name, ownerPublicKey, activePublicKey, orePayerAc
         }],
         accounts: [],
         waits: []
-      }
+      },
+      pricekey,
+      referral
     }
   },
   {
@@ -174,7 +171,7 @@ async function generateAuthKeys(oreAccountName, permName, code, action, broadcas
   return authKeys;
 }
 
-async function createOreAccountWithKeys(activePublicKey, ownerPublicKey, orePayerAccountName, options = {}) {
+async function createOreAccountWithKeys(activePublicKey, ownerPublicKey, orePayerAccountName, pricekey, referral, options = {}) {
   options = {
     confirm: true,
     accountNamePrefix: 'ore',
@@ -185,26 +182,26 @@ async function createOreAccountWithKeys(activePublicKey, ownerPublicKey, orePaye
   let transaction;
   if (options.confirm) {
     const awaitTransactionOptions = getAwaitTransactionOptions(options);
-    transaction = await this.awaitTransaction(() => newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, options), awaitTransactionOptions);
+    transaction = await this.awaitTransaction(() => newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, pricekey, referral, options), awaitTransactionOptions);
   } else {
-    transaction = await newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, options);
+    transaction = await newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, pricekey, referral, options);
   }
   return { oreAccountName, transaction };
 }
 
-async function generateOreAccountAndEncryptedKeys(password, salt, ownerPublicKey, orePayerAccountName, options = {}) {
+async function generateOreAccountAndEncryptedKeys(password, salt, ownerPublicKey, orePayerAccountName, pricekey, referral, options = {}) {
   const keys = await generateEncryptedKeys.bind(this)(password, salt, options.keys);
 
   const {
     oreAccountName,
     transaction
-  } = await createOreAccountWithKeys.bind(this)(keys.publicKeys.active, ownerPublicKey, orePayerAccountName, options);
+  } = await createOreAccountWithKeys.bind(this)(keys.publicKeys.active, ownerPublicKey, orePayerAccountName, pricekey, referral, options);
 
   return { oreAccountName, transaction, keys };
 }
 
 // Creates an account, without verifier auth keys
-async function createAccount(password, salt, ownerPublicKey, orePayerAccountName, options = {}) {
+async function createAccount(password, salt, ownerPublicKey, orePayerAccountName, pricekey, referral, options = {}) {
   options = {
     broadcast: true,
     ...options
@@ -213,7 +210,7 @@ async function createAccount(password, salt, ownerPublicKey, orePayerAccountName
 
   const {
     oreAccountName, transaction, keys
-  } = await generateOreAccountAndEncryptedKeys.bind(this)(password, salt, ownerPublicKey, orePayerAccountName, options);
+  } = await generateOreAccountAndEncryptedKeys.bind(this)(password, salt, ownerPublicKey, orePayerAccountName, pricekey, referral, options);
 
   return {
     oreAccountName,
@@ -426,10 +423,10 @@ async function createBridgeAccount(password, salt, authorizingAccount, options) 
 }
 
 // Creates an account, with verifier auth keys for ORE, and without for EOS
-async function createOreAccount(password, salt, ownerPublicKey, orePayerAccountName, options = {}) {
+async function createOreAccount(password, salt, ownerPublicKey, orePayerAccountName, pricekey, referral, options = {}) {
   const { broadcast } = options;
 
-  const returnInfo = await createAccount.bind(this)(password, salt, ownerPublicKey, orePayerAccountName, options);
+  const returnInfo = await createAccount.bind(this)(password, salt, ownerPublicKey, orePayerAccountName, pricekey, referral, options);
 
   if (this.chainName === 'ore') {
     const verifierAuthKeys = await generateAuthKeys.bind(this)(returnInfo.oreAccountName, 'authverifier', 'token.ore', 'approve', broadcast);
