@@ -327,7 +327,6 @@ async function createBridgeAccount(password, salt, authorizingAccount, options) 
   if (!this.isNullOrEmpty(newAccountName)) {
     nameAlreadyExists = await getNameAlreadyExists.bind(this)(newAccountName);
   }
-
   if (!this.isNullOrEmpty(newAccountName)) {
     // add the new active key to the newAccountName if the account name exists already on the chain with the active key set to unusedAccountPubKey
     try {
@@ -374,8 +373,7 @@ async function createBridgeAccount(password, salt, authorizingAccount, options) 
     privateKey: keys.privateKeys.active,
     publicKey: keys.publicKeys.active,
     keys,
-    transaction,
-    contractName
+    transaction
   };
 }
 

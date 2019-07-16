@@ -1,6 +1,6 @@
 {
   "name": "@open-rights-exchange/orejs",
-  "version": "1.8.2",
+  "version": "1.9.0",
   "description": "Orejs is a Javascript helper library to provide simple high-level access to the ore-protocol. Orejs uses eosJS as a wrapper to the EOS blockchain.",
   "main": "./dist/index.js",
   "scripts": {
