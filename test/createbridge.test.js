@@ -27,6 +27,7 @@ describe('createbridge', () => {
       const symbol = 'SYS';
       const precision = 4;
       const newAccountContract = 'eosio';
+      const newAccountAction = 'newaccount';
       const minimumRAM = 4096;
       const options = { contractName };
       orejs.init(symbol, precision, newAccountContract, minimumRAM, options);
@@ -38,6 +39,7 @@ describe('createbridge', () => {
             data: {
               symbol: `${precision},${symbol}`,
               newaccountcontract: newAccountContract,
+              newaccountaction: newaccountaction,
               minimumram: minimumRAM
             } })
         ]
@@ -55,6 +57,7 @@ describe('createbridge', () => {
       const ram = 4096;
       const net = '1.0000 SYS';
       const cpu = '1.0000 SYS';
+      const pricekey = 1;
       const airdropContract = '';
       const airdropToken = '0 SYS';
       const airdropLimit = '0 SYS';
@@ -71,6 +74,7 @@ describe('createbridge', () => {
               ram_bytes: ram,
               net,
               cpu,
+              pricekey,
               airdrop: {
                 contract: airdropContract,
                 tokens: airdropToken,

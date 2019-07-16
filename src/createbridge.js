@@ -6,7 +6,7 @@
 // precision            = precision of the core token of the chain
 // newAccountContract   = the contract to call for new account action
 // minimumRAM           = minimum bytes of RAM to put in a new account created on the chain
-function init(symbol, precision, newAccountContract, minimumRAM, options) {
+function init(symbol, precision, newAccountContract, newAccountAction, minimumRAM, options) {
   const { contractName = 'createbridge', permission = 'active', broadcast = true } = options;
   const chainSymbol = `${precision},${symbol}`;
   const actions = [{
@@ -19,6 +19,7 @@ function init(symbol, precision, newAccountContract, minimumRAM, options) {
     data: {
       symbol: chainSymbol,
       newaccountcontract: newAccountContract,
+      newaccountaction: newAccountAction,
       minimumram: minimumRAM
     }
   }];
@@ -35,7 +36,7 @@ function init(symbol, precision, newAccountContract, minimumRAM, options) {
 // airdropContract          = name of the airdrop contract
 // airdropToken             = total number of tokens to be airdropped
 // airdroplimit             = number of tokens to be airdropped to the newly created account
-function define(authorizingAccount, appName, ram = 4096, net, cpu, options) {
+function define(authorizingAccount, appName, ram = 4096, net, cpu, pricekey, options) {
   const { airdropContract, airdropToken, airdropLimit, contractName = 'createbridge', broadcast = true } = options;
   const { accountName, permission = 'active' } = authorizingAccount;
   const airdrop = {
@@ -56,6 +57,7 @@ function define(authorizingAccount, appName, ram = 4096, net, cpu, options) {
       ram_bytes: ram,
       net,
       cpu,
+      pricekey,
       airdrop
     }
   }];
@@ -69,7 +71,7 @@ function define(authorizingAccount, appName, ram = 4096, net, cpu, options) {
 // origin             = the string representing the app to create the new user account for. For ex- everipedia.org, lumeos
 function createNewAccount(authorizingAccount, keys, options) {
   const { accountName, permission } = authorizingAccount;
-  const { origin, oreAccountName, contractName = 'createbridge', broadcast = true } = options;
+  const { origin, oreAccountName, contractName = 'createbridge', broadcast = true, referralAccountName = '' } = options;
   const actions = [{
     account: contractName,
     name: 'create',
@@ -82,7 +84,8 @@ function createNewAccount(authorizingAccount, keys, options) {
       account: oreAccountName,
       ownerkey: keys.publicKeys.owner,
       activekey: keys.publicKeys.active,
-      origin
+      origin,
+      referralAccountName
     }
   }];
 
