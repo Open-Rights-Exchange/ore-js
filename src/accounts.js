@@ -127,7 +127,7 @@ async function generateAuthKeys(oreAccountName, permName, code, action, broadcas
   return authKeys;
 }
 
-async function createOreAccountWithKeys(activePublicKey, ownerPublicKey, orePayerAccountName, pricekey, referral, options = {}) {
+async function createOreAccountWithKeys(activePublicKey, ownerPublicKey, orePayerAccountName, options = {}) {
   options = {
     confirm: true,
     accountNamePrefix: 'ore',
@@ -138,26 +138,26 @@ async function createOreAccountWithKeys(activePublicKey, ownerPublicKey, orePaye
   let transaction;
   if (options.confirm) {
     const awaitTransactionOptions = getAwaitTransactionOptions(options);
-    transaction = await this.awaitTransaction(() => newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, pricekey, referral, options), awaitTransactionOptions);
+    transaction = await this.awaitTransaction(() => newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, options), awaitTransactionOptions);
   } else {
-    transaction = await newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, pricekey, referral, options);
+    transaction = await newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, options);
   }
   return { oreAccountName, transaction };
 }
 
-async function generateOreAccountAndEncryptedKeys(password, salt, ownerPublicKey, orePayerAccountName, pricekey, referral, options = {}) {
+async function generateOreAccountAndEncryptedKeys(password, salt, ownerPublicKey, orePayerAccountName, options = {}) {
   const keys = await generateEncryptedKeys.bind(this)(password, salt, options.keys);
 
   const {
     oreAccountName,
     transaction
-  } = await createOreAccountWithKeys.bind(this)(keys.publicKeys.active, ownerPublicKey, orePayerAccountName, pricekey, referral, options);
+  } = await createOreAccountWithKeys.bind(this)(keys.publicKeys.active, ownerPublicKey, orePayerAccountName, options);
 
   return { oreAccountName, transaction, keys };
 }
 
 // Creates an account, without verifier auth keys
-async function createAccount(password, salt, ownerPublicKey, orePayerAccountName, pricekey, referral, options = {}) {
+async function createAccount(password, salt, ownerPublicKey, orePayerAccountName, options = {}) {
   options = {
     broadcast: true,
     ...options
@@ -165,7 +165,7 @@ async function createAccount(password, salt, ownerPublicKey, orePayerAccountName
   const { broadcast, oreAccountName: newAccountName } = options;
   const {
     oreAccountName, transaction, keys
-  } = await generateOreAccountAndEncryptedKeys.bind(this)(password, salt, ownerPublicKey, orePayerAccountName, pricekey, referral, options);
+  } = await generateOreAccountAndEncryptedKeys.bind(this)(password, salt, ownerPublicKey, orePayerAccountName, options);
 
   return {
     oreAccountName,
