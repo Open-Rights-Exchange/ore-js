@@ -71,7 +71,7 @@ function define(authorizingAccount, appName, ram = 4096, net, cpu, pricekey, opt
 // origin             = the string representing the app to create the new user account for. For ex- everipedia.org, lumeos
 function createNewAccount(authorizingAccount, keys, options) {
   const { accountName, permission } = authorizingAccount;
-  const { origin, oreAccountName, contractName = 'createbridge', broadcast = true, referralAccountName = '' } = options;
+  const { origin, oreAccountName, contractName = 'createbridge', broadcast = true, referral = '' } = options;
   const actions = [{
     account: contractName,
     name: 'create',
@@ -85,7 +85,7 @@ function createNewAccount(authorizingAccount, keys, options) {
       ownerkey: keys.publicKeys.owner,
       activekey: keys.publicKeys.active,
       origin,
-      referralAccountName
+      referral
     }
   }];
 
