@@ -12,74 +12,27 @@ function getAwaitTransactionOptions(options) {
 }
 
 function newAccountTransaction(name, ownerPublicKey, activePublicKey, orePayerAccountName, options = {}) {
-  const { broadcast, bytes, permission, stakedCpu, stakedNet, transfer, tokenSymbol } = {
+  const { broadcast, permission, tokenSymbol, pricekey = 1, referral = '' } = {
     broadcast: true,
-    bytes: 2048,
     permission: 'active',
-    stakedCpu: '0.1000',
-    stakedNet: '0.1000',
-    tokenSymbol: this.chainName === 'ore' ? 'SYS' : 'EOS',
-    transfer: false,
+    tokenSymbol: this.chainName === 'ore' ? 'ORE' : 'EOS',
     ...options
   };
 
   const actions = [{
-    account: 'eosio',
-    name: 'newaccount',
+    account: 'system.ore',
+    name: 'createoreacc',
     authorization: [{
       actor: orePayerAccountName,
       permission
     }],
     data: {
       creator: orePayerAccountName,
-      name,
-      newact: name, // Some versions of the system contract are running a different version of the newaccount code
-      owner: {
-        threshold: 1,
-        keys: [{
-          key: ownerPublicKey,
-          weight: 1
-        }],
-        accounts: [],
-        waits: []
-      },
-      active: {
-        threshold: 1,
-        keys: [{
-          key: activePublicKey,
-          weight: 1
-        }],
-        accounts: [],
-        waits: []
-      }
-    }
-  },
-  {
-    account: 'eosio',
-    name: 'buyrambytes',
-    authorization: [{
-      actor: orePayerAccountName,
-      permission
-    }],
-    data: {
-      payer: orePayerAccountName,
-      receiver: name,
-      bytes
-    }
-  },
-  {
-    account: 'eosio',
-    name: 'delegatebw',
-    authorization: [{
-      actor: orePayerAccountName,
-      permission
-    }],
-    data: {
-      from: orePayerAccountName,
-      receiver: name,
-      stake_net_quantity: `${stakedNet} ${tokenSymbol}`,
-      stake_cpu_quantity: `${stakedCpu} ${tokenSymbol}`,
-      transfer
+      newname: name, // Some versions of the system contract are running a different version of the newaccount code
+      ownerkey: ownerPublicKey,
+      activekey: activePublicKey,
+      pricekey,
+      referral
     }
   }];
 
