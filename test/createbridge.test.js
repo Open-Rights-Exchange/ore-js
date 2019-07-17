@@ -26,11 +26,11 @@ describe('createbridge', () => {
     it('initialises createbridge', () => {
       const symbol = 'SYS';
       const precision = 4;
-      const newAccountContract = 'eosio';
-      const newAccountAction = 'newaccount';
+      const newAccountContract = 'system.ore';
+      const newAccountAction = 'createoreacc';
       const minimumRAM = 4096;
       const options = { contractName };
-      orejs.init(symbol, precision, newAccountContract, minimumRAM, options);
+      orejs.init(symbol, precision, newAccountContract, newAccountAction, minimumRAM, options);
       expect(spyTransaction).toHaveBeenCalledWith({
         actions: [
           mockAction({ account: contractName,
@@ -39,7 +39,7 @@ describe('createbridge', () => {
             data: {
               symbol: `${precision},${symbol}`,
               newaccountcontract: newAccountContract,
-              newaccountaction: newaccountaction,
+              newaccountaction: newAccountAction,
               minimumram: minimumRAM
             } })
         ]
@@ -62,7 +62,7 @@ describe('createbridge', () => {
       const airdropToken = '0 SYS';
       const airdropLimit = '0 SYS';
       const options = { airdropContract, airdropToken, airdropLimit, contractName };
-      orejs.define(authorizingAccount, appName, ram, net, cpu, options);
+      orejs.define(authorizingAccount, appName, ram, net, cpu, pricekey, options);
       expect(spyTransaction).toHaveBeenCalledWith({
         actions: [
           mockAction({ account: contractName,
