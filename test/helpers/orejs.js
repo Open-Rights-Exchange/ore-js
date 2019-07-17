@@ -42,6 +42,23 @@ function mockGetAccount(_orejs = undefined, withInitialCheck = true, _account = 
   return mockupAccount;
 }
 
+function mockAllGetAccounts(_orejs = undefined, withInitialCheck = true, _account = {}) {
+  const mockupAccount = jest.fn();
+
+  const getAccount = JSON.parse(mockAccount(_account)[0])[0];
+
+  mockupAccount.mockImplementationOnce(() => Promise.reject(false));
+  mockupAccount.mockImplementationOnce(() => Promise.resolve(getAccount));
+  mockupAccount.mockImplementationOnce(() => Promise.resolve(getAccount));
+  mockupAccount.mockImplementationOnce(() => Promise.resolve(getAccount));
+  mockupAccount.mockClear();
+
+  const orejs = _orejs || constructOrejs();
+  orejs.eos.rpc.get_account = mockupAccount;
+
+  return mockupAccount;
+}
+
 function mockGetAccountWithAlreadyExistingAccount(_orejs = undefined, _account = {}) {
   const mockupAccount = jest.fn();
 
@@ -126,6 +143,7 @@ module.exports = {
   constructOrejs,
   mockGetAbi,
   mockGetAccount,
+  mockAllGetAccounts,
   mockGetAccountWithAlreadyExistingAccount,
   mockGetBlock,
   mockGetBlockError,
