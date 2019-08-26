@@ -352,7 +352,9 @@ async function reuseAccount(authAccountName, keys, authPermission = 'owner', par
 }
 
 async function exportAccount(authAccountName, publicKeys) {
-  let transactions;
+  let activeTransaction = null;
+  let ownerTransaction = null;
+
   try {
     const options = {
       confirm: true,
@@ -360,19 +362,21 @@ async function exportAccount(authAccountName, publicKeys) {
     };
     if (options.confirm) {
       const awaitTransactionOptions = getAwaitTransactionOptions(options);
-      transactions[0] = await this.awaitTransaction(() => addPermission.bind(this)(authAccountName, [publicKeys.active], 'active', 'owner', true, options), awaitTransactionOptions);
-      transactions[1] = await this.awaitTransaction(() => addPermission.bind(this)(authAccountName, [publicKeys.owner], 'owner', 'owner', true, options), awaitTransactionOptions);
+      console.log('await transaction options', awaitTransactionOptions);
+      console.log('accountName', authAccountName);
+      console.log('publickeys', publicKeys);
+      activeTransaction = await this.awaitTransaction(() => addPermission.bind(this)(authAccountName, [publicKeys.active], 'active', 'owner', true, options), awaitTransactionOptions);
+      console.log('activetransaction', activeTransaction);
+      ownerTransaction = await this.awaitTransaction(() => addPermission.bind(this)(authAccountName, [publicKeys.owner], 'owner', 'owner', true, options), awaitTransactionOptions);
+      console.log('ownerTransaction', ownerTransaction);
     } else {
-      transactions[0] = await addPermission.bind(this)(authAccountName, [publicKeys.active], 'active', 'owner', true, options);
-      transactions[1] = await addPermission.bind(this)(authAccountName, [publicKeys.owner], 'owner', 'owner', true, options);
+      activeTransaction = await addPermission.bind(this)(authAccountName, [publicKeys.active], 'active', 'owner', true, options);
+      ownerTransaction = await addPermission.bind(this)(authAccountName, [publicKeys.owner], 'owner', 'owner', true, options);
     }
   } catch (error) {
     throw new Error(`Error in exportAccount:  ${error}`);
   }
-  console.log('BASLADI');
-  console.log(transactions);
-  console.log('BITTI');
-  return transactions;
+  return { activeTransaction, ownerTransaction };
 }
 
 // NOTE: When setting keys for `createKeyPair`, all keys are completely overriden, not just partially
