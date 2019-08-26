@@ -176,6 +176,27 @@ async function createAccount(password, salt, ownerPublicKey, orePayerAccountName
   };
 }
 
+// returns a list of actions to delete permissions
+// every permission input is being deleted
+async function composeDeleteAuthActions(permissions, authAccountName, authPermission) {
+  const actions = [];
+  permissions.forEach((permission) => {
+    actions.push({
+      account: 'eosio',
+      name: 'deleteauth',
+      authorization: [{
+        actor: authAccountName,
+        permission: authPermission
+      }],
+      data: {
+        account: authAccountName,
+        permission
+      }
+    });
+  });
+  return actions;
+}
+
 // returns a list of actions to link to an app permission
 // every { contract, action } input pair is linked to the app permission
 async function composeLinkActions(links, permission, authAccountName, authPermission) {
@@ -200,6 +221,29 @@ async function composeLinkActions(links, permission, authAccountName, authPermis
   return actions;
 }
 
+// returns a list of actions to unlink to an app permission
+// every { contract, action } input pair is linked to the app permission
+async function composeUnlinkActions(links, authAccountName, authPermission) {
+  const actions = [];
+  links.forEach((link) => {
+    const { code, type } = link;
+    actions.push({
+      account: 'eosio',
+      name: 'unlinkauth',
+      authorization: [{
+        actor: authAccountName,
+        permission: authPermission
+      }],
+      data: {
+        account: authAccountName,
+        code,
+        type
+      }
+    });
+  });
+  return actions;
+}
+
 /* Public */
 
 // gets the account details from the chain network and checks if the account has a specific permission
@@ -210,11 +254,8 @@ async function checkIfAccountHasPermission(oreAccountName, permName) {
 
 async function addPermission(authAccountName, keys, permissionName, parentPermission, overridePermission = false, options = {}) {
   let perm;
-  options = {
-    authPermission: 'active',
-    ...options
-  };
-  const { authPermission, links = [], broadcast = true } = options;
+
+  const { authPermission = 'active', links = [], broadcast = true } = options;
 
   if (overridePermission) {
     perm = await newPermission.bind(this)(keys, permissionName, parentPermission);
@@ -225,7 +266,7 @@ async function addPermission(authAccountName, keys, permissionName, parentPermis
   const { perm_name: permission, parent, required_auth: auth } = perm;
 
   // add account permission
-  const actions = [{
+  let actions = [{
     account: 'eosio',
     name: 'updateauth',
     authorization: [{
@@ -241,16 +282,33 @@ async function addPermission(authAccountName, keys, permissionName, parentPermis
   }];
 
   // add action permission for every { contract, action } pair passed in
-  const linkActions = await composeLinkActions(links, permission, authAccountName, authPermission);
-  const allActions = actions.concat(linkActions);
+  if (links.length > 0) {
+    const linkActions = await composeLinkActions(links, permission, authAccountName, authPermission);
+    actions = actions.concat(linkActions);
+  }
 
-  return this.transact(allActions, broadcast);
+  return this.transact(actions, broadcast);
+}
+
+async function deletePermissions(authAccountName, permissions, options = {}) {
+  options = {
+    authPermission: 'active',
+    ...options
+  };
+  const { authPermission, links = [], broadcast = true } = options;
+  const deleteActions = await composeDeleteAuthActions(permissions, authAccountName, authPermission);
+  return this.transact(deleteActions, broadcast);
 }
 
 // links actions for a given account to an app permission
 async function linkActionsToPermission(links, permission, authAccountName, authPermission, broadcast = true) {
   const actions = await composeLinkActions(links, permission, authAccountName, authPermission);
 
+  return this.transact(actions, broadcast);
+}
+
+async function unlinkActionsToPermission(links, authAccountName, authPermission, broadcast = true) {
+  const actions = await composeUnlinkActions(links, authAccountName, authPermission);
   return this.transact(actions, broadcast);
 }
 
@@ -291,6 +349,30 @@ async function reuseAccount(authAccountName, keys, authPermission = 'owner', par
     throw new Error(`Error in reuseAccount:  ${error}`);
   }
   return transaction;
+}
+
+async function exportAccount(authAccountName, publicKeys) {
+  let transactions;
+  try {
+    const options = {
+      confirm: true,
+      authPermission: 'owner'
+    };
+    if (options.confirm) {
+      const awaitTransactionOptions = getAwaitTransactionOptions(options);
+      transactions[0] = await this.awaitTransaction(() => addPermission.bind(this)(authAccountName, [publicKeys.active], 'active', 'owner', true, options), awaitTransactionOptions);
+      transactions[1] = await this.awaitTransaction(() => addPermission.bind(this)(authAccountName, [publicKeys.owner], 'owner', 'owner', true, options), awaitTransactionOptions);
+    } else {
+      transactions[0] = await addPermission.bind(this)(authAccountName, [publicKeys.active], 'active', 'owner', true, options);
+      transactions[1] = await addPermission.bind(this)(authAccountName, [publicKeys.owner], 'owner', 'owner', true, options);
+    }
+  } catch (error) {
+    throw new Error(`Error in exportAccount:  ${error}`);
+  }
+  console.log('BASLADI');
+  console.log(transactions);
+  console.log('BITTI');
+  return transactions;
 }
 
 // NOTE: When setting keys for `createKeyPair`, all keys are completely overriden, not just partially
@@ -490,6 +572,7 @@ async function getNameAlreadyExists(accountName) {
 
 module.exports = {
   addPermission,
+  deletePermissions,
   checkIfAccountHasPermission,
   createKeyPair,
   createBridgeAccount,
@@ -499,5 +582,7 @@ module.exports = {
   generateAccountNameString,
   generateEncryptedKeys,
   getNameAlreadyExists,
-  linkActionsToPermission
+  linkActionsToPermission,
+  unlinkActionsToPermission,
+  exportAccount
 };

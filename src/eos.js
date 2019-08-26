@@ -1,5 +1,6 @@
 /* Private */
 const { RpcError } = require('eosjs');
+const ecc = require('eosjs-ecc');
 
 // NOTE: More than a simple wrapper for eos.rpc.get_info
 // NOTE: Saves state from get_info, which can be used by other methods
@@ -116,10 +117,15 @@ function transact(actions, broadcast = true, blocksBehind = 3, expireSeconds = 3
   });
 }
 
+function isValidPublic(publicKey) {
+  return ecc.isValidPublic(publicKey);
+}
+
 module.exports = {
   awaitTransaction,
   getAllTableRows,
   hasTransaction,
   checkPubKeytoAccount,
-  transact
+  transact,
+  isValidPublic
 };
