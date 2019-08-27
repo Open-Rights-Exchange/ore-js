@@ -362,13 +362,8 @@ async function exportAccount(authAccountName, publicKeys) {
     };
     if (options.confirm) {
       const awaitTransactionOptions = getAwaitTransactionOptions(options);
-      console.log('await transaction options', awaitTransactionOptions);
-      console.log('accountName', authAccountName);
-      console.log('publickeys', publicKeys);
       activeTransaction = await this.awaitTransaction(() => addPermission.bind(this)(authAccountName, [publicKeys.active], 'active', 'owner', true, options), awaitTransactionOptions);
-      console.log('activetransaction', activeTransaction);
       ownerTransaction = await this.awaitTransaction(() => addPermission.bind(this)(authAccountName, [publicKeys.owner], 'owner', 'owner', true, options), awaitTransactionOptions);
-      console.log('ownerTransaction', ownerTransaction);
     } else {
       activeTransaction = await addPermission.bind(this)(authAccountName, [publicKeys.active], 'active', 'owner', true, options);
       ownerTransaction = await addPermission.bind(this)(authAccountName, [publicKeys.owner], 'owner', 'owner', true, options);
