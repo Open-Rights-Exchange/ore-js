@@ -1,4 +1,5 @@
 const { Keygen } = require('eosjs-keygen');
+const { isValidPublicKey } = require('./eos');
 
 const ACCOUNT_NAME_MAX_LENGTH = 12;
 const BASE = 31; // Base 31 allows us to leave out '.', as it's used for account scope
@@ -354,6 +355,11 @@ async function reuseAccount(authAccountName, keys, authPermission = 'owner', par
 async function exportAccount(authAccountName, publicKeys) {
   let activeTransaction = null;
   let ownerTransaction = null;
+  const { owner, active } = publicKeys;
+
+  if (!isValidPublicKey(active) || !isValidPublicKey(owner)) {
+    throw new Error('Error in exportAccount:  Valid public keys needs to be provided for both active and owner keys.');
+  }
 
   try {
     const options = {
@@ -362,11 +368,11 @@ async function exportAccount(authAccountName, publicKeys) {
     };
     if (options.confirm) {
       const awaitTransactionOptions = getAwaitTransactionOptions(options);
-      activeTransaction = await this.awaitTransaction(() => addPermission.bind(this)(authAccountName, [publicKeys.active], 'active', 'owner', true, options), awaitTransactionOptions);
-      ownerTransaction = await this.awaitTransaction(() => addPermission.bind(this)(authAccountName, [publicKeys.owner], 'owner', 'owner', true, options), awaitTransactionOptions);
+      activeTransaction = await this.awaitTransaction(() => addPermission.bind(this)(authAccountName, [active], 'active', 'owner', true, options), awaitTransactionOptions);
+      ownerTransaction = await this.awaitTransaction(() => addPermission.bind(this)(authAccountName, [owner], 'owner', '', true, options), awaitTransactionOptions);
     } else {
-      activeTransaction = await addPermission.bind(this)(authAccountName, [publicKeys.active], 'active', 'owner', true, options);
-      ownerTransaction = await addPermission.bind(this)(authAccountName, [publicKeys.owner], 'owner', 'owner', true, options);
+      activeTransaction = await addPermission.bind(this)(authAccountName, [active], 'active', 'owner', true, options);
+      ownerTransaction = await addPermission.bind(this)(authAccountName, [owner], 'owner', '', true, options);
     }
   } catch (error) {
     throw new Error(`Error in exportAccount:  ${error}`);
@@ -571,17 +577,17 @@ async function getNameAlreadyExists(accountName) {
 
 module.exports = {
   addPermission,
-  deletePermissions,
   checkIfAccountHasPermission,
   createKeyPair,
   createBridgeAccount,
   createOreAccount,
+  deletePermissions,
   eosBase32,
+  exportAccount,
   generateAccountName,
   generateAccountNameString,
   generateEncryptedKeys,
   getNameAlreadyExists,
   linkActionsToPermission,
-  unlinkActionsToPermission,
-  exportAccount
+  unlinkActionsToPermission
 };
