@@ -117,15 +117,15 @@ function transact(actions, broadcast = true, blocksBehind = 3, expireSeconds = 3
   });
 }
 
-function isValidPublic(publicKey) {
+function isValidPublicKey(publicKey) {
   return ecc.isValidPublic(publicKey);
 }
 
 module.exports = {
   awaitTransaction,
+  checkPubKeytoAccount,
   getAllTableRows,
   hasTransaction,
-  checkPubKeytoAccount,
-  transact,
-  isValidPublic
+  isValidPublicKey,
+  transact
 };
