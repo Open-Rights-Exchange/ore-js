@@ -364,7 +364,10 @@ async function exportAccount(authAccountName, publicKeys) {
   try {
     const options = {
       confirm: true,
-      authPermission: 'owner'
+      authPermission: 'owner',
+      checkInterval: 200,
+      getBlockAttempts: 20,
+      blocksToCheck: 40
     };
     if (options.confirm) {
       const awaitTransactionOptions = getAwaitTransactionOptions(options);
