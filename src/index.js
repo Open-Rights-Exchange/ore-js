@@ -56,6 +56,7 @@ const generateAccountNameString = accounts.generateAccountNameString;
 module.exports = {
   crypto,
   generateAccountNameString,
+  isValidPublicKey: eos.isValidPublicKey,
   Orejs,
   JsSignatureProvider
 };
