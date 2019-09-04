@@ -136,8 +136,9 @@ async function createOreAccountWithKeys(activePublicKey, ownerPublicKey, orePaye
   };
   const oreAccountName = options.oreAccountName || await generateAccountName.bind(this)(options.accountNamePrefix);
 
+  const { confirm } = options;
   let transaction;
-  if (options.confirm) {
+  if (confirm === true) {
     const awaitTransactionOptions = getAwaitTransactionOptions(options);
     transaction = await this.awaitTransaction(() => newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, options), awaitTransactionOptions);
   } else {
@@ -289,7 +290,7 @@ async function addPermission(authAccountName, keys, permissionName, parentPermis
     actions = actions.concat(linkActions);
   }
 
-  if (confirm) {
+  if (confirm === true) {
     const awaitTransactionOptions = getAwaitTransactionOptions(options);
     transaction = await this.awaitTransaction(async () => this.transact(actions, broadcast), awaitTransactionOptions);
   } else {
@@ -308,7 +309,7 @@ async function deletePermissions(authAccountName, permissions, options = {}) {
   const { authPermission, links = [], broadcast = true, confirm = true } = options;
   const deleteActions = await composeDeleteAuthActions(permissions, authAccountName, authPermission);
 
-  if (confirm) {
+  if (confirm === true) {
     const awaitTransactionOptions = getAwaitTransactionOptions(options);
     transaction = await this.awaitTransaction(async () => this.transact(deleteActions, broadcast), awaitTransactionOptions);
   } else {
@@ -325,7 +326,7 @@ async function linkActionsToPermission(links, permission, authAccountName, authP
   const { confirm = true } = options;
   const actions = await composeLinkActions(links, permission, authAccountName, authPermission);
 
-  if (confirm) {
+  if (confirm === true) {
     const awaitTransactionOptions = getAwaitTransactionOptions(options);
     transaction = await this.awaitTransaction(async () => this.transact(actions, broadcast), awaitTransactionOptions);
   } else {
@@ -342,7 +343,7 @@ async function unlinkActionsToPermission(links, authAccountName, authPermission,
 
   const actions = await composeUnlinkActions(links, authAccountName, authPermission);
 
-  if (confirm) {
+  if (confirm === true) {
     const awaitTransactionOptions = getAwaitTransactionOptions(options);
     transaction = await this.awaitTransaction(async () => this.transact(actions, broadcast), awaitTransactionOptions);
   } else {
@@ -379,7 +380,7 @@ async function reuseAccount(authAccountName, keys, authPermission = 'owner', par
     };
 
     const { confirm = true } = options;
-    if (confirm) {
+    if (confirm === true) {
       const awaitTransactionOptions = getAwaitTransactionOptions(options);
       transaction = await this.awaitTransaction(() => addPermission.bind(this)(authAccountName, [keys.publicKeys.active], permissionName, parentPermission, true, options), awaitTransactionOptions);
     } else {
@@ -408,7 +409,7 @@ async function exportAccount(authAccountName, publicKeys) {
 
     const { confirm = true } = options;
 
-    if (confirm) {
+    if (confirm === true) {
       const awaitTransactionOptions = getAwaitTransactionOptions(options);
       activeTransaction = await this.awaitTransaction(() => addPermission.bind(this)(authAccountName, [active], 'active', 'owner', true, options), awaitTransactionOptions);
       ownerTransaction = await this.awaitTransaction(() => addPermission.bind(this)(authAccountName, [owner], 'owner', '', true, options), awaitTransactionOptions);
@@ -474,7 +475,7 @@ async function createBridgeAccount(password, salt, authorizingAccount, options) 
         confirm
       };
 
-      if (confirm) {
+      if (confirm === true) {
         const awaitTransactionOptions = getAwaitTransactionOptions(options);
         transaction = await this.awaitTransaction(async () => this.createNewAccount(authorizingAccount, keys, options), awaitTransactionOptions);
       } else {
@@ -530,7 +531,7 @@ async function createOreAccount(password, salt, ownerPublicKey, orePayerAccountN
       } else {
         oreAccountName = await generateAccountName.bind(this)(options.accountNamePrefix);
       }
-      if (confirm) {
+      if (confirm === true) {
         const awaitTransactionOptions = getAwaitTransactionOptions(options);
         transaction = await this.awaitTransaction(() => newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, options), awaitTransactionOptions);
       } else {
