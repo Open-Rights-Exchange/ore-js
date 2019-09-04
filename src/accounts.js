@@ -258,7 +258,7 @@ async function addPermission(authAccountName, keys, permissionName, parentPermis
   let transaction;
 
   const { authPermission = 'active', links = [], broadcast = true, confirm = true } = options;
-  console.log('confirm', confirm);
+
   if (overridePermission) {
     perm = await newPermission.bind(this)(keys, permissionName, parentPermission);
   } else {
@@ -291,7 +291,6 @@ async function addPermission(authAccountName, keys, permissionName, parentPermis
 
   if (confirm) {
     const awaitTransactionOptions = getAwaitTransactionOptions(options);
-    console.log('awaitTransactionOptions', awaitTransactionOptions);
     transaction = await this.awaitTransaction(async () => this.transact(actions, broadcast), awaitTransactionOptions);
   } else {
     transaction = await this.transact(actions, broadcast);
