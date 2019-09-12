@@ -65,7 +65,7 @@ async function getInstruments(params) {
     scope: params.scope || params.code,
     limit: params.limit || limit,
     key_type: keyType || 'i64',
-    index_position: index || 1
+    index_position: index || 1,
   };
   results = await this.eos.rpc.get_table_rows(parameters);
   return results.rows;
@@ -76,7 +76,7 @@ async function getAllInstruments() {
   // Returns all the instruments
   const instruments = await getInstruments.bind(this)({
     code: 'instr.ore',
-    table: 'tokens'
+    table: 'tokens',
   });
   return instruments;
 }
@@ -84,8 +84,8 @@ async function getAllInstruments() {
 function getRight(instrument, rightName) {
   const {
     instrument: {
-      rights
-    } = {}
+      rights,
+    } = {},
   } = instrument;
 
   const right = rights.find((rightObject) => {
@@ -106,15 +106,15 @@ async function findInstruments(oreAccountName, activeOnly = true, category = und
     code: 'instr.ore',
     table: 'tokens',
     lower_bound: oreAccountName,
-    key_name: 'owner'
+    key_name: 'owner',
   });
 
   if (activeOnly) {
-    instruments = instruments.filter(element => isActive(element));
+    instruments = instruments.filter((element) => isActive(element));
   }
 
   if (category) {
-    instruments = instruments.filter(element => hasCategory(element, category));
+    instruments = instruments.filter((element) => hasCategory(element, category));
   }
 
   if (rightName) {
@@ -134,19 +134,19 @@ function sortInstruments(instruments, rightName, sortOrder = 'cheapestThenMostRe
   let cheapestInstruments;
 
   switch (sortOrder) {
-    case 'cheapestThenMostRecent':
-      sortedInstruments = sortByCheapestRight.bind(this)(instruments, rightName);
-      cheapestInstrument = sortedInstruments[0];
-      cheapestPrice = this.getRight(cheapestInstrument, rightName).price_in_cpu;
-      cheapestInstruments = sortedInstruments.filter(instrument => this.getRight(instrument, rightName).price_in_cpu === cheapestPrice);
+  case 'cheapestThenMostRecent':
+    sortedInstruments = sortByCheapestRight.bind(this)(instruments, rightName);
+    cheapestInstrument = sortedInstruments[0];
+    cheapestPrice = this.getRight(cheapestInstrument, rightName).price_in_cpu;
+    cheapestInstruments = sortedInstruments.filter((instrument) => this.getRight(instrument, rightName).price_in_cpu === cheapestPrice);
 
-      sortedInstruments = sortByMintedAt(cheapestInstruments);
-      break;
-    case 'mostRecent':
-      sortedInstruments = sortByMintedAt(instruments);
-      break;
-    default:
-      break;
+    sortedInstruments = sortByMintedAt(cheapestInstruments);
+    break;
+  case 'mostRecent':
+    sortedInstruments = sortByMintedAt(instruments);
+    break;
+  default:
+    break;
   }
   return sortedInstruments[sortedInstruments.length - 1];
 }
@@ -155,5 +155,5 @@ module.exports = {
   getRight,
   getAllInstruments,
   findInstruments,
-  sortInstruments
+  sortInstruments,
 };

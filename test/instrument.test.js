@@ -21,33 +21,33 @@ describe('instrument', () => {
 
     beforeEach(() => {
       active = {
-        owner: ORE_TESTA_ACCOUNT_NAME
+        owner: ORE_TESTA_ACCOUNT_NAME,
       };
       expired = {
         owner: ORE_TESTA_ACCOUNT_NAME,
-        end_time: Math.floor(Date.now() / 1000) - 10
+        end_time: Math.floor(Date.now() / 1000) - 10,
       };
       uncategorized = {
         owner: ORE_TESTA_ACCOUNT_NAME,
         instrument: {
-          instrument_class: 'company.uncategorized'
-        }
+          instrument_class: 'company.uncategorized',
+        },
       };
       additionalRighted = {
         owner: ORE_TESTA_ACCOUNT_NAME,
         instrument: {
           instrument_class: 'company.uncategorized',
           rights: [{
-            right_name: 'company.nobody.licenseApi'
-          }]
-        }
+            right_name: 'company.nobody.licenseApi',
+          }],
+        },
       };
 
       instrumentMocks = mockInstruments([
         active,
         additionalRighted,
         expired,
-        uncategorized
+        uncategorized,
       ]);
 
       fetch.resetMocks();
@@ -92,18 +92,18 @@ describe('instrument', () => {
     describe('when multiple rights exist', () => {
       beforeEach(() => {
         rights = [{
-          right_name: 'company.left.licenseApi'
+          right_name: 'company.left.licenseApi',
         }, {
-          right_name: rightName
+          right_name: rightName,
         }, {
-          right_name: 'company.right.licenseApi'
+          right_name: 'company.right.licenseApi',
         }];
         instrument = mockInstrument({
           owner: ORE_TESTA_ACCOUNT_NAME,
           instrument: {
             instrument_class: 'company.uncategorized',
-            rights
-          }
+            rights,
+          },
         });
       });
 
@@ -116,16 +116,16 @@ describe('instrument', () => {
     describe('when the right does not exist', () => {
       beforeEach(() => {
         rights = [{
-          right_name: 'company.left.licenseApi'
+          right_name: 'company.left.licenseApi',
         }, {
-          right_name: 'company.right.licenseApi'
+          right_name: 'company.right.licenseApi',
         }];
         instrument = mockInstrument({
           owner: ORE_TESTA_ACCOUNT_NAME,
           instrument: {
             instrument_class: 'company.uncategorized',
-            rights
-          }
+            rights,
+          },
         });
       });
 

@@ -17,7 +17,7 @@ function newAccountTransaction(name, ownerPublicKey, activePublicKey, orePayerAc
     broadcast: true,
     permission: 'active',
     tokenSymbol: this.chainName === 'ore' ? 'ORE' : 'EOS',
-    ...options
+    ...options,
   };
 
   const actions = [{
@@ -25,7 +25,7 @@ function newAccountTransaction(name, ownerPublicKey, activePublicKey, orePayerAc
     name: 'createoreacc',
     authorization: [{
       actor: orePayerAccountName,
-      permission
+      permission,
     }],
     data: {
       creator: orePayerAccountName,
@@ -33,8 +33,8 @@ function newAccountTransaction(name, ownerPublicKey, activePublicKey, orePayerAc
       ownerkey: ownerPublicKey,
       activekey: activePublicKey,
       pricekey,
-      referral
-    }
+      referral,
+    },
   }];
 
   return this.transact(actions, broadcast);
@@ -66,9 +66,9 @@ function encryptKeys(keys, password, salt) {
   const encryptedKeys = {
     privateKeys: {
       owner: encrypted(keys.privateKeys.owner) ? keys.privateKeys.owner : this.encrypt(keys.privateKeys.owner, password, salt).toString(),
-      active: encrypted(keys.privateKeys.active) ? keys.privateKeys.active : this.encrypt(keys.privateKeys.active, password, salt).toString()
+      active: encrypted(keys.privateKeys.active) ? keys.privateKeys.active : this.encrypt(keys.privateKeys.active, password, salt).toString(),
     },
-    publicKeys: { ...publicKeys }
+    publicKeys: { ...publicKeys },
   };
   return encryptedKeys;
 }
@@ -76,7 +76,7 @@ function encryptKeys(keys, password, salt) {
 async function getAccountPermissions(oreAccountName) {
   const account = await this.eos.rpc.get_account(oreAccountName);
   const {
-    permissions
+    permissions,
   } = account;
 
   return permissions;
@@ -87,7 +87,7 @@ function weightedKey(key, weight = 1) {
 }
 
 function weightKeys(keys, weight = 1) {
-  return keys.map(key => weightedKey(key, weight));
+  return keys.map((key) => weightedKey(key, weight));
 }
 
 function newPermissionDetails(keys, threshold = 1, weights = 1) {
@@ -95,7 +95,7 @@ function newPermissionDetails(keys, threshold = 1, weights = 1) {
     accounts: [],
     keys: weightKeys.bind(this)(keys, weights),
     threshold,
-    waits: []
+    waits: [],
   };
 }
 
@@ -103,13 +103,13 @@ function newPermission(keys, permName, parent = 'active', threshold = 1, weights
   return {
     parent,
     perm_name: permName,
-    required_auth: newPermissionDetails.bind(this)(keys, threshold, weights)
+    required_auth: newPermissionDetails.bind(this)(keys, threshold, weights),
   };
 }
 
 async function appendPermission(oreAccountName, keys, permName, parent = 'active', threshold = 1, weights = 1) {
   const perms = await getAccountPermissions.bind(this)(oreAccountName);
-  const existingPerm = perms.find(perm => perm.perm_name === permName);
+  const existingPerm = perms.find((perm) => perm.perm_name === permName);
   if (existingPerm) { // NOTE: Add new keys & update the parent permission
     const weightedKeys = weightKeys.bind(this)(keys, weights);
     existingPerm.required_auth.keys = existingPerm.required_auth.keys.concat(weightedKeys);
@@ -132,7 +132,7 @@ async function createOreAccountWithKeys(activePublicKey, ownerPublicKey, orePaye
   options = {
     confirm: true,
     accountNamePrefix: 'ore',
-    ...options
+    ...options,
   };
   const oreAccountName = options.oreAccountName || await generateAccountName.bind(this)(options.accountNamePrefix);
 
@@ -152,7 +152,7 @@ async function generateOreAccountAndEncryptedKeys(password, salt, ownerPublicKey
 
   const {
     oreAccountName,
-    transaction
+    transaction,
   } = await createOreAccountWithKeys.bind(this)(keys.publicKeys.active, ownerPublicKey, orePayerAccountName, options);
 
   return { oreAccountName, transaction, keys };
@@ -162,11 +162,11 @@ async function generateOreAccountAndEncryptedKeys(password, salt, ownerPublicKey
 async function createAccount(password, salt, ownerPublicKey, orePayerAccountName, options = {}) {
   options = {
     broadcast: true,
-    ...options
+    ...options,
   };
   const { broadcast, oreAccountName: newAccountName } = options;
   const {
-    oreAccountName, transaction, keys
+    oreAccountName, transaction, keys,
   } = await generateOreAccountAndEncryptedKeys.bind(this)(password, salt, ownerPublicKey, orePayerAccountName, options);
 
   return {
@@ -174,7 +174,7 @@ async function createAccount(password, salt, ownerPublicKey, orePayerAccountName
     privateKey: keys.privateKeys.active,
     publicKey: keys.publicKeys.active,
     keys,
-    transaction
+    transaction,
   };
 }
 
@@ -188,12 +188,12 @@ async function composeDeleteAuthActions(permissions, authAccountName, authPermis
       name: 'deleteauth',
       authorization: [{
         actor: authAccountName,
-        permission: authPermission
+        permission: authPermission,
       }],
       data: {
         account: authAccountName,
-        permission
-      }
+        permission,
+      },
     });
   });
   return actions;
@@ -210,14 +210,14 @@ async function composeLinkActions(links, permission, authAccountName, authPermis
       name: 'linkauth',
       authorization: [{
         actor: authAccountName,
-        permission: authPermission
+        permission: authPermission,
       }],
       data: {
         account: authAccountName,
         code,
         type,
-        requirement: permission
-      }
+        requirement: permission,
+      },
     });
   });
   return actions;
@@ -234,13 +234,13 @@ async function composeUnlinkActions(links, authAccountName, authPermission) {
       name: 'unlinkauth',
       authorization: [{
         actor: authAccountName,
-        permission: authPermission
+        permission: authPermission,
       }],
       data: {
         account: authAccountName,
         code,
-        type
-      }
+        type,
+      },
     });
   });
   return actions;
@@ -251,7 +251,7 @@ async function composeUnlinkActions(links, authAccountName, authPermission) {
 // gets the account details from the chain network and checks if the account has a specific permission
 async function checkIfAccountHasPermission(oreAccountName, permName) {
   const perms = await getAccountPermissions.bind(this)(oreAccountName);
-  return !!(perms.find(perm => perm.perm_name === permName));
+  return !!(perms.find((perm) => perm.perm_name === permName));
 }
 
 async function addPermission(authAccountName, keys, permissionName, parentPermission, overridePermission = false, options = {}) {
@@ -274,14 +274,14 @@ async function addPermission(authAccountName, keys, permissionName, parentPermis
     name: 'updateauth',
     authorization: [{
       actor: authAccountName,
-      permission: authPermission
+      permission: authPermission,
     }],
     data: {
       account: authAccountName,
       permission,
       parent,
-      auth
-    }
+      auth,
+    },
   }];
 
   // add action permission for every { contract, action } pair passed in
@@ -304,7 +304,7 @@ async function deletePermissions(authAccountName, permissions, options = {}) {
   let transaction;
   options = {
     authPermission: 'active',
-    ...options
+    ...options,
   };
   const { authPermission, links = [], broadcast = true, confirm = true } = options;
   const deleteActions = await composeDeleteAuthActions(permissions, authAccountName, authPermission);
@@ -357,10 +357,10 @@ async function unlinkActionsToPermission(links, authAccountName, authPermission,
 async function checkIfAccountNameUsable(accountName) {
   let key = null;
   const permissions = await getAccountPermissions.bind(this)(accountName);
-  const activePermission = permissions.find(perm => perm.perm_name === 'active');
+  const activePermission = permissions.find((perm) => perm.perm_name === 'active');
   const { required_auth: requiredAuth } = activePermission;
   const { keys } = requiredAuth;
-  key = keys.find(k => k.key === this.unusedAccountPubKey);
+  key = keys.find((k) => k.key === this.unusedAccountPubKey);
   // only unusedAccountPubKey should exist in the active key
   if (!this.isNullOrEmpty(key) && keys.length === 1) {
     return true;
@@ -376,7 +376,7 @@ async function reuseAccount(authAccountName, keys, authPermission = 'owner', par
     options = {
       confirm: true,
       authPermission,
-      ...options
+      ...options,
     };
 
     const { confirm = true } = options;
@@ -404,7 +404,7 @@ async function exportAccount(authAccountName, publicKeys) {
   try {
     const options = {
       confirm: true,
-      authPermission: 'owner'
+      authPermission: 'owner',
     };
 
     const { confirm = true } = options;
@@ -429,7 +429,7 @@ async function createKeyPair(password, salt, authAccountName, permissionName, op
     confirm: true,
     parentPermission: 'active',
     keys: await generateEncryptedKeys.bind(this)(password, salt),
-    ...options
+    ...options,
   };
 
   const { keys, parentPermission } = options;
@@ -472,7 +472,7 @@ async function createBridgeAccount(password, salt, authorizingAccount, options) 
       options = {
         ...options,
         oreAccountName,
-        confirm
+        confirm,
       };
 
       if (confirm === true) {
@@ -491,7 +491,7 @@ async function createBridgeAccount(password, salt, authorizingAccount, options) 
     privateKey: keys.privateKeys.active,
     publicKey: keys.publicKeys.active,
     keys,
-    transaction
+    transaction,
   };
 }
 
@@ -555,7 +555,7 @@ async function createOreAccount(password, salt, ownerPublicKey, orePayerAccountN
     keys,
     transaction,
     verifierAuthKey,
-    verifierAuthPublicKey
+    verifierAuthPublicKey,
   };
 }
 
@@ -592,12 +592,12 @@ async function generateEncryptedKeys(password, salt, predefinedKeys = {}) {
     ...keys,
     publicKeys: {
       ...keys.publicKeys,
-      ...publicKeys
+      ...publicKeys,
     },
     privateKeys: {
       ...keys.privateKeys,
-      ...privateKeys
-    }
+      ...privateKeys,
+    },
   };
   const encryptedKeys = encryptKeys.bind(this)(keys, password, salt);
   return encryptedKeys;
@@ -626,5 +626,5 @@ module.exports = {
   generateEncryptedKeys,
   getNameAlreadyExists,
   linkActionsToPermission,
-  unlinkActionsToPermission
+  unlinkActionsToPermission,
 };

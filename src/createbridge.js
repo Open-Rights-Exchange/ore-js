@@ -14,14 +14,14 @@ function init(symbol, precision, newAccountContract, newAccountAction, minimumRA
     name: 'init',
     authorization: [{
       actor: contractName,
-      permission
+      permission,
     }],
     data: {
       symbol: chainSymbol,
       newaccountcontract: newAccountContract,
       newaccountaction: newAccountAction,
-      minimumram: minimumRAM
-    }
+      minimumram: minimumRAM,
+    },
   }];
 
   return this.transact(actions, broadcast);
@@ -42,14 +42,14 @@ function define(authorizingAccount, appName, ram = 4096, net, cpu, pricekey, opt
   const airdrop = {
     contract: airdropContract,
     tokens: airdropToken,
-    limit: airdropLimit
+    limit: airdropLimit,
   };
   const actions = [{
     account: contractName,
     name: 'define',
     authorization: [{
       actor: accountName,
-      permission
+      permission,
     }],
     data: {
       owner: accountName,
@@ -58,8 +58,8 @@ function define(authorizingAccount, appName, ram = 4096, net, cpu, pricekey, opt
       net,
       cpu,
       pricekey,
-      airdrop
-    }
+      airdrop,
+    },
   }];
 
   return this.transact(actions, broadcast);
@@ -77,7 +77,7 @@ function createNewAccount(authorizingAccount, keys, options) {
     name: 'create',
     authorization: [{
       actor: accountName,
-      permission
+      permission,
     }],
     data: {
       memo: accountName,
@@ -85,8 +85,8 @@ function createNewAccount(authorizingAccount, keys, options) {
       ownerkey: keys.publicKeys.owner,
       activekey: keys.publicKeys.active,
       origin,
-      referral
-    }
+      referral,
+    },
   }];
 
   return this.transact(actions, broadcast);
@@ -103,13 +103,13 @@ function whitelist(authorizingAccount, whitelistAccount, appName, options) {
     name: 'whitelist',
     authorization: [{
       actor: accountName,
-      permission
+      permission,
     }],
     data: {
       owner: accountName,
       account: whitelistAccount,
-      dapp: appName
-    }
+      dapp: appName,
+    },
   }];
 
   return this.transact(actions, broadcast);
@@ -130,14 +130,14 @@ function transfer(authorizingAccount, appName, amount, ramPercentage, totalAccou
     name: 'transfer',
     authorization: [{
       actor: accountName,
-      permission
+      permission,
     }],
     data: {
       from: accountName,
       to: createbridgeAccountName,
       quantity: amount,
-      memo
-    }
+      memo,
+    },
   }];
 
   return this.transact(actions, broadcast);
@@ -155,13 +155,13 @@ function reclaim(authorizingAccount, appName, symbol, options) {
     name: 'reclaim',
     authorization: [{
       actor: accountName,
-      permission
+      permission,
     }],
     data: {
       reclaimer: accountName,
       dapp: appName,
-      sym: symbol
-    }
+      sym: symbol,
+    },
   }];
 
   return this.transact(actions, broadcast);
@@ -173,5 +173,5 @@ module.exports = {
   define,
   whitelist,
   transfer,
-  reclaim
+  reclaim,
 };

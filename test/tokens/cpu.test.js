@@ -82,8 +82,8 @@ describe('cpu', () => {
         fetch.mockResponses(mock([`${cpuBalance}.0000 CPU`]), mock({
           rows: [{
             to: ORE_TESTA_ACCOUNT_NAME,
-            quantity: '10.0000 CPU'
-          }]
+            quantity: '10.0000 CPU',
+          }],
         }));
         orejs = constructOrejs({ fetch });
         transaction = mockGetTransaction(orejs);
@@ -103,8 +103,8 @@ describe('cpu', () => {
         fetch.mockResponses(mock({
           rows: [{
             to: ORE_TESTB_ACCOUNT_NAME,
-            quantity: '0.0000 CPU'
-          }]
+            quantity: '0.0000 CPU',
+          }],
         }));
         orejs = constructOrejs({ fetch });
       });

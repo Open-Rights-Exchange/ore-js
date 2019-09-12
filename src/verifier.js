@@ -24,11 +24,11 @@ async function getAccessTokenFromVerifier(verifierEndpoint, instrument, right, h
       requestParams: hashedParams,
       rightName: right.right_name,
       signature,
-      voucherId: instrument.id
+      voucherId: instrument.id,
     }),
     headers: {
-      'Content-Type': 'application/json'
-    }
+      'Content-Type': 'application/json',
+    },
   };
 
   // Call the Verifier to approve the request
@@ -64,5 +64,5 @@ async function getAccessTokenFromVerifier(verifierEndpoint, instrument, right, h
 
 module.exports = {
   getAccessTokenFromVerifier,
-  hashParams
+  hashParams,
 };

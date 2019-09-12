@@ -15,7 +15,7 @@ async function getInfo() {
 
 function hasTransaction(block, transactionId) {
   if (block.transactions) {
-    const result = block.transactions.find(transaction => transaction.trx.id === transactionId);
+    const result = block.transactions.find((transaction) => transaction.trx.id === transactionId);
     if (result !== undefined) {
       return true;
     }
@@ -89,7 +89,7 @@ async function getAllTableRows(params, key_field = 'id', json = true) {
     json,
     lower_bound: params.lower_bound || lowerBound,
     scope: params.scope || params.code,
-    limit: params.limit || limit
+    limit: params.limit || limit,
   };
   results = await this.eos.rpc.get_table_rows(parameters);
   return results.rows;
@@ -109,11 +109,11 @@ async function checkPubKeytoAccount(account, publicKey) {
 // NOTE: setting the broadcast parameter to false allows us to receive signed transactions, without submitting them
 function transact(actions, broadcast = true, blocksBehind = 3, expireSeconds = 30) {
   return this.eos.transact({
-    actions
+    actions,
   }, {
     blocksBehind,
     broadcast,
-    expireSeconds
+    expireSeconds,
   });
 }
 
@@ -127,5 +127,5 @@ module.exports = {
   getAllTableRows,
   hasTransaction,
   isValidPublicKey,
-  transact
+  transact,
 };

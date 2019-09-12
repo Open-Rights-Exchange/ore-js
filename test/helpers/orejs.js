@@ -9,7 +9,7 @@ function constructOrejs(config) {
   const orejs = new Orejs({
     httpEndpoint: ORE_NETWORK_URI,
     keyProvider: [ORE_OWNER_ACCOUNT_KEY],
-    ...config
+    ...config,
   });
 
   return orejs;
@@ -149,5 +149,5 @@ module.exports = {
   mockGetBlockError,
   mockGetCurrency,
   mockGetInfo,
-  mockGetTransaction
+  mockGetTransaction,
 };

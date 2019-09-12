@@ -14,7 +14,7 @@ async function getInstrumentByOwner(owner) {
 
 async function getInstrumentsByRight(instrumentList, rightName) {
   // Gets all the instruments with a particular right
-  const instruments = await instrumentList.filter(instrument => this.getRight(instrument, rightName) !== undefined);
+  const instruments = await instrumentList.filter((instrument) => this.getRight(instrument, rightName) !== undefined);
   return instruments;
 }
 
@@ -25,15 +25,15 @@ async function getCallStats(instrumentId, rightName) {
     json: true,
     scope: instrumentId,
     table: LOG_COUNT_TABLE_NAME,
-    limit: -1
+    limit: -1,
   });
 
   const rightProperties = {
     totalCalls: 0,
-    totalCpuUsage: 0
+    totalCpuUsage: 0,
   };
 
-  const rightObject = await result.rows.find(right => right.right_name === rightName);
+  const rightObject = await result.rows.find((right) => right.right_name === rightName);
 
   if (rightObject !== undefined) {
     rightProperties.totalCalls = rightObject.total_count;
@@ -55,7 +55,7 @@ async function getRightStats(rightName, owner) {
       code: INSTR_CONTRACT_NAME,
       scope: INSTR_CONTRACT_NAME,
       table: INSTR_TABLE_NAME,
-      limit: -1
+      limit: -1,
     });
   }
 
@@ -71,7 +71,7 @@ async function getRightStats(rightName, owner) {
 
   return {
     totalCpuUsage: value.reduce((a, b) => a + parseFloat(b.totalCpuUsage), 0),
-    totalCalls: value.reduce((a, b) => a + parseFloat(b.totalCalls), 0)
+    totalCalls: value.reduce((a, b) => a + parseFloat(b.totalCalls), 0),
   };
 }
 
@@ -86,11 +86,11 @@ async function updateUsageLog(verifierEndpoint, instrumentId, rightName, oreAcce
       oreAccessToken,
       signature,
       voucherId: instrumentId,
-      amount: instrumentCallCost
+      amount: instrumentCallCost,
     }),
     headers: {
-      'Content-Type': 'application/json'
-    }
+      'Content-Type': 'application/json',
+    },
   };
   await fetch(`${verifierEndpoint}/update-usage`, options);
 }
@@ -100,5 +100,5 @@ module.exports = {
   getCallStats,
   getRightStats,
   getInstrumentsByRight,
-  updateUsageLog
+  updateUsageLog,
 };
