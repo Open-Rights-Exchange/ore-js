@@ -33,6 +33,7 @@
     "eosjs": "20.0.0",
     "eosjs-ecc": "^4.0.4",
     "eosjs-keygen": "^1.3.2",
+    "eslint-config-aikon": "git+https://apim-npmbot:LtT3pgcj9YAxMrNN@github.com/API-market/eslint-config-aikon.git#master",
     "hash.js": "^1.1.7",
     "node-fetch": "^2.6.0",
     "sjcl": "^1.0.8",
