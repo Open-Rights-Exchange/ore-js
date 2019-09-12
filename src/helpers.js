@@ -16,5 +16,5 @@ function isNullOrEmpty(obj) {
 }
 
 module.exports = {
-  isNullOrEmpty
+  isNullOrEmpty,
 };

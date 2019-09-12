@@ -46,17 +46,17 @@ class Orejs {
       rpc: this.rpc,
       signatureProvider: this.signatureProvider,
       textEncoder: new TextEncoder(),
-      textDecoder: new TextDecoder()
+      textDecoder: new TextDecoder(),
     });
   }
 }
 
-const generateAccountNameString = accounts.generateAccountNameString;
+const { generateAccountNameString } = accounts;
 
 module.exports = {
   crypto,
   generateAccountNameString,
   isValidPublicKey: eos.isValidPublicKey,
   Orejs,
-  JsSignatureProvider
+  JsSignatureProvider,
 };

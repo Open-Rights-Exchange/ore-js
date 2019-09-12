@@ -11,6 +11,7 @@ describe('createbridge', () => {
   const permission = 'active';
   const authorizingAccount = { accountName, permission };
   const appName = Math.random().toString();
+  let orejs;
 
 
   beforeAll(() => {
@@ -40,9 +41,9 @@ describe('createbridge', () => {
               symbol: `${precision},${symbol}`,
               newaccountcontract: newAccountContract,
               newaccountaction: newAccountAction,
-              minimumram: minimumRAM
-            } })
-        ]
+              minimumram: minimumRAM,
+            } }),
+        ],
       }, mockOptions());
     });
   });
@@ -78,10 +79,10 @@ describe('createbridge', () => {
               airdrop: {
                 contract: airdropContract,
                 tokens: airdropToken,
-                limit: airdropLimit
-              }
-            } })
-        ]
+                limit: airdropLimit,
+              },
+            } }),
+        ],
       }, mockOptions());
     });
   });
@@ -104,9 +105,9 @@ describe('createbridge', () => {
             data: {
               owner: accountName,
               account: whitelistAccount,
-              dapp: appName
-            } })
-        ]
+              dapp: appName,
+            } }),
+        ],
       }, mockOptions());
     });
   });
@@ -132,9 +133,9 @@ describe('createbridge', () => {
               from: accountName,
               to: 'createbridge',
               quantity: amount,
-              memo: `${appName},${ramPercentage},${totalAccounts}`
-            } })
-        ]
+              memo: `${appName},${ramPercentage},${totalAccounts}`,
+            } }),
+        ],
       }, mockOptions());
     });
   });
@@ -157,9 +158,9 @@ describe('createbridge', () => {
             data: {
               reclaimer: accountName,
               dapp: appName,
-              sym: symbol
-            } })
-        ]
+              sym: symbol,
+            } }),
+        ],
       }, mockOptions());
     });
 
@@ -176,9 +177,9 @@ describe('createbridge', () => {
             data: {
               reclaimer: accountName,
               dapp: appName,
-              sym: symbol
-            } })
-        ]
+              sym: symbol,
+            } }),
+        ],
       }, mockOptions());
     });
   });

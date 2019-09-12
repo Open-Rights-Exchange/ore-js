@@ -5,7 +5,7 @@
   "main": "./dist/index.js",
   "scripts": {
     "build": "tsc --project ./tsconfig.json --pretty",
-    "lint": "./node_modules/.bin/eslint test/** src/** --fix",
+    "lint": "eslint test/** src/** --fix",
     "prepublishOnly": "npm run build",
     "test": "jest --runInBand --coverage --detectOpenHandles"
   },
@@ -21,6 +21,7 @@
   "devDependencies": {
     "eslint": "^6.0.0",
     "eslint-config-airbnb": "^17.1.0",
+    "eslint-config-aikon": "git+https://apim-npmbot:LtT3pgcj9YAxMrNN@github.com/API-market/eslint-config-aikon.git#master",
     "eslint-plugin-import": "^2.18.0",
     "eslint-plugin-jsx-a11y": "^6.2.1",
     "eslint-plugin-react": "^7.14.2",

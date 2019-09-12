@@ -78,15 +78,15 @@ describe('eos', () => {
       transactionId = 'asdf';
       transaction = {
         trx: {
-          id: transactionId
-        }
+          id: transactionId,
+        },
       };
     });
 
     describe('when the block includes the transaction', () => {
       beforeAll(() => {
         block = {
-          transactions: [transaction]
+          transactions: [transaction],
         };
       });
 
@@ -99,7 +99,7 @@ describe('eos', () => {
     describe('when the block does not include the transaction', () => {
       beforeAll(() => {
         block = {
-          transactions: []
+          transactions: [],
         };
       });
 

@@ -57,16 +57,16 @@ describe('account', () => {
                   accounts: [],
                   keys: [{
                     key: expect.any(String),
-                    weight: 1
+                    weight: 1,
                   }],
                   threshold: 1,
-                  waits: []
+                  waits: [],
                 },
                 parent: parentPermission,
-                permission: permissionName
-              }
-            })
-          ]
+                permission: permissionName,
+              },
+            }),
+          ],
         }, mockOptions());
         expect(spyAccount).toHaveBeenCalledWith(expect.any(String));
       });
@@ -113,16 +113,16 @@ describe('account', () => {
                   accounts: [],
                   keys: [{
                     key: expect.any(String),
-                    weight: 1
+                    weight: 1,
                   }],
                   threshold: 1,
-                  waits: []
+                  waits: [],
                 },
                 parent: parentPermission,
-                permission: permissionName
-              }
-            })
-          ]
+                permission: permissionName,
+              },
+            }),
+          ],
         }, mockOptions());
         // expect(spyAccount).toHaveBeenCalledWith(expect.any(String));
         expect(spyInfo).toHaveBeenCalledWith({});
@@ -152,14 +152,14 @@ describe('account', () => {
                     accounts: [],
                     keys: [{
                       key: expect.any(String),
-                      weight: 1
+                      weight: 1,
                     }],
                     threshold: 1,
-                    waits: []
+                    waits: [],
                   },
                   parent: parentPermission,
-                  permission: permissionName
-                }
+                  permission: permissionName,
+                },
               }),
               mockAction({
                 account: 'eosio',
@@ -169,10 +169,10 @@ describe('account', () => {
                   account: accountName,
                   code,
                   type,
-                  requirement: permissionName
-                }
-              })
-            ]
+                  requirement: permissionName,
+                },
+              }),
+            ],
           }, mockOptions());
         });
       });
@@ -200,19 +200,19 @@ describe('account', () => {
                   accounts: [],
                   keys: [{
                     key: expect.any(String),
-                    weight: 1
+                    weight: 1,
                   }, {
                     key: expect.any(String),
-                    weight: 1
+                    weight: 1,
                   }],
                   threshold: 1,
-                  waits: []
+                  waits: [],
                 },
                 parent: parentPermission,
-                permission: permissionName
-              }
-            })
-          ]
+                permission: permissionName,
+              },
+            }),
+          ],
         }, mockOptions());
         // expect(spyAccount).toHaveBeenCalledWith(expect.any(String));
         expect(ecc.privateToPublic(orejs.decrypt(keypair.privateKeys.owner, WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT))).toEqual(keypair.publicKeys.owner);
@@ -224,12 +224,12 @@ describe('account', () => {
       const keys = {
         privateKeys: {
           owner: '{"iv":"xr5XTgow76QCpEe8Tij7xw==","v":1,"iter":10000,"ks":128,"ts":64,"mode":"gcm","adata":"","cipher":"aes","ct":"2YAap55e6O8gwZ6m33UjEjxqw1GU+cZbVrYP7TDRFiF0axe1XJ2W+uvhgG5ArEga8GO8cnNf+6KaFaQ="}',
-          active: '{"iv":"whCS0NVLJv+5xFxm/udHaw==","v":1,"iter":10000,"ks":128,"ts":64,"mode":"gcm","adata":"","cipher":"aes","ct":"G7So6hZeuqp3eZT4aj3w/C5lhXIJ8Z+9dTUCQNAhSWMVB9S+k+IHoUGQKgAi1cz3vnQ3VH4DdJobec4="}'
+          active: '{"iv":"whCS0NVLJv+5xFxm/udHaw==","v":1,"iter":10000,"ks":128,"ts":64,"mode":"gcm","adata":"","cipher":"aes","ct":"G7So6hZeuqp3eZT4aj3w/C5lhXIJ8Z+9dTUCQNAhSWMVB9S+k+IHoUGQKgAi1cz3vnQ3VH4DdJobec4="}',
         },
         publicKeys: {
           owner: 'EOS8ekDXRqcWGYXHDZp246B8VF9DTwkuz13u5tpPnMdptE2SE9sVf',
-          active: 'EOS6iGJBT4PPuhm5zKiKUiFNi7eYqLFofZqMYDyZyKHfNt5fuRLF2'
-        }
+          active: 'EOS6iGJBT4PPuhm5zKiKUiFNi7eYqLFofZqMYDyZyKHfNt5fuRLF2',
+        },
       };
 
       beforeEach(() => {
@@ -269,15 +269,15 @@ describe('account', () => {
           actions: [
             mockAction({ account: 'system.ore',
               name: 'createoreacc',
-              authorization: { permission }
-            })
-          ]
+              authorization: { permission },
+            }),
+          ],
         }, mockOptions());
         expect(spyTransaction).toHaveBeenNthCalledWith(2, {
           actions: [
             mockAction({ account: 'eosio', name: 'updateauth' }),
-            mockAction({ account: 'eosio', name: 'linkauth' })
-          ]
+            mockAction({ account: 'eosio', name: 'linkauth' }),
+          ],
         }, mockOptions());
         expect(spyInfo).toHaveBeenCalledWith({});
         expect(spyBlock).toHaveBeenCalledWith(block.block_num + 1);
@@ -290,14 +290,14 @@ describe('account', () => {
           keys: expect.objectContaining({
             privateKeys: expect.objectContaining({
               active: expect.stringMatching(/^\{.*\}$/),
-              owner: expect.stringMatching(/^\{.*\}$/)
+              owner: expect.stringMatching(/^\{.*\}$/),
             }),
             publicKeys: expect.objectContaining({
               active: expect.stringMatching(/^EOS\w*$/),
-              owner: expect.stringMatching(/^EOS\w*$/)
-            })
+              owner: expect.stringMatching(/^EOS\w*$/),
+            }),
           }),
-          transaction
+          transaction,
         });
         expect(ecc.privateToPublic(orejs.decrypt(account.privateKey, WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT))).toEqual(account.publicKey);
         expect(ecc.privateToPublic(account.verifierAuthKey)).toEqual(account.verifierAuthPublicKey);
@@ -321,14 +321,14 @@ describe('account', () => {
             keys: expect.objectContaining({
               privateKeys: expect.objectContaining({
                 active: expect.stringMatching(/^\{.*\}$/),
-                owner: expect.stringMatching(/^\{.*\}$/)
+                owner: expect.stringMatching(/^\{.*\}$/),
               }),
               publicKeys: expect.objectContaining({
                 active: expect.stringMatching(/^EOS\w*$/),
-                owner: expect.stringMatching(/^EOS\w*$/)
-              })
+                owner: expect.stringMatching(/^EOS\w*$/),
+              }),
             }),
-            transaction
+            transaction,
           });
         });
       });
@@ -345,8 +345,8 @@ describe('account', () => {
           const account = await orejs.createOreAccount(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, ORE_OWNER_ACCOUNT_KEY, ORE_PAYER_ACCOUNT_NAME, options);
           expect(account).toEqual(expect.objectContaining({
             keys: expect.objectContaining({
-              publicKeys: expect.objectContaining({ owner: key })
-            })
+              publicKeys: expect.objectContaining({ owner: key }),
+            }),
           }));
         });
       });
@@ -370,8 +370,8 @@ describe('account', () => {
           expect(spyTransaction).toHaveBeenNthCalledWith(1, {
             actions: [
               mockAction({ account: 'system.ore',
-                name: 'createoreacc' })
-            ]
+                name: 'createoreacc' }),
+            ],
           }, mockOptions());
         });
 
@@ -384,14 +384,14 @@ describe('account', () => {
             keys: expect.objectContaining({
               privateKeys: expect.objectContaining({
                 active: expect.stringMatching(/^\{.*\}$/),
-                owner: expect.stringMatching(/^\{.*\}$/)
+                owner: expect.stringMatching(/^\{.*\}$/),
               }),
               publicKeys: expect.objectContaining({
                 active: expect.stringMatching(/^EOS\w*$/),
-                owner: expect.stringMatching(/^EOS\w*$/)
-              })
+                owner: expect.stringMatching(/^EOS\w*$/),
+              }),
             }),
-            transaction
+            transaction,
           });
         });
       });
@@ -467,9 +467,9 @@ describe('account', () => {
               memo: accountName,
               origin: dappName,
               ownerkey: expect.stringMatching(/^EOS\w*$/),
-              referral: ''
-            } })
-        ]
+              referral: '',
+            } }),
+        ],
       }, mockOptions());
       expect(spyInfo).toHaveBeenCalledWith({});
       expect(spyBlock).toHaveBeenCalledWith(block.block_num + 1);
@@ -480,14 +480,14 @@ describe('account', () => {
         keys: expect.objectContaining({
           privateKeys: expect.objectContaining({
             active: expect.stringMatching(/^\{.*\}$/),
-            owner: expect.stringMatching(/^\{.*\}$/)
+            owner: expect.stringMatching(/^\{.*\}$/),
           }),
           publicKeys: expect.objectContaining({
             active: expect.stringMatching(/^EOS\w*$/),
-            owner: expect.stringMatching(/^EOS\w*$/)
-          })
+            owner: expect.stringMatching(/^EOS\w*$/),
+          }),
         }),
-        transaction
+        transaction,
       });
       expect(ecc.privateToPublic(orejs.decrypt(account.privateKey, WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT))).toEqual(account.publicKey);
     });
@@ -512,9 +512,9 @@ describe('account', () => {
               ownerkey: expect.stringMatching(/^EOS\w*$/),
               activekey: expect.stringMatching(/^EOS\w*$/),
               origin: dappName,
-              referral: ''
-            } })
-        ]
+              referral: '',
+            } }),
+        ],
       }, mockOptions());
       expect(spyInfo).toHaveBeenCalledWith({});
       expect(spyBlock).toHaveBeenCalledWith(block.block_num + 1);
@@ -525,14 +525,14 @@ describe('account', () => {
         keys: expect.objectContaining({
           privateKeys: expect.objectContaining({
             active: expect.stringMatching(/^\{.*\}$/),
-            owner: expect.stringMatching(/^\{.*\}$/)
+            owner: expect.stringMatching(/^\{.*\}$/),
           }),
           publicKeys: expect.objectContaining({
             active: expect.stringMatching(/^EOS\w*$/),
-            owner: expect.stringMatching(/^EOS\w*$/)
-          })
+            owner: expect.stringMatching(/^EOS\w*$/),
+          }),
         }),
-        transaction
+        transaction,
       });
       expect(ecc.privateToPublic(orejs.decrypt(account.privateKey, WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT))).toEqual(account.publicKey);
     });
@@ -580,12 +580,12 @@ describe('account', () => {
       expect(keys).toEqual(expect.objectContaining({
         privateKeys: expect.objectContaining({
           active: expect.stringMatching(/^\{.*\}$/),
-          owner: expect.stringMatching(/^\{.*\}$/)
+          owner: expect.stringMatching(/^\{.*\}$/),
         }),
         publicKeys: expect.objectContaining({
           active: expect.stringMatching(/^EOS\w*$/),
-          owner: expect.stringMatching(/^EOS\w*$/)
-        })
+          owner: expect.stringMatching(/^EOS\w*$/),
+        }),
       }));
     });
 
@@ -598,8 +598,8 @@ describe('account', () => {
         expect(keys).toEqual(expect.objectContaining({
           publicKeys: expect.objectContaining({
             active: expect.stringMatching(/^EOS\w*$/),
-            owner: expect.stringMatching(publicKey)
-          })
+            owner: expect.stringMatching(publicKey),
+          }),
         }));
       });
     });
@@ -613,8 +613,8 @@ describe('account', () => {
         expect(keys).toEqual(expect.objectContaining({
           privateKeys: expect.objectContaining({
             active: expect.stringMatching(/^\{.*\}$/),
-            owner: expect.stringMatching(/^\{.*\}$/)
-          })
+            owner: expect.stringMatching(/^\{.*\}$/),
+          }),
         }));
       });
     });
@@ -628,8 +628,8 @@ describe('account', () => {
         expect(keys).toEqual(expect.objectContaining({
           privateKeys: expect.objectContaining({
             active: expect.stringMatching(/^\{.*\}$/),
-            owner: expect.stringContaining(privateKey)
-          })
+            owner: expect.stringContaining(privateKey),
+          }),
         }));
       });
     });
