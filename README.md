@@ -6,4 +6,4 @@ OREJS is a helper library (written in Javascript) to provide simple high-level a
 
 # NPM Package
 
-Once published, package name will be: @open-rights-exchange/orejs@{version}
+Once published, the package name will be: @open-rights-exchange/orejs@{version}
