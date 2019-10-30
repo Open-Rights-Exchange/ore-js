@@ -90,8 +90,8 @@ describe('eos', () => {
         };
       });
 
-      it('returns true', () => {
-        const hasTransaction = orejs.hasTransaction(block, transactionId);
+      it('returns true', async () => {
+        const hasTransaction = await orejs.hasTransaction(block, transactionId);
         expect(hasTransaction).toEqual(true);
       });
     });
@@ -103,8 +103,8 @@ describe('eos', () => {
         };
       });
 
-      it('returns false', () => {
-        const hasTransaction = orejs.hasTransaction(block, transactionId);
+      it('returns false', async () => {
+        const hasTransaction = await orejs.hasTransaction(block, transactionId);
         expect(hasTransaction).toEqual(false);
       });
     });

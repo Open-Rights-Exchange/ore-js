@@ -39,6 +39,9 @@ describe('account', () => {
       let spyAccount;
 
       beforeEach(() => {
+        transaction = mockGetTransaction(orejs);
+        info = mockGetInfo(orejs);
+        block = mockGetBlock(orejs, { block_num: info.head_block_num, transactions: [{ trx: { id: transaction.transaction_id } }] });  
         spyTransaction = jest.spyOn(orejs.eos, 'transact');
         spyAccount = jest.spyOn(orejs.eos.rpc, 'get_account');
       });
@@ -304,10 +307,11 @@ describe('account', () => {
       });
 
       describe('when defining an account name prefix', () => {
-        const options = { accountNamePrefix: 'ore', oreAccountName: 'oreoretest11' };
+        const options = { accountNamePrefix: 'ore', oreAccountName: 'oreoretest11', confirm: false };
 
         beforeEach(() => {
           mockAllGetAccounts(orejs);
+          block = mockGetBlock(orejs, { block_num: info.head_block_num, transactions: [{ trx: { id: transaction.transaction_id } }] });
         });
 
         it('returns an account with the proper name', async () => {

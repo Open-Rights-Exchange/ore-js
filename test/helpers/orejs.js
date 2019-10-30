@@ -116,7 +116,7 @@ function mockGetInfo(_orejs = undefined, _info = {}) {
 
   const getInfo = JSON.parse(mockInfo(_info)[0])[0];
 
-  mockupInfo.mockImplementationOnce(() => Promise.resolve(getInfo));
+  mockupInfo.mockImplementation(() => Promise.resolve(getInfo));
   const orejs = _orejs || constructOrejs();
   orejs.eos.rpc.get_info = mockupInfo;
 
@@ -129,9 +129,9 @@ function mockGetTransaction(_orejs = undefined, success = true, _transaction = {
   const getTransaction = mockTransaction(_transaction);
 
   if (success) {
-    mockupTransaction.mockImplementationOnce(() => Promise.resolve(getTransaction));
+    mockupTransaction.mockImplementation(() => Promise.resolve(getTransaction));
   } else {
-    mockupTransaction.mockImplementationOnce(() => Promise.reject(getTransaction));
+    mockupTransaction.mockImplementation(() => Promise.reject(getTransaction));
   }
   const orejs = _orejs || constructOrejs();
   orejs.eos.transact = mockupTransaction;

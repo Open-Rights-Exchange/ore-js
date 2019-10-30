@@ -13,7 +13,7 @@ async function getInfo() {
 
 /* Public */
 
-function hasTransaction(block, transactionId) {
+async function hasTransaction(block, transactionId) {
   if (block.transactions) {
     const result = block.transactions.find(transaction => transaction.trx.id === transactionId);
     if (result !== undefined) {
@@ -31,15 +31,21 @@ function hasTransaction(block, transactionId) {
 // NOTE: getBlockAttempts = the number of failed attempts at retrieving a particular block, before giving up
 function awaitTransaction(func, options = {}) {
   const { blocksToCheck = 20, checkInterval = 400, getBlockAttempts = 5 } = options;
+  let startingBlockNumToCheck;
+  let blockNumToCheck;
+
   return new Promise(async (resolve, reject) => {
     // check the current head block num...
     const preCommitInfo = await getInfo.bind(this)();
     const preCommitHeadBlockNum = preCommitInfo.head_block_num;
     // make the transaction...
-    // const transaction = await func();
     let transaction;
     try {
       transaction = await func();
+      const { processed } = transaction || {};
+      // starting block number should be the block number in the transaction reciept. If block number not in transaction, use preCommitHeadBlockNum
+      const { block_num = preCommitHeadBlockNum + 1 } = processed || {};
+      startingBlockNumToCheck = block_num;
     } catch (error) {
       let errString = '';
 
@@ -52,13 +58,15 @@ function awaitTransaction(func, options = {}) {
       reject(new Error(`Await Transaction Failure: ${errString}`));
     }
     // keep checking for the transaction in future blocks...
-    let blockNumToCheck = preCommitHeadBlockNum + 1;
     let blockToCheck;
     let getBlockAttempt = 1;
+    let blockHasTransaction = false;
+    blockNumToCheck = startingBlockNumToCheck;
     const intConfirm = setInterval(async () => {
       try {
         blockToCheck = await this.eos.rpc.get_block(blockNumToCheck);
-        if (hasTransaction(blockToCheck, transaction.transaction_id)) {
+        blockHasTransaction = await hasTransaction(blockToCheck, transaction.transaction_id);
+        if (blockHasTransaction) {
           clearInterval(intConfirm);
           resolve(transaction);
         }
@@ -71,7 +79,7 @@ function awaitTransaction(func, options = {}) {
         }
         getBlockAttempt += 1;
       }
-      if (blockNumToCheck > preCommitHeadBlockNum + blocksToCheck) {
+      if (blockNumToCheck > startingBlockNumToCheck + blocksToCheck) {
         clearInterval(intConfirm);
         reject(new Error(`Await Transaction Timeout: Waited for ${blocksToCheck} blocks ~(${blocksToCheck / 2} seconds) starting with block num: ${preCommitHeadBlockNum}. This does not mean the transaction failed just that the transaction wasn't found in a block before timeout`));
       }
