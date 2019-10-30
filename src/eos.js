@@ -31,7 +31,7 @@ async function hasTransaction(block, transactionId) {
 // NOTE: getBlockAttempts = the number of failed attempts at retrieving a particular block, before giving up
 function awaitTransaction(func, options = {}) {
   const { blocksToCheck = 20, checkInterval = 400, getBlockAttempts = 5 } = options;
-  let startingBlockNumToCheck
+  let startingBlockNumToCheck;
   let blockNumToCheck;
 
   return new Promise(async (resolve, reject) => {
