@@ -31,6 +31,7 @@ async function hasTransaction(block, transactionId) {
 // NOTE: getBlockAttempts = the number of failed attempts at retrieving a particular block, before giving up
 function awaitTransaction(func, options = {}) {
   const { blocksToCheck = 20, checkInterval = 400, getBlockAttempts = 5 } = options;
+  let startingBlockNumToCheck
   let blockNumToCheck;
 
   return new Promise(async (resolve, reject) => {
@@ -44,7 +45,7 @@ function awaitTransaction(func, options = {}) {
       const { processed } = transaction || {};
       // starting block number should be the block number in the transaction reciept. If block number not in transaction, use preCommitHeadBlockNum
       const { block_num = preCommitHeadBlockNum + 1 } = processed || {};
-      blockNumToCheck = block_num;
+      startingBlockNumToCheck = block_num;
     } catch (error) {
       let errString = '';
 
@@ -60,6 +61,7 @@ function awaitTransaction(func, options = {}) {
     let blockToCheck;
     let getBlockAttempt = 1;
     let blockHasTransaction = false;
+    blockNumToCheck = startingBlockNumToCheck;
     const intConfirm = setInterval(async () => {
       try {
         blockToCheck = await this.eos.rpc.get_block(blockNumToCheck);
@@ -77,7 +79,7 @@ function awaitTransaction(func, options = {}) {
         }
         getBlockAttempt += 1;
       }
-      if (blockNumToCheck > blockNumToCheck + blocksToCheck) {
+      if (blockNumToCheck > startingBlockNumToCheck + blocksToCheck) {
         clearInterval(intConfirm);
         reject(new Error(`Await Transaction Timeout: Waited for ${blocksToCheck} blocks ~(${blocksToCheck / 2} seconds) starting with block num: ${preCommitHeadBlockNum}. This does not mean the transaction failed just that the transaction wasn't found in a block before timeout`));
       }
