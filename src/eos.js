@@ -44,8 +44,8 @@ function awaitTransaction(func, options = {}) {
       transaction = await func();
       const { processed } = transaction || {};
       // starting block number should be the block number in the transaction reciept. If block number not in transaction, use preCommitHeadBlockNum
-      const { block_num = preCommitHeadBlockNum + 1 } = processed || {};
-      startingBlockNumToCheck = block_num;
+      const { block_num = preCommitHeadBlockNum } = processed || {};
+      startingBlockNumToCheck = block_num - 1;
     } catch (error) {
       let errString = '';
 
