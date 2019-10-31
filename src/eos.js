@@ -44,8 +44,8 @@ function awaitTransaction(func, options = {}) {
       transaction = await func();
       const { processed } = transaction || {};
       // starting block number should be the block number in the transaction reciept. If block number not in transaction, use preCommitHeadBlockNum
-      const { block_num = preCommitHeadBlockNum + 1 } = processed || {};
-      startingBlockNumToCheck = block_num;
+      const { block_num = preCommitHeadBlockNum } = processed || {};
+      startingBlockNumToCheck = block_num - 1;
     } catch (error) {
       let errString = '';
 
@@ -81,7 +81,7 @@ function awaitTransaction(func, options = {}) {
       }
       if (blockNumToCheck > startingBlockNumToCheck + blocksToCheck) {
         clearInterval(intConfirm);
-        reject(new Error(`Await Transaction Timeout: Waited for ${blocksToCheck} blocks ~(${blocksToCheck / 2} seconds) starting with block num: ${preCommitHeadBlockNum}. This does not mean the transaction failed just that the transaction wasn't found in a block before timeout`));
+        reject(new Error(`Await Transaction Timeout: Waited for ${blocksToCheck} blocks ~(${(checkInterval / 1000) * blocksToCheck} seconds) starting with block num: ${startingBlockNumToCheck}. This does not mean the transaction failed just that the transaction wasn't found in a block before timeout`));
       }
     }, checkInterval);
   });
