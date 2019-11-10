@@ -125,8 +125,42 @@ function transact(actions, broadcast = true, blocksBehind = 3, expireSeconds = 3
   });
 }
 
+function serializeTransaction(actions, blocksBehind = 3, expireSeconds = 30) {
+  return this.eos.transact({
+    actions
+  }, {
+    broadcast: false,
+    sign: false,
+    blocksBehind,
+    expireSeconds
+  });
+}
+
+function createSignBuffer(serializedTransaction, chainId) {
+  const { serializedTransaction: serializedTrx } = serializedTransaction;
+  return Buffer.concat([
+    Buffer.from(chainId, 'hex'),
+    Buffer.from(serializedTrx),
+    Buffer.alloc(new Uint8Array(32))
+  ]);
+}
+
+function signSerializedTransaction(signBuffer, privateKey) {
+  return ecc.Signature.sign(signBuffer, privateKey).toString();
+}
+
 function isValidPublicKey(publicKey) {
   return ecc.isValidPublic(publicKey);
+}
+
+function signRawTransaction(transactionObject, transactionOptions, privateKey, chainId, additionalSignatures = []) {
+  const serializedTrx = this.serializeTransaction(transactionObject);
+  const signBuffer = this.createSignBuffer(serializedTrx, chainId);
+  const signedTrx = this.signSerializedTransaction(signBuffer, privateKey);
+  if (additionalSignatures.length > 0) {
+    signedTrx.signatures.concat(additionalSignatures);
+  }
+  return signedTrx;
 }
 
 module.exports = {
