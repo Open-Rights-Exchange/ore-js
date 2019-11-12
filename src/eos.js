@@ -154,9 +154,13 @@ function isValidPublicKey(publicKey) {
 }
 
 function signRawTransaction(transactionObject, transactionOptions, privateKey, chainId, additionalSignatures = []) {
-  const serializedTrx = this.serializeTransaction(transactionObject);
-  const signBuffer = this.createSignBuffer(serializedTrx, chainId);
-  const signedTrx = this.signSerializedTransaction(signBuffer, privateKey);
+  const { blocksBehind = 3, expireSeconds = 30 } = transactionOptions;
+  const signedTrx = {};
+  signedTrx.signatures = [];
+  signedTrx.serializedTransaction = this.serializeTransaction(transactionObject, blocksBehind, expireSeconds);
+  const signBuffer = this.createSignBuffer(signedTrx.serializedTransaction, chainId);
+  const trxSignature = this.signSerializedTransaction(signBuffer, privateKey);
+  signedTrx.signatures.push(trxSignature);
   if (additionalSignatures.length > 0) {
     signedTrx.signatures.concat(additionalSignatures);
   }
@@ -169,5 +173,9 @@ module.exports = {
   getAllTableRows,
   hasTransaction,
   isValidPublicKey,
-  transact
+  transact,
+  serializeTransaction,
+  createSignBuffer,
+  signSerializedTransaction,
+  signRawTransaction
 };
