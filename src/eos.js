@@ -125,23 +125,12 @@ function transact(actions, broadcast = true, blocksBehind = 3, expireSeconds = 3
   });
 }
 
-function serializeTransaction(actions, blocksBehind = 3, expireSeconds = 30) {
-  return this.eos.transact({
-    actions
-  }, {
-    broadcast: false,
-    sign: false,
-    blocksBehind,
-    expireSeconds
-  });
-}
-
-function createSignBuffer(serializedTransaction, chainId) {
-  const { serializedTransaction: serializedTrx } = serializedTransaction;
+function createSignBuffer(serializedTrx, chainId) {
+  const { serializedTransaction } = serializedTrx;
   return Buffer.concat([
-    Buffer.from(chainId, 'hex'),
-    Buffer.from(serializedTrx),
-    Buffer.alloc(new Uint8Array(32))
+    new Buffer(chainId, 'hex'),
+    new Buffer(serializedTrx.serializedTransaction),
+    new Buffer(new Uint8Array(32))
   ]);
 }
 
@@ -153,14 +142,22 @@ function isValidPublicKey(publicKey) {
   return ecc.isValidPublic(publicKey);
 }
 
-function signRawTransaction(transactionObject, transactionOptions, privateKey, chainId, additionalSignatures = []) {
+async function signRawTransaction(transaction, transactionOptions = {}, privateKey, chainId, additionalSignatures = []) {
   const { blocksBehind = 3, expireSeconds = 30 } = transactionOptions;
+  const options = {
+    blocksBehind,
+    expireSeconds,
+    broadcast: false,
+    sign: false
+  };
+  const serializedTrx = await this.eos.transact(transaction, options);
+  const signBuf = await createSignBuffer(serializedTrx, chainId);
+  const signature = await signSerializedTransaction(signBuf, privateKey);
   const signedTrx = {};
   signedTrx.signatures = [];
-  signedTrx.serializedTransaction = this.serializeTransaction(transactionObject, blocksBehind, expireSeconds);
-  const signBuffer = this.createSignBuffer(signedTrx.serializedTransaction, chainId);
-  const trxSignature = this.signSerializedTransaction(signBuffer, privateKey);
-  signedTrx.signatures.push(trxSignature);
+  signedTrx.signatures.push(signature);
+
+  signedTrx.serializedTransaction = serializedTrx.serializedTransaction;
   if (additionalSignatures.length > 0) {
     signedTrx.signatures.concat(additionalSignatures);
   }
@@ -174,7 +171,6 @@ module.exports = {
   hasTransaction,
   isValidPublicKey,
   transact,
-  serializeTransaction,
   createSignBuffer,
   signSerializedTransaction,
   signRawTransaction
