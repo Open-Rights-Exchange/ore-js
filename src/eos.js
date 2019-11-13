@@ -164,6 +164,10 @@ async function signRawTransaction(transaction, transactionOptions = {}, privateK
   return signedTrx;
 }
 
+function pushSignedTransaction(signedTransaction) {
+  return this.eos.pushSignedTransaction(signedTransaction);
+}
+
 module.exports = {
   awaitTransaction,
   checkPubKeytoAccount,
@@ -173,5 +177,6 @@ module.exports = {
   transact,
   createSignBuffer,
   signSerializedTransaction,
-  signRawTransaction
+  signRawTransaction,
+  pushSignedTransaction
 };
