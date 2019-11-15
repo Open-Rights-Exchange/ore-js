@@ -153,6 +153,10 @@ function isValidPublicKey(publicKey) {
   return ecc.isValidPublic(publicKey);
 }
 
+function recoverPublicKeyFromSignature(signBuffer, transaction, encoding = 'utf8') {
+  return ecc.recover(signBuffer, transaction);
+}
+
 async function signRawTransaction(transaction, transactionOptions = {}, privateKey, chainId, additionalSignatures = []) {
   const serializedTrx = await serializeTransaction(transaction, transactionOptions);
   const signBuf = await createSignBuffer(serializedTrx, chainId);
@@ -175,13 +179,14 @@ function pushSignedTransaction(signedTransaction) {
 module.exports = {
   awaitTransaction,
   checkPubKeytoAccount,
+  createSignBuffer,
   getAllTableRows,
   hasTransaction,
   isValidPublicKey,
-  transact,
+  pushSignedTransaction,
+  recoverPublicKeyFromSignature,
   serializeTransaction,
-  createSignBuffer,
-  signSerializedTransactionBuffer,
   signRawTransaction,
-  pushSignedTransaction
+  signSerializedTransactionBuffer,
+  transact
 };
