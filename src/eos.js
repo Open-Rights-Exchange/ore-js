@@ -125,6 +125,17 @@ function transact(actions, broadcast = true, blocksBehind = 3, expireSeconds = 3
   });
 }
 
+function serializeTransaction(transaction, transactionOptions) {
+  const { blocksBehind = 3, expireSeconds = 30 } = transactionOptions;
+  const options = {
+    blocksBehind,
+    expireSeconds,
+    broadcast: false,
+    sign: false
+  };
+  return this.eos.transact(transaction, options);
+}
+
 function createSignBuffer(serializedTrx, chainId) {
   const { serializedTransaction } = serializedTrx;
   return Buffer.concat([
@@ -134,7 +145,7 @@ function createSignBuffer(serializedTrx, chainId) {
   ]);
 }
 
-function signSerializedTransaction(signBuffer, privateKey) {
+function signSerializedTransactionBuffer(signBuffer, privateKey) {
   return ecc.Signature.sign(signBuffer, privateKey).toString();
 }
 
@@ -143,16 +154,9 @@ function isValidPublicKey(publicKey) {
 }
 
 async function signRawTransaction(transaction, transactionOptions = {}, privateKey, chainId, additionalSignatures = []) {
-  const { blocksBehind = 3, expireSeconds = 30 } = transactionOptions;
-  const options = {
-    blocksBehind,
-    expireSeconds,
-    broadcast: false,
-    sign: false
-  };
-  const serializedTrx = await this.eos.transact(transaction, options);
+  const serializedTrx = await serializeTransaction(transaction, transactionOptions);
   const signBuf = await createSignBuffer(serializedTrx, chainId);
-  const signature = await signSerializedTransaction(signBuf, privateKey);
+  const signature = await signSerializedTransactionBuffer(signBuf, privateKey);
   const signedTrx = {};
   signedTrx.signatures = [];
   signedTrx.signatures.push(signature);
@@ -175,8 +179,9 @@ module.exports = {
   hasTransaction,
   isValidPublicKey,
   transact,
+  serializeTransaction,
   createSignBuffer,
-  signSerializedTransaction,
+  signSerializedTransactionBuffer,
   signRawTransaction,
   pushSignedTransaction
 };
