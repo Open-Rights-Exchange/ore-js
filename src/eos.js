@@ -23,6 +23,11 @@ async function hasTransaction(block, transactionId) {
   return false;
 }
 
+async function getChainId() {
+  const { chain_id: chainId = null } = await getInfo.bind(this)();
+  return chainId;
+}
+
 // NOTE: Use this to await for transactions to be added to a block
 // NOTE: Useful, when committing sequential transactions with inter-dependencies
 // NOTE: This does NOT confirm that the transaction is irreversible, aka finalized
@@ -136,8 +141,9 @@ function serializeTransaction(transaction, transactionOptions) {
   return this.eos.transact(transaction, options);
 }
 
-function createSignBuffer(serializedTrx, chainId) {
+async function createSignBuffer(serializedTrx) {
   const { serializedTransaction } = serializedTrx;
+  const chainId = await getChainId.bind(this)();
   return Buffer.concat([
     new Buffer(chainId, 'hex'),
     new Buffer(serializedTrx.serializedTransaction),
@@ -157,8 +163,9 @@ function recoverPublicKeyFromSignature(signBuffer, transaction, encoding = 'utf8
   return ecc.recover(signBuffer, transaction);
 }
 
-async function signRawTransaction(transaction, transactionOptions = {}, privateKey, chainId, additionalSignatures = []) {
+async function signRawTransaction(transaction, transactionOptions = {}, privateKey, additionalSignatures = []) {
   const serializedTrx = await serializeTransaction(transaction, transactionOptions);
+  const chainId = await getChainId.bind(this)();
   const signBuf = await createSignBuffer(serializedTrx, chainId);
   const signature = await signSerializedTransactionBuffer(signBuf, privateKey);
   const signedTrx = {};
