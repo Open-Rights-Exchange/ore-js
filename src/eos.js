@@ -130,7 +130,7 @@ function transact(actions, broadcast = true, blocksBehind = 3, expireSeconds = 3
   });
 }
 
-function serializeTransaction(transaction, transactionOptions) {
+function serializeTransaction(transaction, transactionOptions = {}) {
   const { blocksBehind = 3, expireSeconds = 30 } = transactionOptions;
   const options = {
     blocksBehind,

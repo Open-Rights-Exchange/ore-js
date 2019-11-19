@@ -621,6 +621,7 @@ module.exports = {
   deletePermissions,
   eosBase32,
   exportAccount,
+  getAccountPermissions,
   generateAccountName,
   generateAccountNameString,
   generateEncryptedKeys,
