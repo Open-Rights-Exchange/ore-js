@@ -131,14 +131,20 @@ function transact(actions, broadcast = true, blocksBehind = 3, expireSeconds = 3
 }
 
 function serializeTransaction(transaction, transactionOptions = {}) {
-  const { blocksBehind = BLOCKS_BEHIND_REF_BLOCK, expireSeconds = TRANSACTION_EXPIRY_IN_SECONDS } = transactionOptions;
+  const { blocksBehind = BLOCKS_BEHIND_REF_BLOCK, expireSeconds = TRANSACTION_EXPIRY_IN_SECONDS, broadcast = false, sign = false } = transactionOptions;
+
   const options = {
     blocksBehind,
     expireSeconds,
     broadcast: false,
     sign: false
   };
+
   return this.eos.transact(transaction, options);
+}
+
+function deserializeTransaction(serializedTransaction) {
+  return this.eos.deserializeTransaction(serializedTransaction);
 }
 
 async function createSignBuffer(serializedTransaction) {
@@ -193,6 +199,7 @@ module.exports = {
   pushSignedTransaction,
   recoverPublicKeyFromSignature,
   serializeTransaction,
+  deserializeTransaction,
   signRawTransaction,
   signSerializedTransactionBuffer,
   transact
