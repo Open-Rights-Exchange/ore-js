@@ -1,7 +1,7 @@
 /* Private */
 const { RpcError } = require('eosjs');
 const ecc = require('eosjs-ecc');
-
+const { BLOCKS_BEHIND_REF_BLOCK, BLOCKS_TO_CHECK, CHECK_INTERVAL, GET_BLOCK_ATTEMPTS, TRANSACTION_ENCODING, TRANSACTION_EXPIRY_IN_SECONDS } = require('./constants');
 // NOTE: More than a simple wrapper for eos.rpc.get_info
 // NOTE: Saves state from get_info, which can be used by other methods
 // NOTE: For example, newaccount will have different field names, depending on the server_version_string
@@ -23,6 +23,11 @@ async function hasTransaction(block, transactionId) {
   return false;
 }
 
+async function getChainId() {
+  const { chain_id: chainId = null } = await getInfo.bind(this)();
+  return chainId;
+}
+
 // NOTE: Use this to await for transactions to be added to a block
 // NOTE: Useful, when committing sequential transactions with inter-dependencies
 // NOTE: This does NOT confirm that the transaction is irreversible, aka finalized
@@ -30,7 +35,7 @@ async function hasTransaction(block, transactionId) {
 // NOTE: checkInterval = the time between block checks in MS
 // NOTE: getBlockAttempts = the number of failed attempts at retrieving a particular block, before giving up
 function awaitTransaction(func, options = {}) {
-  const { blocksToCheck = 20, checkInterval = 400, getBlockAttempts = 5 } = options;
+  const { blocksToCheck = BLOCKS_TO_CHECK, checkInterval = CHECK_INTERVAL, getBlockAttempts = GET_BLOCK_ATTEMPTS } = options;
   let startingBlockNumToCheck;
   let blockNumToCheck;
 
@@ -115,7 +120,7 @@ async function checkPubKeytoAccount(account, publicKey) {
 }
 
 // NOTE: setting the broadcast parameter to false allows us to receive signed transactions, without submitting them
-function transact(actions, broadcast = true, blocksBehind = 3, expireSeconds = 30) {
+function transact(actions, broadcast = true, blocksBehind = BLOCKS_BEHIND_REF_BLOCK, expireSeconds = TRANSACTION_EXPIRY_IN_SECONDS) {
   return this.eos.transact({
     actions
   }, {
@@ -125,15 +130,77 @@ function transact(actions, broadcast = true, blocksBehind = 3, expireSeconds = 3
   });
 }
 
+function serializeTransaction(transaction, transactionOptions = {}) {
+  const { blocksBehind = BLOCKS_BEHIND_REF_BLOCK, expireSeconds = TRANSACTION_EXPIRY_IN_SECONDS, broadcast = false, sign = false } = transactionOptions;
+
+  const options = {
+    blocksBehind,
+    expireSeconds,
+    broadcast,
+    sign
+  };
+
+  return this.eos.transact(transaction, options);
+}
+
+function deserializeTransaction(serializedTransaction) {
+  return this.eos.deserializeTransaction(serializedTransaction);
+}
+
+async function createSignBuffer(serializedTransaction) {
+  const chainId = await getChainId.bind(this)();
+
+  return Buffer.concat([
+    Buffer.from(chainId, 'hex'),
+    Buffer.from(serializedTransaction),
+    Buffer.from(new Uint8Array(32))
+  ]);
+}
+
+function signSerializedTransactionBuffer(signBuffer, privateKey, encoding = TRANSACTION_ENCODING) {
+  return ecc.sign(signBuffer, privateKey).toString();
+}
+
 function isValidPublicKey(publicKey) {
   return ecc.isValidPublic(publicKey);
+}
+
+function recoverPublicKeyFromSignature(signBuffer, transaction, encoding = TRANSACTION_ENCODING) {
+  return ecc.recover(signBuffer, transaction);
+}
+
+async function signRawTransaction(transaction, transactionOptions = {}, privateKey, additionalSignatures = []) {
+  const serializedTrx = await serializeTransaction.bind(this)(transaction, transactionOptions);
+  const { serializeTransaction } = serializedTrx;
+  const signBuf = await createSignBuffer.bind(this)(serializeTransaction);
+  const signature = await signSerializedTransactionBuffer(signBuf, privateKey);
+  const signedTrx = {};
+  signedTrx.signatures = [];
+  signedTrx.signatures.push(signature);
+
+  signedTrx.serializedTransaction = serializedTrx.serializedTransaction;
+  if (additionalSignatures.length > 0) {
+    signedTrx.signatures.concat(additionalSignatures);
+  }
+  return signedTrx;
+}
+
+function pushSignedTransaction(signedTransaction) {
+  return this.eos.pushSignedTransaction(signedTransaction);
 }
 
 module.exports = {
   awaitTransaction,
   checkPubKeytoAccount,
+  createSignBuffer,
   getAllTableRows,
   hasTransaction,
   isValidPublicKey,
+  pushSignedTransaction,
+  recoverPublicKeyFromSignature,
+  serializeTransaction,
+  deserializeTransaction,
+  signRawTransaction,
+  signSerializedTransactionBuffer,
   transact
 };
