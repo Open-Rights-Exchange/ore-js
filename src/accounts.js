@@ -442,10 +442,13 @@ async function createBridgeAccount(password, salt, authorizingAccount, options) 
   let oreAccountName = null;
   let isAccountUsable = false;
   let transaction = null;
+  let nameAlreadyExists = false;
 
   const { confirm = true, oreAccountName: newAccountName } = options;
   const keys = await generateEncryptedKeys.bind(this)(password, salt, options.keys);
-  const nameAlreadyExists = await getNameAlreadyExists.bind(this)(newAccountName);
+  if (newAccountName) {
+    nameAlreadyExists = await getNameAlreadyExists.bind(this)(newAccountName);
+  }
 
   // if the new account name passed in already exists, check if the active key matches the unused active public key
   if (nameAlreadyExists) {
@@ -482,7 +485,7 @@ async function createBridgeAccount(password, salt, authorizingAccount, options) 
         transaction = await this.createNewAccount(authorizingAccount, keys, options);
       }
     } catch (error) {
-      throw new Error(`Error creating bridge account: ${newAccountName} ${error}`);
+      throw new Error(`Error creating bridge account: ${oreAccountName} ${error}`);
     }
   }
 
