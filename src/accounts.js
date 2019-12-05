@@ -246,6 +246,13 @@ async function composeUnlinkActions(links, authAccountName, authPermission) {
   return actions;
 }
 
+function addFirstAuthAction(actions, firstAuthorizerAction) {
+  if (!this.isNullOrEmpty(firstAuthorizerAction)) {
+    actions = [firstAuthorizerAction, ...actions];
+  }
+  return actions;
+}
+
 /* Public */
 
 // gets the account details from the chain network and checks if the account has a specific permission
@@ -284,9 +291,7 @@ async function addPermission(authAccountName, keys, permissionName, parentPermis
     }
   }];
 
-  if (!this.isNullOrEmpty(firstAuthorizerAction)) {
-    actions = [firstAuthorizerAction, ...actions];
-  }
+  (actions = addFirstAuthAction(actions, firstAuthorizerAction));
 
   // add action permission for every { contract, action } pair passed in
   if (links.length > 0) {
@@ -329,9 +334,7 @@ async function linkActionsToPermission(links, permission, authAccountName, authP
   const { confirm = true, firstAuthorizerAction = {} } = options;
   let actions = await composeLinkActions(links, permission, authAccountName, authPermission);
 
-  if (!this.isNullOrEmpty(firstAuthorizerAction)) {
-    actions = [firstAuthorizerAction, ...actions];
-  }
+  (actions = addFirstAuthAction(actions, firstAuthorizerAction));
 
   if (confirm === true) {
     const awaitTransactionOptions = getAwaitTransactionOptions(options);
