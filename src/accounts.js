@@ -291,7 +291,7 @@ async function addPermission(authAccountName, keys, permissionName, parentPermis
     }
   }];
 
-  (actions = addFirstAuthAction(actions, firstAuthorizerAction));
+  (actions = addFirstAuthAction.bind(this)(actions, firstAuthorizerAction));
 
   // add action permission for every { contract, action } pair passed in
   if (links.length > 0) {
@@ -334,7 +334,7 @@ async function linkActionsToPermission(links, permission, authAccountName, authP
   const { confirm = true, firstAuthorizerAction = {} } = options;
   let actions = await composeLinkActions(links, permission, authAccountName, authPermission);
 
-  (actions = addFirstAuthAction(actions, firstAuthorizerAction));
+  (actions = addFirstAuthAction.bind(this)(actions, firstAuthorizerAction));
 
   if (confirm === true) {
     const awaitTransactionOptions = getAwaitTransactionOptions(options);
