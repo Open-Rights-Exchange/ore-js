@@ -57,6 +57,7 @@ module.exports = {
   crypto,
   generateAccountNameString,
   isValidPublicKey: eos.isValidPublicKey,
+  hexToUint8Array: eos.hexToUint8Array,
   Orejs,
   JsSignatureProvider
 };
