@@ -246,6 +246,13 @@ async function composeUnlinkActions(links, authAccountName, authPermission) {
   return actions;
 }
 
+function addFirstAuthAction(actions, firstAuthorizerAction) {
+  if (!this.isNullOrEmpty(firstAuthorizerAction)) {
+    actions = [firstAuthorizerAction, ...actions];
+  }
+  return actions;
+}
+
 /* Public */
 
 // gets the account details from the chain network and checks if the account has a specific permission
@@ -258,7 +265,7 @@ async function addPermission(authAccountName, keys, permissionName, parentPermis
   let perm;
   let transaction;
 
-  const { authPermission = 'active', links = [], broadcast = true, confirm = true } = options;
+  const { authPermission = 'active', links = [], broadcast = true, confirm = true, firstAuthorizerAction = {} } = options;
 
   if (overridePermission) {
     perm = await newPermission.bind(this)(keys, permissionName, parentPermission);
@@ -283,6 +290,8 @@ async function addPermission(authAccountName, keys, permissionName, parentPermis
       auth
     }
   }];
+
+  (actions = addFirstAuthAction.bind(this)(actions, firstAuthorizerAction));
 
   // add action permission for every { contract, action } pair passed in
   if (links.length > 0) {
@@ -322,9 +331,10 @@ async function deletePermissions(authAccountName, permissions, options = {}) {
 // links actions for a given account to an app permission
 async function linkActionsToPermission(links, permission, authAccountName, authPermission, broadcast = true, options = {}) {
   let transaction;
+  const { confirm = true, firstAuthorizerAction = {} } = options;
+  let actions = await composeLinkActions(links, permission, authAccountName, authPermission);
 
-  const { confirm = true } = options;
-  const actions = await composeLinkActions(links, permission, authAccountName, authPermission);
+  (actions = addFirstAuthAction.bind(this)(actions, firstAuthorizerAction));
 
   if (confirm === true) {
     const awaitTransactionOptions = getAwaitTransactionOptions(options);

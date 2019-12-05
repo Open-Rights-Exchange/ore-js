@@ -60,7 +60,7 @@ function awaitTransaction(func, options = {}) {
         errString = JSON.stringify(error);
       }
 
-      reject(new Error(`Await Transaction Failure: ${errString}`));
+      return reject(new Error(`Await Transaction Failure: ${errString}`));
     }
     // keep checking for the transaction in future blocks...
     let blockToCheck;
@@ -80,13 +80,13 @@ function awaitTransaction(func, options = {}) {
       } catch (error) {
         if (getBlockAttempt >= getBlockAttempts) {
           clearInterval(intConfirm);
-          reject(new Error(`Await Transaction Failure: Failure to find a block, after ${getBlockAttempt} attempts to check block ${blockNumToCheck}.`));
+          return reject(new Error(`Await Transaction Failure: Failure to find a block, after ${getBlockAttempt} attempts to check block ${blockNumToCheck}.`));
         }
         getBlockAttempt += 1;
       }
       if (blockNumToCheck > startingBlockNumToCheck + blocksToCheck) {
         clearInterval(intConfirm);
-        reject(new Error(`Await Transaction Timeout: Waited for ${blocksToCheck} blocks ~(${(checkInterval / 1000) * blocksToCheck} seconds) starting with block num: ${startingBlockNumToCheck}. This does not mean the transaction failed just that the transaction wasn't found in a block before timeout`));
+        return reject(new Error(`Await Transaction Timeout: Waited for ${blocksToCheck} blocks ~(${(checkInterval / 1000) * blocksToCheck} seconds) starting with block num: ${startingBlockNumToCheck}. This does not mean the transaction failed just that the transaction wasn't found in a block before timeout`));
       }
     }, checkInterval);
   });
