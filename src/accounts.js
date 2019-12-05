@@ -258,7 +258,7 @@ async function addPermission(authAccountName, keys, permissionName, parentPermis
   let perm;
   let transaction;
 
-  const { authPermission = 'active', links = [], broadcast = true, confirm = true } = options;
+  const { authPermission = 'active', links = [], broadcast = true, confirm = true, firstAuthorizerAction = {} } = options;
 
   if (overridePermission) {
     perm = await newPermission.bind(this)(keys, permissionName, parentPermission);
@@ -283,6 +283,10 @@ async function addPermission(authAccountName, keys, permissionName, parentPermis
       auth
     }
   }];
+
+  if (!this.isNullOrEmpty(firstAuthorizerAction)) {
+    actions = [firstAuthorizerAction, ...actions];
+  }
 
   // add action permission for every { contract, action } pair passed in
   if (links.length > 0) {
@@ -322,9 +326,12 @@ async function deletePermissions(authAccountName, permissions, options = {}) {
 // links actions for a given account to an app permission
 async function linkActionsToPermission(links, permission, authAccountName, authPermission, broadcast = true, options = {}) {
   let transaction;
+  const { confirm = true, firstAuthorizerAction = {} } = options;
+  let actions = await composeLinkActions(links, permission, authAccountName, authPermission);
 
-  const { confirm = true } = options;
-  const actions = await composeLinkActions(links, permission, authAccountName, authPermission);
+  if (!this.isNullOrEmpty(firstAuthorizerAction)) {
+    actions = [firstAuthorizerAction, ...actions];
+  }
 
   if (confirm === true) {
     const awaitTransactionOptions = getAwaitTransactionOptions(options);
