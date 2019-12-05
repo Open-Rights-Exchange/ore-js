@@ -1,5 +1,5 @@
 /* Private */
-const { RpcError } = require('eosjs');
+const { Serialize, RpcError } = require('eosjs');
 const ecc = require('eosjs-ecc');
 const { BLOCKS_BEHIND_REF_BLOCK, BLOCKS_TO_CHECK, CHECK_INTERVAL, GET_BLOCK_ATTEMPTS, TRANSACTION_ENCODING, TRANSACTION_EXPIRY_IN_SECONDS } = require('./constants');
 // NOTE: More than a simple wrapper for eos.rpc.get_info
@@ -195,6 +195,7 @@ module.exports = {
   createSignBuffer,
   getAllTableRows,
   hasTransaction,
+  hexToUint8Array: Serialize.hexToUint8Array,
   isValidPublicKey,
   pushSignedTransaction,
   recoverPublicKeyFromSignature,
