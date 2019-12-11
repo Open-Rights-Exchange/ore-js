@@ -315,8 +315,9 @@ async function deletePermissions(authAccountName, permissions, options = {}) {
     authPermission: 'active',
     ...options
   };
-  const { authPermission, links = [], broadcast = true, confirm = true } = options;
-  const deleteActions = await composeDeleteAuthActions(permissions, authAccountName, authPermission);
+  const { authPermission, links = [], broadcast = true, confirm = true, firstAuthorizerAction } = options;
+  let deleteActions = await composeDeleteAuthActions(permissions, authAccountName, authPermission);
+  (deleteActions = addFirstAuthAction.bind(this)(deleteActions, firstAuthorizerAction));
 
   if (confirm === true) {
     const awaitTransactionOptions = getAwaitTransactionOptions(options);
@@ -349,9 +350,10 @@ async function linkActionsToPermission(links, permission, authAccountName, authP
 async function unlinkActionsToPermission(links, authAccountName, authPermission, broadcast = true, options = {}) {
   let transaction;
 
-  const { confirm = true } = options;
+  const { confirm = true, firstAuthorizerAction } = options;
 
-  const actions = await composeUnlinkActions(links, authAccountName, authPermission);
+  let actions = await composeUnlinkActions(links, authAccountName, authPermission);
+  (actions = addFirstAuthAction.bind(this)(actions, firstAuthorizerAction));
 
   if (confirm === true) {
     const awaitTransactionOptions = getAwaitTransactionOptions(options);
