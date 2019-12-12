@@ -137,13 +137,8 @@ async function createOreAccountWithKeys(activePublicKey, ownerPublicKey, orePaye
   const oreAccountName = options.oreAccountName || await generateAccountName.bind(this)(options.accountNamePrefix);
 
   const { confirm } = options;
-  let transaction;
-  if (confirm === true) {
-    const awaitTransactionOptions = getAwaitTransactionOptions(options);
-    transaction = await this.awaitTransaction(() => newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, options), awaitTransactionOptions);
-  } else {
-    transaction = await newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, options);
-  }
+  const awaitTransactionOptions = getAwaitTransactionOptions(options);
+  const transaction = this.sendTransaction(() => newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, options), confirm, awaitTransactionOptions);
   return { oreAccountName, transaction };
 }
 
@@ -263,7 +258,6 @@ async function checkIfAccountHasPermission(oreAccountName, permName) {
 
 async function addPermission(authAccountName, keys, permissionName, parentPermission, overridePermission = false, options = {}) {
   let perm;
-  let transaction;
 
   const { authPermission = 'active', links = [], broadcast = true, confirm = true, firstAuthorizerAction = {} } = options;
 
@@ -298,19 +292,13 @@ async function addPermission(authAccountName, keys, permissionName, parentPermis
     const linkActions = await composeLinkActions(links, permission, authAccountName, authPermission);
     actions = actions.concat(linkActions);
   }
-
-  if (confirm === true) {
-    const awaitTransactionOptions = getAwaitTransactionOptions(options);
-    transaction = await this.awaitTransaction(async () => this.transact(actions, broadcast), awaitTransactionOptions);
-  } else {
-    transaction = await this.transact(actions, broadcast);
-  }
+  const awaitTransactionOptions = getAwaitTransactionOptions(options);
+  const transaction = this.sendTransaction(async () => this.transact(actions, broadcast), confirm, awaitTransactionOptions);
 
   return transaction;
 }
 
 async function deletePermissions(authAccountName, permissions, options = {}) {
-  let transaction;
   options = {
     authPermission: 'active',
     ...options
@@ -319,48 +307,33 @@ async function deletePermissions(authAccountName, permissions, options = {}) {
   let deleteActions = await composeDeleteAuthActions(permissions, authAccountName, authPermission);
   (deleteActions = addFirstAuthAction.bind(this)(deleteActions, firstAuthorizerAction));
 
-  if (confirm === true) {
-    const awaitTransactionOptions = getAwaitTransactionOptions(options);
-    transaction = await this.awaitTransaction(async () => this.transact(deleteActions, broadcast), awaitTransactionOptions);
-  } else {
-    transaction = await this.transact(deleteActions, broadcast);
-  }
+  const awaitTransactionOptions = getAwaitTransactionOptions(options);
+  const transaction = this.sendTransaction(async () => this.transact(deleteActions, broadcast), confirm, awaitTransactionOptions);
 
   return transaction;
 }
 
 // links actions for a given account to an app permission
 async function linkActionsToPermission(links, permission, authAccountName, authPermission, broadcast = true, options = {}) {
-  let transaction;
   const { confirm = true, firstAuthorizerAction = {} } = options;
   let actions = await composeLinkActions(links, permission, authAccountName, authPermission);
 
   (actions = addFirstAuthAction.bind(this)(actions, firstAuthorizerAction));
 
-  if (confirm === true) {
-    const awaitTransactionOptions = getAwaitTransactionOptions(options);
-    transaction = await this.awaitTransaction(async () => this.transact(actions, broadcast), awaitTransactionOptions);
-  } else {
-    transaction = await this.transact(actions, broadcast);
-  }
+  const awaitTransactionOptions = getAwaitTransactionOptions(options);
+  const transaction = this.sendTransaction(async () => this.transact(actions, broadcast), confirm, awaitTransactionOptions);
 
   return transaction;
 }
 
 async function unlinkActionsToPermission(links, authAccountName, authPermission, broadcast = true, options = {}) {
-  let transaction;
-
   const { confirm = true, firstAuthorizerAction } = options;
 
   let actions = await composeUnlinkActions(links, authAccountName, authPermission);
   (actions = addFirstAuthAction.bind(this)(actions, firstAuthorizerAction));
 
-  if (confirm === true) {
-    const awaitTransactionOptions = getAwaitTransactionOptions(options);
-    transaction = await this.awaitTransaction(async () => this.transact(actions, broadcast), awaitTransactionOptions);
-  } else {
-    transaction = await this.transact(actions, broadcast);
-  }
+  const awaitTransactionOptions = getAwaitTransactionOptions(options);
+  const transaction = this.sendTransaction(async () => this.transact(actions, broadcast), confirm, awaitTransactionOptions);
   return transaction;
 }
 
@@ -392,12 +365,8 @@ async function reuseAccount(authAccountName, keys, authPermission = 'owner', par
     };
 
     const { confirm = true } = options;
-    if (confirm === true) {
-      const awaitTransactionOptions = getAwaitTransactionOptions(options);
-      transaction = await this.awaitTransaction(() => addPermission.bind(this)(authAccountName, [keys.publicKeys.active], permissionName, parentPermission, true, options), awaitTransactionOptions);
-    } else {
-      transaction = await addPermission.bind(this)(authAccountName, [keys.publicKeys.active], permissionName, parentPermission, true, options);
-    }
+    const awaitTransactionOptions = getAwaitTransactionOptions(options);
+    transaction = this.sendTransaction(() => addPermission.bind(this)(authAccountName, [keys.publicKeys.active], permissionName, parentPermission, true, options), confirm, awaitTransactionOptions);
   } catch (error) {
     throw new Error(`Error in reuseAccount:  ${error}`);
   }
@@ -405,9 +374,9 @@ async function reuseAccount(authAccountName, keys, authPermission = 'owner', par
 }
 
 async function exportAccount(authAccountName, publicKeys) {
+  const { owner, active } = publicKeys;
   let activeTransaction = null;
   let ownerTransaction = null;
-  const { owner, active } = publicKeys;
 
   if (!isValidPublicKey(active) || !isValidPublicKey(owner)) {
     throw new Error('Error in exportAccount:  Valid public keys needs to be provided for both active and owner keys.');
@@ -420,15 +389,9 @@ async function exportAccount(authAccountName, publicKeys) {
     };
 
     const { confirm = true } = options;
-
-    if (confirm === true) {
-      const awaitTransactionOptions = getAwaitTransactionOptions(options);
-      activeTransaction = await this.awaitTransaction(() => addPermission.bind(this)(authAccountName, [active], 'active', 'owner', true, options), awaitTransactionOptions);
-      ownerTransaction = await this.awaitTransaction(() => addPermission.bind(this)(authAccountName, [owner], 'owner', '', true, options), awaitTransactionOptions);
-    } else {
-      activeTransaction = await addPermission.bind(this)(authAccountName, [active], 'active', 'owner', true, options);
-      ownerTransaction = await addPermission.bind(this)(authAccountName, [owner], 'owner', '', true, options);
-    }
+    const awaitTransactionOptions = getAwaitTransactionOptions(options);
+    activeTransaction = this.sendTransaction(() => addPermission.bind(this)(authAccountName, [active], 'active', 'owner', true, options), confirm, awaitTransactionOptions);
+    ownerTransaction = this.sendTransaction(() => addPermission.bind(this)(authAccountName, [owner], 'owner', '', true, options), confirm, awaitTransactionOptions);
   } catch (error) {
     throw new Error(`Error in exportAccount:  ${error}`);
   }
@@ -489,13 +452,8 @@ async function createBridgeAccount(password, salt, authorizingAccount, options) 
         oreAccountName,
         confirm
       };
-
-      if (confirm === true) {
-        const awaitTransactionOptions = getAwaitTransactionOptions(options);
-        transaction = await this.awaitTransaction(async () => this.createNewAccount(authorizingAccount, keys, options), awaitTransactionOptions);
-      } else {
-        transaction = await this.createNewAccount(authorizingAccount, keys, options);
-      }
+      const awaitTransactionOptions = getAwaitTransactionOptions(options);
+      transaction = this.sendTransaction(async () => this.createNewAccount(authorizingAccount, keys, options), confirm, awaitTransactionOptions);
     } catch (error) {
       throw new Error(`Error creating bridge account: ${oreAccountName} ${error}`);
     }
@@ -546,12 +504,8 @@ async function createOreAccount(password, salt, ownerPublicKey, orePayerAccountN
       } else {
         oreAccountName = await generateAccountName.bind(this)(options.accountNamePrefix);
       }
-      if (confirm === true) {
-        const awaitTransactionOptions = getAwaitTransactionOptions(options);
-        transaction = await this.awaitTransaction(() => newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, options), awaitTransactionOptions);
-      } else {
-        transaction = await newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, options);
-      }
+      const awaitTransactionOptions = getAwaitTransactionOptions(options);
+      transaction = this.sendTransaction(() => newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, options), confirm, awaitTransactionOptions);
     } catch (error) {
       throw new Error(`Error creating account: ${newAccountName} ${error}`);
     }
