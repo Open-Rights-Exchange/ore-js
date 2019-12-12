@@ -34,6 +34,18 @@ async function getChainId() {
 // NOTE: blocksToCheck = the number of blocks to check, after committing the transaction, before giving up
 // NOTE: checkInterval = the time between block checks in MS
 // NOTE: getBlockAttempts = the number of failed attempts at retrieving a particular block, before giving up
+
+
+async function sendTransaction(func, confirm, awaitTransactionOptions) {
+  let transaction = {};
+  if (confirm === true) {
+    transaction = await awaitTransaction(func, awaitTransactionOptions);
+  } else {
+    transaction = await func;
+  }
+  return transaction;
+}
+
 function awaitTransaction(func, options = {}) {
   const { blocksToCheck = BLOCKS_TO_CHECK, checkInterval = CHECK_INTERVAL, getBlockAttempts = GET_BLOCK_ATTEMPTS } = options;
   let startingBlockNumToCheck;
@@ -190,7 +202,6 @@ function pushSignedTransaction(signedTransaction) {
 }
 
 module.exports = {
-  awaitTransaction,
   checkPubKeytoAccount,
   createSignBuffer,
   getAllTableRows,
@@ -199,6 +210,7 @@ module.exports = {
   isValidPublicKey,
   pushSignedTransaction,
   recoverPublicKeyFromSignature,
+  sendTransaction,
   serializeTransaction,
   deserializeTransaction,
   signRawTransaction,
