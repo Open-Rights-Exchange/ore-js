@@ -1,23 +1,23 @@
 /* eslint-disable quote-props */
-import account_deleteAuth from './templates/actions/account_deleteAuth';
-import account_linkAuth from './templates/actions/account_linkAuth';
-import account_unlinkAuth from './templates/actions/account_unlinkAuth';
-import account_updateAuth from './templates/actions/account_updateAuth';
-import createBridge_create from './templates/actions/createBridge_create';
-import createBridge_define from './templates/actions/createBridge_define';
-import createBridge_init from './templates/actions/createBridge_init';
-import createBridge_reclaim from './templates/actions/createBridge_reclaim';
-import createBridge_transfer from './templates/actions/createBridge_transfer';
-import createBridge_whitelist from './templates/actions/createBridge_whitelist';
-import ore_upsertRight from './templates/actions/ore_upsertRight';
-import token_approve from './templates/actions/token_approve';
-import token_create from './templates/actions/token_create';
-import token_issue from './templates/actions/token_issue';
-import token_retire from './templates/actions/token_retire';
-import token_transfer from './templates/actions/token_transfer';
-import token_transferFrom from './templates/actions/token_transferFrom';
+import account_deleteAuth from './templates/chainActions/account_deleteAuth';
+import account_linkAuth from './templates/chainActions/account_linkAuth';
+import account_unlinkAuth from './templates/chainActions/account_unlinkAuth';
+import account_updateAuth from './templates/chainActions/account_updateAuth';
+import createBridge_create from './templates/chainActions/createBridge_create';
+import createBridge_define from './templates/chainActions/createBridge_define';
+import createBridge_init from './templates/chainActions/createBridge_init';
+import createBridge_reclaim from './templates/chainActions/createBridge_reclaim';
+import createBridge_transfer from './templates/chainActions/createBridge_transfer';
+import createBridge_whitelist from './templates/chainActions/createBridge_whitelist';
+import ore_upsertRight from './templates/chainActions/ore_upsertRight';
+import token_approve from './templates/chainActions/token_approve';
+import token_create from './templates/chainActions/token_create';
+import token_issue from './templates/chainActions/token_issue';
+import token_retire from './templates/chainActions/token_retire';
+import token_transfer from './templates/chainActions/token_transfer';
+import token_transferFrom from './templates/chainActions/token_transferFrom';
 
-export const action = {
+export const chainAction = {
   account_deleteAuth,
   account_linkAuth,
   account_unlinkAuth,
