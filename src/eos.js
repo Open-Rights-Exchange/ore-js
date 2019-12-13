@@ -28,23 +28,38 @@ async function getChainId() {
   return chainId;
 }
 
+function formatErrorStringIfRpcError(error) {
+  let errString = '';
+  if (error instanceof RpcError) {
+    errString = JSON.stringify(error.json);
+  } else {
+    errString = JSON.stringify(error);
+  }
+  return errString;
+}
+
+async function sendTransaction(func, confirm, awaitTransactionOptions) {
+  let transaction;
+
+  if (confirm === true) {
+    transaction = await awaitTransaction.bind(this)(func, awaitTransactionOptions);
+  } else {
+    try {
+      transaction = await func();
+    } catch (error) {
+      const errString = formatErrorStringIfRpcError(error);
+      throw new Error(`Send Transaction Failure: ${errString}`);
+    }
+  }
+  return transaction;
+}
+
 // NOTE: Use this to await for transactions to be added to a block
 // NOTE: Useful, when committing sequential transactions with inter-dependencies
 // NOTE: This does NOT confirm that the transaction is irreversible, aka finalized
 // NOTE: blocksToCheck = the number of blocks to check, after committing the transaction, before giving up
 // NOTE: checkInterval = the time between block checks in MS
 // NOTE: getBlockAttempts = the number of failed attempts at retrieving a particular block, before giving up
-
-
-async function sendTransaction(func, confirm, awaitTransactionOptions) {
-  let transaction = {};
-  if (confirm === true) {
-    transaction = await awaitTransaction(func, awaitTransactionOptions);
-  } else {
-    transaction = await func;
-  }
-  return transaction;
-}
 
 function awaitTransaction(func, options = {}) {
   const { blocksToCheck = BLOCKS_TO_CHECK, checkInterval = CHECK_INTERVAL, getBlockAttempts = GET_BLOCK_ATTEMPTS } = options;
@@ -64,14 +79,7 @@ function awaitTransaction(func, options = {}) {
       const { block_num = preCommitHeadBlockNum } = processed || {};
       startingBlockNumToCheck = block_num - 1;
     } catch (error) {
-      let errString = '';
-
-      if (error instanceof RpcError) {
-        errString = JSON.stringify(error.json);
-      } else {
-        errString = JSON.stringify(error);
-      }
-
+      const errString = formatErrorStringIfRpcError(error);
       return reject(new Error(`Await Transaction Failure: ${errString}`));
     }
     // keep checking for the transaction in future blocks...

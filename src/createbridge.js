@@ -1,5 +1,5 @@
 /* Public */
-
+const { ChainAction, composeAction } = require('./compose');
 // Initializes createbridge with the following details:
 // Only the createbridge account can call this action
 // symbol               = the core token of the chain or the token used to pay for new user accounts of the chain
@@ -9,20 +9,10 @@
 function init(symbol, precision, newAccountContract, newAccountAction, minimumRAM, options) {
   const { contractName = 'createbridge', permission = 'active', broadcast = true } = options;
   const chainSymbol = `${precision},${symbol}`;
-  const actions = [{
-    account: contractName,
-    name: 'init',
-    authorization: [{
-      actor: contractName,
-      permission
-    }],
-    data: {
-      symbol: chainSymbol,
-      newaccountcontract: newAccountContract,
-      newaccountaction: newAccountAction,
-      minimumram: minimumRAM
-    }
-  }];
+
+  const args = { contractName, chainSymbol, newAccountContract, newAccountAction, minimumRAM, permission };
+  const action = composeAction(ChainAction.CreateBridge_init, args);
+  const actions = [action];
 
   return this.transact(actions, broadcast);
 }
@@ -44,23 +34,10 @@ function define(authorizingAccount, appName, ram = 4096, net, cpu, pricekey, opt
     tokens: airdropToken,
     limit: airdropLimit
   };
-  const actions = [{
-    account: contractName,
-    name: 'define',
-    authorization: [{
-      actor: accountName,
-      permission
-    }],
-    data: {
-      owner: accountName,
-      dapp: appName,
-      ram_bytes: ram,
-      net,
-      cpu,
-      pricekey,
-      airdrop
-    }
-  }];
+
+  const args = { accountName, airdrop, appName, contractName, cpu, permission, net, pricekey, ram };
+  const action = composeAction(ChainAction.CreateBridge_Define, args);
+  const actions = [action];
 
   return this.transact(actions, broadcast);
 }
@@ -72,22 +49,11 @@ function define(authorizingAccount, appName, ram = 4096, net, cpu, pricekey, opt
 function createNewAccount(authorizingAccount, keys, options) {
   const { accountName, permission } = authorizingAccount;
   const { origin, oreAccountName, contractName = 'createbridge', broadcast = true, referral = '' } = options;
-  const actions = [{
-    account: contractName,
-    name: 'create',
-    authorization: [{
-      actor: accountName,
-      permission
-    }],
-    data: {
-      memo: accountName,
-      account: oreAccountName,
-      ownerkey: keys.publicKeys.owner,
-      activekey: keys.publicKeys.active,
-      origin,
-      referral
-    }
-  }];
+
+  const { active: activekey, owner: ownerkey } = keys.publicKeys;
+  const args = { accountName, activekey, contractName, oreAccountName, origin, ownerkey, permission, referral };
+  const action = composeAction(ChainAction.CreateBridge_Create, args);
+  const actions = [action];
 
   return this.transact(actions, broadcast);
 }
@@ -98,19 +64,10 @@ function createNewAccount(authorizingAccount, keys, options) {
 function whitelist(authorizingAccount, whitelistAccount, appName, options) {
   const { contractName = 'createbridge', broadcast = true } = options;
   const { accountName, permission = 'active' } = authorizingAccount;
-  const actions = [{
-    account: contractName,
-    name: 'whitelist',
-    authorization: [{
-      actor: accountName,
-      permission
-    }],
-    data: {
-      owner: accountName,
-      account: whitelistAccount,
-      dapp: appName
-    }
-  }];
+
+  const args = { accountName, appName, contractName, permission, whitelistAccount };
+  const action = composeAction(ChainAction.CreateBridge_Whitelist, args);
+  const actions = [action];
 
   return this.transact(actions, broadcast);
 }
@@ -125,20 +82,10 @@ function transfer(authorizingAccount, appName, amount, ramPercentage, totalAccou
   const { contractName = 'eosio.token', createbridgeAccountName = 'createbridge', broadcast = true } = options;
   const { accountName, permission = 'active' } = authorizingAccount;
   const memo = `${appName},${ramPercentage},${totalAccounts}`;
-  const actions = [{
-    account: contractName,
-    name: 'transfer',
-    authorization: [{
-      actor: accountName,
-      permission
-    }],
-    data: {
-      from: accountName,
-      to: createbridgeAccountName,
-      quantity: amount,
-      memo
-    }
-  }];
+
+  const args = { accountName, amount, contractName, createbridgeAccountName, memo, permission };
+  const action = composeAction(ChainAction.CreateBridge_Transfer, args);
+  const actions = [action];
 
   return this.transact(actions, broadcast);
 }
@@ -150,19 +97,10 @@ function transfer(authorizingAccount, appName, amount, ramPercentage, totalAccou
 function reclaim(authorizingAccount, appName, symbol, options) {
   const { contractName = 'createbridge', broadcast = true } = options;
   const { accountName, permission = 'active' } = authorizingAccount;
-  const actions = [{
-    account: contractName,
-    name: 'reclaim',
-    authorization: [{
-      actor: accountName,
-      permission
-    }],
-    data: {
-      reclaimer: accountName,
-      dapp: appName,
-      sym: symbol
-    }
-  }];
+
+  const args = { accountName, appName, contractName, permission, symbol };
+  const action = composeAction(ChainAction.CreateBridge_Reclaim, args);
+  const actions = [action];
 
   return this.transact(actions, broadcast);
 }
