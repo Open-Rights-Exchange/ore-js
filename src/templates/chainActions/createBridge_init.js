@@ -14,4 +14,4 @@ const action = ({ contractName, chainSymbol, newAccountContract, newAccountActio
     }
   }
 );
-export { action as default };
+module.exports = action;

@@ -14,4 +14,4 @@ const action = ({ contractName, fromAccountName, toAccountName, tokenAmount, mem
     }
   }
 );
-export { action as default };
+module.exports = action;

@@ -13,4 +13,4 @@ const action = ({ accountName, appName, contractName, permission, whitelistAccou
     }
   }
 );
-export { action as default };
+module.exports = action;

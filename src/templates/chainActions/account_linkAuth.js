@@ -14,4 +14,4 @@ const action = ({ authAccountName, authPermission, code, permission, type }) => 
     }
   }
 );
-export { action as default };
+module.exports = action;

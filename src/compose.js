@@ -1,23 +1,23 @@
 /* eslint-disable quote-props */
-import Account_DeleteAuth from './templates/chainActions/account_deleteAuth';
-import Account_LinkAuth from './templates/chainActions/account_linkAuth';
-import Account_UnlinkAuth from './templates/chainActions/account_unlinkAuth';
-import Account_UpdateAuth from './templates/chainActions/account_updateAuth';
-import CreateBridge_Create from './templates/chainActions/createBridge_create';
-import CreateBridge_Define from './templates/chainActions/createBridge_define';
-import CreateBridge_Init from './templates/chainActions/createBridge_init';
-import CreateBridge_Reclaim from './templates/chainActions/createBridge_reclaim';
-import CreateBridge_Transfer from './templates/chainActions/createBridge_transfer';
-import CreateBridge_Whitelist from './templates/chainActions/createBridge_whitelist';
-import Ore_UpsertRight from './templates/chainActions/ore_upsertRight';
-import Token_Approve from './templates/chainActions/token_approve';
-import Token_Create from './templates/chainActions/token_create';
-import Token_Issue from './templates/chainActions/token_issue';
-import Token_Retire from './templates/chainActions/token_retire';
-import Token_Transfer from './templates/chainActions/token_transfer';
-import Token_TransferFrom from './templates/chainActions/token_transferFrom';
+const Account_DeleteAuth = require('./templates/chainActions/account_deleteAuth');
+const Account_LinkAuth = require('./templates/chainActions/account_linkAuth');
+const Account_UnlinkAuth = require('./templates/chainActions/account_unlinkAuth');
+const Account_UpdateAuth = require('./templates/chainActions/account_updateAuth');
+const CreateBridge_Create = require('./templates/chainActions/createBridge_create');
+const CreateBridge_Define = require('./templates/chainActions/createBridge_define');
+const CreateBridge_Init = require('./templates/chainActions/createBridge_init');
+const CreateBridge_Reclaim = require('./templates/chainActions/createBridge_reclaim');
+const CreateBridge_Transfer = require('./templates/chainActions/createBridge_transfer');
+const CreateBridge_Whitelist = require('./templates/chainActions/createBridge_whitelist');
+const Ore_UpsertRight = require('./templates/chainActions/ore_upsertRight');
+const Token_Approve = require('./templates/chainActions/token_approve');
+const Token_Create = require('./templates/chainActions/token_create');
+const Token_Issue = require('./templates/chainActions/token_issue');
+const Token_Retire = require('./templates/chainActions/token_retire');
+const Token_Transfer = require('./templates/chainActions/token_transfer');
+const Token_TransferFrom = require('./templates/chainActions/token_transferFrom');
 
-export const ChainAction = {
+const ChainAction = {
   Account_DeleteAuth,
   Account_LinkAuth,
   Account_UnlinkAuth,
@@ -37,7 +37,12 @@ export const ChainAction = {
   Token_TransferFrom
 };
 
-export function composeAction(actionType, args) {
+function composeAction(actionType, args) {
   const actionComposer = actionType;
   return actionComposer(args);
 }
+
+module.exports = {
+  ChainAction,
+  composeAction
+};

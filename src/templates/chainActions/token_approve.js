@@ -14,4 +14,4 @@ const action = ({ contractName, memo, fromAccountName, toAccountName, tokenAmoun
     }
   }
 );
-export { action as default };
+module.exports = action;

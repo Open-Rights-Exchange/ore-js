@@ -16,4 +16,4 @@ const action = ({ activePublicKey, name, orePayerAccountName, ownerPublicKey, pe
     }
   }
 );
-export { action as default };
+module.exports = action;

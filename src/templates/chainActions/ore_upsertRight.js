@@ -14,4 +14,4 @@ const action = ({ contractName, issuer_whitelist, oreAccountName, right_name, ur
     }
   }
 );
-export { action as default };
+module.exports = action;

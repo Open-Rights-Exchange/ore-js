@@ -15,4 +15,4 @@ const action = ({ approvedAccountName, contractName, fromAccountName, toAccountN
     }
   }
 );
-export { action as default };
+module.exports = action;

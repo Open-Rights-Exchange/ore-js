@@ -12,4 +12,4 @@ const action = ({ contractName, ownerAccountName, tokenAmount, memo, permission 
     }
   }
 );
-export { action as default };
+module.exports = action;

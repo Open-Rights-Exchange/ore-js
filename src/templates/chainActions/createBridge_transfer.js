@@ -14,4 +14,4 @@ const action = ({ accountName, amount, contractName, createbridgeAccountName, me
     }
   }
 );
-export { action as default };
+module.exports = action;

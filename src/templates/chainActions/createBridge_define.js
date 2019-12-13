@@ -17,4 +17,4 @@ const action = ({ accountName, airdrop, appName, contractName, cpu, permission, 
     }
   }
 );
-export { action as default };
+module.exports = action;

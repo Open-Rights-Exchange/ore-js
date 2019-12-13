@@ -12,4 +12,4 @@ const action = ({ contractName, ownerAccountName, toAccountName, tokenAmount, pe
     }
   }
 );
-export { action as default };
+module.exports = action;

@@ -16,4 +16,4 @@ const action = ({ accountName, activekey, contractName, oreAccountName, origin, 
     }
   }
 );
-export { action as default };
+module.exports = action;
