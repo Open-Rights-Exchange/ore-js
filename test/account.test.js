@@ -41,7 +41,7 @@ describe('account', () => {
       beforeEach(() => {
         transaction = mockGetTransaction(orejs);
         info = mockGetInfo(orejs);
-        block = mockGetBlock(orejs, { block_num: info.head_block_num, transactions: [{ trx: { id: transaction.transaction_id } }] });  
+        block = mockGetBlock(orejs, { block_num: info.head_block_num, transactions: [{ trx: { id: transaction.transaction_id } }] });
         spyTransaction = jest.spyOn(orejs.eos, 'transact');
         spyAccount = jest.spyOn(orejs.eos.rpc, 'get_account');
       });
@@ -129,7 +129,8 @@ describe('account', () => {
         }, mockOptions());
         // expect(spyAccount).toHaveBeenCalledWith(expect.any(String));
         expect(spyInfo).toHaveBeenCalledWith({});
-        expect(spyBlock).toHaveBeenCalledWith(block.block_num + 1);
+        expect(spyBlock).toHaveBeenCalledWith(block.block_num - 1);
+
         expect(ecc.privateToPublic(orejs.decrypt(keypair.privateKeys.owner, WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT))).toEqual(keypair.publicKeys.owner);
       });
 
@@ -283,7 +284,7 @@ describe('account', () => {
           ]
         }, mockOptions());
         expect(spyInfo).toHaveBeenCalledWith({});
-        expect(spyBlock).toHaveBeenCalledWith(block.block_num + 1);
+        expect(spyBlock).toHaveBeenCalledWith(block.block_num - 1);
         expect(account).toEqual({
           verifierAuthKey: expect.stringMatching(/^\w*$/),
           verifierAuthPublicKey: expect.stringMatching(/^EOS\w*$/),
@@ -476,7 +477,7 @@ describe('account', () => {
         ]
       }, mockOptions());
       expect(spyInfo).toHaveBeenCalledWith({});
-      expect(spyBlock).toHaveBeenCalledWith(block.block_num + 1);
+      expect(spyBlock).toHaveBeenCalledWith(block.block_num - 1);
       expect(account).toEqual({
         oreAccountName,
         privateKey: expect.stringMatching(/^\{.*\}$/),
@@ -521,7 +522,7 @@ describe('account', () => {
         ]
       }, mockOptions());
       expect(spyInfo).toHaveBeenCalledWith({});
-      expect(spyBlock).toHaveBeenCalledWith(block.block_num + 1);
+      expect(spyBlock).toHaveBeenCalledWith(block.block_num - 1);
       expect(account).toEqual({
         oreAccountName: expect.stringMatching(/[a-z1-5]{12}/),
         privateKey: expect.stringMatching(/^\{.*\}$/),
