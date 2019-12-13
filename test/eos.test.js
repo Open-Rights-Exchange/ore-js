@@ -31,7 +31,7 @@ describe('eos', () => {
         return transaction;
       }, { blocksToCheck: 10, checkInterval: 10 });
       expect(spyInfo).toHaveBeenCalledWith({});
-      expect(spyBlock).toHaveBeenCalledWith(block.block_num + 1);
+      expect(spyBlock).toHaveBeenCalledWith(block.block_num - 1);
     });
 
     describe('when the transaction is not found', () => {
