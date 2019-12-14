@@ -5,9 +5,11 @@ const fetch = require('node-fetch');
 const { TextDecoder, TextEncoder } = require('text-encoding');
 const accounts = require('./accounts');
 const cpu = require('./tokens/cpu');
+const compose = require('./compose');
 const createbridge = require('./createbridge');
 const crypto = require('./modules/crypto');
 const eos = require('./eos');
+const errors = require('./errors');
 const helpers = require('./helpers');
 const instrument = require('./instrument');
 const ore = require('./tokens/ore');
@@ -22,10 +24,12 @@ class Orejs {
 
     /* Mixins */
     Object.assign(this, accounts);
+    Object.assign(this, compose);
     Object.assign(this, cpu);
     Object.assign(this, createbridge);
     Object.assign(this, crypto);
     Object.assign(this, eos);
+    Object.assign(this, errors);
     Object.assign(this, helpers);
     Object.assign(this, instrument);
     Object.assign(this, ore);
@@ -54,10 +58,12 @@ class Orejs {
 const generateAccountNameString = accounts.generateAccountNameString;
 
 module.exports = {
+  compose,
   crypto,
+  errors,
   generateAccountNameString,
-  isValidPublicKey: eos.isValidPublicKey,
   hexToUint8Array: eos.hexToUint8Array,
+  isValidPublicKey: eos.isValidPublicKey,
   Orejs,
   JsSignatureProvider
 };

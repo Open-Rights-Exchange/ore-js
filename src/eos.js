@@ -2,6 +2,7 @@
 const { Serialize, RpcError } = require('eosjs');
 const ecc = require('eosjs-ecc');
 const { BLOCKS_BEHIND_REF_BLOCK, BLOCKS_TO_CHECK, CHECK_INTERVAL, GET_BLOCK_ATTEMPTS, TRANSACTION_ENCODING, TRANSACTION_EXPIRY_IN_SECONDS } = require('./constants');
+const { mapError } = require('./errors');
 // NOTE: More than a simple wrapper for eos.rpc.get_info
 // NOTE: Saves state from get_info, which can be used by other methods
 // NOTE: For example, newaccount will have different field names, depending on the server_version_string
@@ -28,12 +29,29 @@ async function getChainId() {
   return chainId;
 }
 
+async function sendTransaction(func, confirm, awaitTransactionOptions) {
+  let transaction;
+
+  if (confirm === true) {
+    transaction = await awaitTransaction.bind(this)(func, awaitTransactionOptions);
+  } else {
+    try {
+      transaction = await func();
+    } catch (error) {
+      const errString = mapError(error);
+      throw new Error(`Send Transaction Failure: ${errString}`);
+    }
+  }
+  return transaction;
+}
+
 // NOTE: Use this to await for transactions to be added to a block
 // NOTE: Useful, when committing sequential transactions with inter-dependencies
 // NOTE: This does NOT confirm that the transaction is irreversible, aka finalized
 // NOTE: blocksToCheck = the number of blocks to check, after committing the transaction, before giving up
 // NOTE: checkInterval = the time between block checks in MS
 // NOTE: getBlockAttempts = the number of failed attempts at retrieving a particular block, before giving up
+
 function awaitTransaction(func, options = {}) {
   const { blocksToCheck = BLOCKS_TO_CHECK, checkInterval = CHECK_INTERVAL, getBlockAttempts = GET_BLOCK_ATTEMPTS } = options;
   let startingBlockNumToCheck;
@@ -52,14 +70,7 @@ function awaitTransaction(func, options = {}) {
       const { block_num = preCommitHeadBlockNum } = processed || {};
       startingBlockNumToCheck = block_num - 1;
     } catch (error) {
-      let errString = '';
-
-      if (error instanceof RpcError) {
-        errString = JSON.stringify(error.json);
-      } else {
-        errString = JSON.stringify(error);
-      }
-
+      const errString = mapError(error);
       return reject(new Error(`Await Transaction Failure: ${errString}`));
     }
     // keep checking for the transaction in future blocks...
@@ -190,7 +201,6 @@ function pushSignedTransaction(signedTransaction) {
 }
 
 module.exports = {
-  awaitTransaction,
   checkPubKeytoAccount,
   createSignBuffer,
   getAllTableRows,
@@ -199,6 +209,7 @@ module.exports = {
   isValidPublicKey,
   pushSignedTransaction,
   recoverPublicKeyFromSignature,
+  sendTransaction,
   serializeTransaction,
   deserializeTransaction,
   signRawTransaction,

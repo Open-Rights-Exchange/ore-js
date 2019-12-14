@@ -10,7 +10,7 @@ describe('eos', () => {
     orejs = constructOrejs();
   });
 
-  describe('awaitTransaction', () => {
+  describe('awaitTransaction via sendTransaction', () => {
     let transaction;
     let info;
     let block;
@@ -26,12 +26,12 @@ describe('eos', () => {
     });
 
     it('returns the transaction', async () => {
-      await orejs.awaitTransaction(async () => {
+      await orejs.sendTransaction(async () => {
         await setTimeout(() => true, 10);
         return transaction;
-      }, { blocksToCheck: 10, checkInterval: 10 });
+      }, true, { blocksToCheck: 10, checkInterval: 10 });
       expect(spyInfo).toHaveBeenCalledWith({});
-      expect(spyBlock).toHaveBeenCalledWith(block.block_num + 1);
+      expect(spyBlock).toHaveBeenCalledWith(block.block_num - 1);
     });
 
     describe('when the transaction is not found', () => {
@@ -43,10 +43,10 @@ describe('eos', () => {
       });
 
       it('throws an error with the block number', async () => {
-        const result = orejs.awaitTransaction(async () => {
+        const result = orejs.sendTransaction(async () => {
           await setTimeout(() => true, 10);
           return transaction;
-        }, { blocksToCheck: 2, checkInterval: 10 });
+        }, true, { blocksToCheck: 2, checkInterval: 10 });
         await expect(result).rejects.toThrow(/Await Transaction Timeout/);
       });
     });
@@ -60,10 +60,10 @@ describe('eos', () => {
       });
 
       it('throws an error with the block number', async () => {
-        const result = orejs.awaitTransaction(async () => {
+        const result = orejs.sendTransaction(async () => {
           await setTimeout(() => true, 10);
           return transaction;
-        }, 10, 10);
+        }, true, 10, 10);
         await expect(result).rejects.toThrow(/Await Transaction Failure/);
       });
     });

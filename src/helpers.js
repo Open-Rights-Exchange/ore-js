@@ -1,3 +1,5 @@
+const { parse, stringify } = require('flatted/cjs');
+
 function isNullOrEmpty(obj) {
   if (obj === undefined) {
     return true;
@@ -15,6 +17,21 @@ function isNullOrEmpty(obj) {
   return (Object.keys(obj).length === 0 && obj.constructor === Object);
 }
 
+// uses flatted library to allow stringifing on an object with circular references
+// NOTE: This does not produce output similar to JSON.stringify, it has it's own format
+// to allow you to stringify and parse and get back an object with circular references
+function stringifySafe(obj) {
+  return stringify(obj);
+}
+
+// this is the inverse of stringifySafe
+// if converts a specially stringifyied string (created by stringifySafe) back into an object
+function parseSafe(string) {
+  return parse(string);
+}
+
 module.exports = {
-  isNullOrEmpty
+  isNullOrEmpty,
+  parseSafe,
+  stringifySafe
 };

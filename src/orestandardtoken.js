@@ -1,3 +1,5 @@
+const { ChainAction, composeAction } = require('./compose');
+
 const TABLE_NAME = 'accounts';
 const ALLOWANCE_TABLE = 'allowances';
 
@@ -22,53 +24,29 @@ function getAmount(tokenAmount, tokenSymbol) {
 }
 
 function createToken(toAccountName, ownerAccountName, tokenAmount, contractName, permission = 'active', broadcast = true) {
-  return this.transact([{
-    account: contractName,
-    name: 'create',
-    authorization: [{
-      actor: ownerAccountName,
-      permission
-    }],
-    data: {
-      issuer: toAccountName,
-      maximum_supply: tokenAmount
-    }
-  }], broadcast);
+  const args = { contractName, ownerAccountName, toAccountName, tokenAmount, permission };
+  const action = composeAction(ChainAction.Token_Create, args);
+  const actions = [action];
+
+  return this.transact(actions, broadcast);
 }
 
 function issueToken(toAccountName, tokenAmount, ownerAccountName, contractName, memo = '', permission = 'active', broadcast = true) {
-  return this.transact([{
-    account: contractName,
-    name: 'issue',
-    authorization: [{
-      actor: ownerAccountName,
-      permission
-    }],
-    data: {
-      to: toAccountName,
-      quantity: tokenAmount,
-      memo
-    }
-  }], broadcast);
+  const args = { contractName, ownerAccountName, toAccountName, tokenAmount, memo, permission };
+  const action = composeAction(ChainAction.Token_Issue, args);
+  const actions = [action];
+
+  return this.transact(actions, broadcast);
 }
 
 // cleos push action cpu.ore approve '[""]
 function approveTransfer(fromAccountName, toAccountName, tokenAmount, contractName, memo = '', permission = 'active', broadcast = true) {
   // Appprove some account to spend on behalf of approving account
-  return this.transact([{
-    account: contractName,
-    name: 'approve',
-    authorization: [{
-      actor: fromAccountName,
-      permission
-    }],
-    data: {
-      from: fromAccountName,
-      to: toAccountName,
-      quantity: tokenAmount,
-      memo
-    }
-  }], broadcast);
+  const args = { contractName, memo, fromAccountName, toAccountName, tokenAmount, permission };
+  const action = composeAction(ChainAction.Token_Approve, args);
+  const actions = [action];
+
+  return this.transact(actions, broadcast);
 }
 
 // cleos get table token.ore test1.acnt allowances
@@ -107,56 +85,32 @@ async function getBalance(accountName, tokenSymbol, contractName) {
 }
 
 function retireToken(ownerAccountName, tokenAmount, contractName, memo = '', permission = 'active', broadcast = true) {
-  return this.transact([{
-    account: contractName,
-    name: 'retire',
-    authorization: [{
-      actor: ownerAccountName,
-      permission
-    }],
-    data: {
-      quantity: tokenAmount,
-      memo
-    }
-  }], broadcast);
+
+  const args = { contractName, ownerAccountName, tokenAmount, memo, permission };
+  const action = composeAction(ChainAction.Token_Retire, args);
+  const actions = [action];
+
+  return this.transact(actions, broadcast);
 }
 
 // cleos push action cpu.ore transfer '["test1.acnt", "test2.acnt", "10.0000 CPU", "memo"]' -p test1.acnt
 function transferToken(fromAccountName, toAccountName, tokenAmount, contractName, memo = '', permission = 'active', broadcast = true) {
-  return this.transact([{
-    account: contractName,
-    name: 'transfer',
-    authorization: [{
-      actor: fromAccountName,
-      permission
-    }],
-    data: {
-      from: fromAccountName,
-      to: toAccountName,
-      quantity: tokenAmount,
-      memo
-    }
-  }], broadcast);
+
+  const args = { contractName, fromAccountName, toAccountName, tokenAmount, memo, permission };
+  const action = composeAction(ChainAction.Token_Transfer, args);
+  const actions = [action];
+
+  return this.transact(actions, broadcast);
 }
 
 // cleos push action cpu.ore transferFrom '["app.acnt", "test1.acnt", "test2.acnt", "10.0000 CPU"]' -p app.acnt
 function transferFrom(approvedAccountName, fromAccountName, toAccountName, tokenAmount, contractName, memo = '', permission = 'active', broadcast = true) {
-  // Standard token transfer
-  return this.transact([{
-    account: contractName,
-    name: 'transferFrom',
-    authorization: [{
-      actor: approvedAccountName,
-      permission
-    }],
-    data: {
-      sender: approvedAccountName,
-      from: fromAccountName,
-      to: toAccountName,
-      quantity: tokenAmount,
-      memo
-    }
-  }], broadcast);
+
+  const args = { approvedAccountName, contractName, fromAccountName, toAccountName, tokenAmount, memo, permission };
+  const action = composeAction(ChainAction.Token_TransferFrom, args);
+  const actions = [action];
+
+  return this.transact(actions, broadcast);
 }
 
 module.exports = {
