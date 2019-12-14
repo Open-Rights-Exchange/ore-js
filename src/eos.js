@@ -2,6 +2,7 @@
 const { Serialize, RpcError } = require('eosjs');
 const ecc = require('eosjs-ecc');
 const { BLOCKS_BEHIND_REF_BLOCK, BLOCKS_TO_CHECK, CHECK_INTERVAL, GET_BLOCK_ATTEMPTS, TRANSACTION_ENCODING, TRANSACTION_EXPIRY_IN_SECONDS } = require('./constants');
+const { mapError } = require('./errors');
 // NOTE: More than a simple wrapper for eos.rpc.get_info
 // NOTE: Saves state from get_info, which can be used by other methods
 // NOTE: For example, newaccount will have different field names, depending on the server_version_string
@@ -28,16 +29,6 @@ async function getChainId() {
   return chainId;
 }
 
-function formatErrorStringIfRpcError(error) {
-  let errString = '';
-  if (error instanceof RpcError) {
-    errString = JSON.stringify(error.json);
-  } else {
-    errString = JSON.stringify(error);
-  }
-  return errString;
-}
-
 async function sendTransaction(func, confirm, awaitTransactionOptions) {
   let transaction;
 
@@ -47,7 +38,7 @@ async function sendTransaction(func, confirm, awaitTransactionOptions) {
     try {
       transaction = await func();
     } catch (error) {
-      const errString = formatErrorStringIfRpcError(error);
+      const errString = mapError(error);
       throw new Error(`Send Transaction Failure: ${errString}`);
     }
   }
@@ -79,7 +70,7 @@ function awaitTransaction(func, options = {}) {
       const { block_num = preCommitHeadBlockNum } = processed || {};
       startingBlockNumToCheck = block_num - 1;
     } catch (error) {
-      const errString = formatErrorStringIfRpcError(error);
+      const errString = mapError(error);
       return reject(new Error(`Await Transaction Failure: ${errString}`));
     }
     // keep checking for the transaction in future blocks...
