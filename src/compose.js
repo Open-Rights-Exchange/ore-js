@@ -38,8 +38,11 @@ const ChainAction = {
 };
 
 function composeAction(actionType, args) {
-  const actionComposer = actionType;
-  return actionComposer(args);
+  if (typeof actionType !== 'function') {
+    return null;
+    // throw new Error('composeAction called with invalid or missing actionType:', actionType);
+  }
+  return actionType(args);
 }
 
 module.exports = {
