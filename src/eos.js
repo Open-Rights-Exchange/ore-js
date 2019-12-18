@@ -80,9 +80,9 @@ function awaitTransaction(func, options = {}) {
     let inProgress = false;
     blockNumToCheck = startingBlockNumToCheck;
     const intConfirm = setInterval(async () => {
-      if (inProgress) return;
-      inProgress = true;
       try {
+        if (inProgress) return;
+        inProgress = true;
         blockToCheck = await this.eos.rpc.get_block(blockNumToCheck);
         blockHasTransaction = await hasTransaction(blockToCheck, transaction.transaction_id);
         if (blockHasTransaction) {
