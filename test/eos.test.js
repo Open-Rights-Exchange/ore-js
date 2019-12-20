@@ -51,7 +51,7 @@ describe('eos', () => {
       });
     });
 
-    describe('when the block is not found', () => {
+    describe('when maxBlockAttemptReached', () => {
       beforeAll(() => {
         jest.clearAllMocks();
         transaction = mockGetTransaction(orejs);
@@ -60,11 +60,14 @@ describe('eos', () => {
       });
 
       it('throws an error with the block number', async () => {
-        const result = orejs.sendTransaction(async () => {
-          await setTimeout(() => true, 10);
-          return transaction;
-        }, true, 10, 10);
-        await expect(result).rejects.toThrow(/Await Transaction Failure/);
+        try {
+          await orejs.sendTransaction(async () => {
+            await setTimeout(() => true, 100);
+            return transaction;
+          }, true, { blocksToCheck: 2, checkInterval: 10, getBlockAttempts: 1 });
+        } catch (err) {
+          await expect(err.name).toBe('maxBlockReadAttemptsTimeout');
+        }
       });
     });
   });
