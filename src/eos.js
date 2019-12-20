@@ -2,7 +2,7 @@
 const { Serialize, RpcError } = require('eosjs');
 const ecc = require('eosjs-ecc');
 const { BLOCKS_BEHIND_REF_BLOCK, BLOCKS_TO_CHECK, CHECK_INTERVAL, GET_BLOCK_ATTEMPTS, TRANSACTION_ENCODING, TRANSACTION_EXPIRY_IN_SECONDS } = require('./constants');
-const { mapError } = require('./errors');
+const { mapChainError } = require('./errors');
 // NOTE: More than a simple wrapper for eos.rpc.get_info
 // NOTE: Saves state from get_info, which can be used by other methods
 // NOTE: For example, newaccount will have different field names, depending on the server_version_string
@@ -32,79 +32,90 @@ async function getChainId() {
 async function sendTransaction(func, confirm, awaitTransactionOptions) {
   let transaction;
 
-  if (confirm === true) {
-    transaction = await awaitTransaction.bind(this)(func, awaitTransactionOptions);
-  } else {
-    try {
-      transaction = await func();
-    } catch (error) {
-      const errString = mapError(error);
-      throw new Error(`Send Transaction Failure: ${errString}`);
-    }
+  try {
+    transaction = await func();
+  } catch (error) {
+    const errString = mapChainError(error);
+    throw new Error(`Send Transaction Failure: ${errString}`);
   }
+
+  if (confirm === true) {
+    transaction = await awaitTransaction.bind(this)(transaction, awaitTransactionOptions);
+  }
+
   return transaction;
 }
 
-// NOTE: Use this to await for transactions to be added to a block
-// NOTE: Useful, when committing sequential transactions with inter-dependencies
+// Polls the chain until it finds a block that includes the specific transaction
+// Useful when committing sequential transactions with inter-dependencies (must wait for the first one to commit before submitting the next one)
+// transactionResponse: The response body from submitting the transaction to the chain (includes transaction Id and most recent chain block number)
+// blocksToCheck = the number of blocks to check, after committing the transaction, before giving up
+// checkInterval = the time between block checks in MS
+// getBlockAttempts = the number of failed attempts at retrieving a particular block, before giving up
 // NOTE: This does NOT confirm that the transaction is irreversible, aka finalized
-// NOTE: blocksToCheck = the number of blocks to check, after committing the transaction, before giving up
-// NOTE: checkInterval = the time between block checks in MS
-// NOTE: getBlockAttempts = the number of failed attempts at retrieving a particular block, before giving up
 
-function awaitTransaction(func, options = {}) {
-  const { blocksToCheck = BLOCKS_TO_CHECK, checkInterval = CHECK_INTERVAL, getBlockAttempts = GET_BLOCK_ATTEMPTS } = options;
-  let startingBlockNumToCheck;
-  let blockNumToCheck;
+function awaitTransaction(transactionResponse, options = {}) {
+  const { blocksToCheck = BLOCKS_TO_CHECK, checkInterval = CHECK_INTERVAL, getBlockAttempts: maxBlockReadAttempts = GET_BLOCK_ATTEMPTS } = options;
 
   return new Promise(async (resolve, reject) => {
-    // check the current head block num...
+    let getBlockAttempt = 1;
+    // get the chain's current head block number...
     const preCommitInfo = await getInfo.bind(this)();
     const preCommitHeadBlockNum = preCommitInfo.head_block_num;
-    // make the transaction...
-    let transaction;
-    try {
-      transaction = await func();
-      const { processed } = transaction || {};
-      // starting block number should be the block number in the transaction reciept. If block number not in transaction, use preCommitHeadBlockNum
-      const { block_num = preCommitHeadBlockNum } = processed || {};
-      startingBlockNumToCheck = block_num - 1;
-    } catch (error) {
-      const errString = mapError(error);
-      return reject(new Error(`Await Transaction Failure: ${errString}`));
-    }
-    // keep checking for the transaction in future blocks...
-    let blockToCheck;
-    let getBlockAttempt = 1;
-    let blockHasTransaction = false;
+    const { processed, transaction_id: transactionId } = transactionResponse || {};
+    // starting block number should be the block number in the transaction receipt. If block number not in transaction, use preCommitHeadBlockNum
+    const { block_num = preCommitHeadBlockNum } = processed || {};
+    const startingBlockNumToCheck = block_num - 1;
+
+    let blockNumToCheck = startingBlockNumToCheck;
     let inProgress = false;
-    blockNumToCheck = startingBlockNumToCheck;
-    const intConfirm = setInterval(async () => {
+
+    // Keep reading blocks from the chain (every checkInterval) until we find the transationId in a block
+    // ... or until we reach a max number of blocks or block read attempts
+    const timer = setInterval(async () => {
       try {
         if (inProgress) return;
         inProgress = true;
-        blockToCheck = await this.eos.rpc.get_block(blockNumToCheck);
-        blockHasTransaction = await hasTransaction(blockToCheck, transaction.transaction_id);
+        const possibleTransactionBlock = await this.eos.rpc.get_block(blockNumToCheck);
+        const blockHasTransaction = await hasTransaction(possibleTransactionBlock, transactionId);
         if (blockHasTransaction) {
-          clearInterval(intConfirm);
-          resolve(transaction);
+          resolveAwaitTransaction(resolve, timer, transactionResponse);
         }
-        getBlockAttempt = 1;
         blockNumToCheck += 1;
-        inProgress = false;
       } catch (error) {
-        if (getBlockAttempt >= getBlockAttempts) {
-          clearInterval(intConfirm);
-          return reject(new Error(`Await Transaction Failure: Failure to find a block, after ${getBlockAttempt} attempts to check block ${blockNumToCheck}.`));
+        const mappedError = mapChainError(error);
+        if (mappedError.name === 'BlockDoesNotExist') {
+          // Try to read the specific block - up to getBlockAttempts times
+          if (getBlockAttempt >= maxBlockReadAttempts) {
+            rejectAwaitTransaction(reject, timer, 'maxBlockReadAttemptsTimeout', `Await Transaction Failure: Failure to find a block, after ${getBlockAttempt} attempts to check block ${blockNumToCheck}.`);
+            return;
+          }
+          getBlockAttempt += 1;
+        } else {
+          // re-throw error - not one we can handle here
+          throw mappedError;
         }
-        getBlockAttempt += 1;
+      } finally {
+        inProgress = false;
       }
       if (blockNumToCheck > startingBlockNumToCheck + blocksToCheck) {
-        clearInterval(intConfirm);
-        return reject(new Error(`Await Transaction Timeout: Waited for ${blocksToCheck} blocks ~(${(checkInterval / 1000) * blocksToCheck} seconds) starting with block num: ${startingBlockNumToCheck}. This does not mean the transaction failed just that the transaction wasn't found in a block before timeout`));
+        rejectAwaitTransaction(reject, timer, 'maxBlocksTimeout', `Await Transaction Timeout: Waited for ${blocksToCheck} blocks ~(${(checkInterval / 1000) * blocksToCheck} seconds) starting with block num: ${startingBlockNumToCheck}. This does not mean the transaction failed just that the transaction wasn't found in a block before timeout`);
+        return;
       }
     }, checkInterval);
   });
+}
+
+function resolveAwaitTransaction(resolve, timer, transaction) {
+  clearInterval(timer);
+  resolve(transaction);
+}
+
+function rejectAwaitTransaction(reject, timer, errorName, errorMessage) {
+  clearInterval(timer);
+  const error = new Error(errorMessage);
+  error.name = errorName;
+  reject(error);
 }
 
 async function getAllTableRows(params, key_field = 'id', json = true) {
