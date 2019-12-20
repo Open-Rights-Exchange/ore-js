@@ -116,6 +116,7 @@ async function generateAuthKeys(oreAccountName, permName, code, action, broadcas
 }
 
 async function createOreAccountWithKeys(activePublicKey, ownerPublicKey, orePayerAccountName, options = {}) {
+  let transaction;
   options = {
     confirm: true,
     accountNamePrefix: 'ore',
@@ -125,7 +126,18 @@ async function createOreAccountWithKeys(activePublicKey, ownerPublicKey, orePaye
 
   const { confirm } = options;
   const awaitTransactionOptions = getAwaitTransactionOptions(options);
-  const transaction = await this.sendTransaction(() => newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, options), confirm, awaitTransactionOptions);
+  try {
+    transaction = await this.sendTransaction(() => newAccountTransaction.bind(this)(oreAccountName, ownerPublicKey, activePublicKey, orePayerAccountName, options), confirm, awaitTransactionOptions);
+  } catch (error) {
+    if (error.name === 'maxBlocksTimeout') {
+      // We didn't find the new account in a block, so we'll double check to see if it made it on the chain anyway
+      if (!getNameAlreadyExists(oreAccountName)) {
+        const err = new Error(`Error creating account: ${oreAccountName}. Transaction sent to chain but not found in a block. ${error.message}`);
+        err.name = error.name;
+        throw err;
+      }
+    }
+  }
   return { oreAccountName, transaction };
 }
 
@@ -240,8 +252,21 @@ async function addPermission(authAccountName, keys, permissionName, parentPermis
     actions = actions.concat(linkActions);
   }
   const awaitTransactionOptions = getAwaitTransactionOptions(options);
-  const transaction = await this.sendTransaction(async () => this.transact(actions, broadcast), confirm, awaitTransactionOptions);
-
+  let transaction;
+  try {
+    transaction = await this.sendTransaction(async () => this.transact(actions, broadcast), confirm, awaitTransactionOptions);
+  } catch (error) {
+    if (error.name === 'maxBlocksTimeout') {
+      // We didn't find the new addPermissons action(s) in a block, so we'll double check to see if it made it on the chain anyway
+      const { required_auth: permissionOnChain } = await getAccountPermissions(authAccountName).find(permm => permm.perm_name === permissionName);
+      const isPermissionOnChain = permissionOnChain.keys.every(key => keys.includes(key));
+      if (!isPermissionOnChain) {
+        const newError = new Error(`Problem with adding permission: ${permissionName} with keys ${keys}. Transaction sent to chain but not found in a block. ${error.message}`);
+        newError.name = error.name;
+        throw newError;
+      }
+    }
+  }
   return transaction;
 }
 
@@ -457,7 +482,7 @@ async function createOreAccount(password, salt, ownerPublicKey, orePayerAccountN
       throw new Error(`Error creating account: ${newAccountName} ${error}`);
     }
   }
-  
+
   if (this.chainName === 'ore') {
     const verifierAuthKeys = await generateAuthKeys.bind(this)(oreAccountName, 'authverifier', 'token.ore', 'approve', broadcast);
     verifierAuthKey = verifierAuthKeys.privateKeys.active;
