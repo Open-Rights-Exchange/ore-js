@@ -27,7 +27,7 @@ const ChainError = {
 };
 
 // Maps an Error object (thrown by a call to the chain) into a known set of errors
-function mapError(error) {
+function mapChainError(error) {
   let errorSearchString;
   let errorMessage;
   let newError;
@@ -50,7 +50,7 @@ function mapError(error) {
     const match = regexp.exec(errorSearchString);
     if (match) {
       newError = new Error(errorMessage);
-      newError.name = errorKey; // exmple: Error = 'Account_Exists: ChainError: Chain error message'
+      newError.name = errorKey; // example: Error = 'Account_Exists: ChainError: Chain error message'
       break;
     }
   }
@@ -60,5 +60,5 @@ function mapError(error) {
 
 module.exports = {
   ChainError,
-  mapError
+  mapChainError
 };
