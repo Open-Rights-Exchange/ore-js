@@ -20,7 +20,8 @@ function deriveKey(password, salt, useOldSaltEncoding = true) {
   }
   // NOTE Passing in at least an empty string for the salt, will prevent cached keys, which can lead to false positives in the test suite
   const { key } = sjcl.misc.cachedPbkdf2(password, { iter: 1000, salt: saltArray });
-  return key;
+  // new salt encoding expects the key object to be converted explicity to a string
+  return (useOldSaltEncoding) ? key : bitArrayToString(key);
 }
 
 // Decrypts the encrypted EOS private key with the derived key
@@ -53,6 +54,10 @@ function encrypt(unencrypted, password, salt, useOldSaltEncoding = true) {
 
 function stringToBitArray(value) {
   return sjcl.codec.base64.toBits(value);
+}
+
+function bitArrayToString(value) {
+  return sjcl.codec.base64.fromBits(value);
 }
 
 module.exports = {
