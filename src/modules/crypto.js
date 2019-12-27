@@ -11,9 +11,15 @@ function encryptWithKey(unencrypted, key) {
 // PUBLIC
 
 // Derive the key used for encryption/decryption
-function deriveKey(password, salt) {
+// TODO: change default value for useOldSaltEncoding to false after migrating keys
+function deriveKey(password, salt, useOldSaltEncoding = true) {
+  let saltArray = salt;
+  if (!useOldSaltEncoding) {
+    // correct usage of this library is to convert the salt to a BitArray - otherwise it won't be decodable correcly using the expected approach
+    saltArray = stringToBitArray(salt || '');
+  }
   // NOTE Passing in at least an empty string for the salt, will prevent cached keys, which can lead to false positives in the test suite
-  const { key } = sjcl.misc.cachedPbkdf2(password, { iter: 1000, salt: salt || '' });
+  const { key } = sjcl.misc.cachedPbkdf2(password, { iter: 1000, salt: saltArray });
   return key;
 }
 
@@ -30,12 +36,23 @@ function decryptWithKey(encrypted, key) {
 
 // Decrypts the encrypted EOS private key with wallet password, and salt
 function decrypt(encrypted, password, salt) {
-  return decryptWithKey(encrypted, deriveKey(password, salt));
+  // try decrypting with new Salt encoding approach
+  let decrypted = decryptWithKey(encrypted, deriveKey(password, salt, false));
+  if (decrypted === '') {
+    // if decrypt fails, try using the old Salt encoding approach
+    decrypted = decryptWithKey(encrypted, deriveKey(password, salt, true));
+  }
+  return decrypted;
 }
 
 // Encrypts the EOS private key with wallet password, and salt
-function encrypt(unencrypted, password, salt) {
-  return encryptWithKey(unencrypted, deriveKey(password, salt));
+// TODO: change default value for useOldSaltEncoding to false after migrating keys
+function encrypt(unencrypted, password, salt, useOldSaltEncoding = true) {
+  return encryptWithKey(unencrypted, deriveKey(password, salt, useOldSaltEncoding));
+}
+
+function stringToBitArray(value) {
+  return sjcl.codec.base64.toBits(value);
 }
 
 module.exports = {
