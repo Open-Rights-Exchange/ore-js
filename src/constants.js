@@ -6,7 +6,7 @@ const TRANSACTION_ENCODING = 'utf8';
 // transaction confirmation parameters
 const BLOCKS_TO_CHECK = 20;
 const CHECK_INTERVAL = 400;
-const GET_BLOCK_ATTEMPTS = 5;
+const GET_BLOCK_ATTEMPTS = 10;
 
 module.exports = {
   TRANSACTION_EXPIRY_IN_SECONDS,
