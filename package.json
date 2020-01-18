@@ -4,7 +4,7 @@
   "description": "Orejs is a Javascript helper library to provide simple high-level access to the ore-protocol. Orejs uses eosJS as a wrapper to the EOS blockchain.",
   "main": "./dist/index.js",
   "scripts": {
-    "build": "tsc --project ./tsconfig.json --pretty",
+    "build": "rm -rf dist/* && tsc --project ./tsconfig.json --pretty",
     "lint": "./node_modules/.bin/eslint test/** src/** --fix",
     "prepublishOnly": "npm run build",
     "test": "jest --runInBand --coverage --detectOpenHandles"
