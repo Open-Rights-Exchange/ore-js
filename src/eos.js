@@ -40,7 +40,10 @@ async function sendTransaction(func, confirm, awaitTransactionOptions) {
   }
 
   if (confirm === true) {
-    transaction = await awaitTransaction.bind(this)(transaction, awaitTransactionOptions);
+    // get the chain's current head block number...
+    const preCommitInfo = await getInfo.bind(this)();
+    const preCommitHeadBlockNum = preCommitInfo.head_block_num;
+    transaction = await awaitTransaction.bind(this)(transaction, awaitTransactionOptions, preCommitHeadBlockNum);
   }
 
   return transaction;
@@ -54,14 +57,20 @@ async function sendTransaction(func, confirm, awaitTransactionOptions) {
 // getBlockAttempts = the number of failed attempts at retrieving a particular block, before giving up
 // NOTE: This does NOT confirm that the transaction is irreversible, aka finalized
 
-function awaitTransaction(transactionResponse, options = {}) {
+function awaitTransaction(transactionResponse, options = {}, preCommitHeadBlockNum) {
   const { blocksToCheck = BLOCKS_TO_CHECK, checkInterval = CHECK_INTERVAL, getBlockAttempts: maxBlockReadAttempts = GET_BLOCK_ATTEMPTS } = options;
 
   return new Promise(async (resolve, reject) => {
     let getBlockAttempt = 1;
-    // get the chain's current head block number...
-    const preCommitInfo = await getInfo.bind(this)();
-    const preCommitHeadBlockNum = preCommitInfo.head_block_num;
+    // use the chain's current head block number...
+    if (!preCommitHeadBlockNum) {
+      // WARNING - This code can cause false await error messages since the head block retrieved below might be after the transaction's block
+      // the head block should be retrieved before sending the transaction and passed-in to this function
+      // This workaround is included for backawards compatibility
+      const preCommitInfo = await getInfo.bind(this)();
+      preCommitHeadBlockNum = preCommitInfo.head_block_num;
+    }
+
     const { processed, transaction_id: transactionId } = transactionResponse || {};
     // starting block number should be the block number in the transaction receipt. If block number not in transaction, use preCommitHeadBlockNum
     const { block_num = preCommitHeadBlockNum } = processed || {};
@@ -82,7 +91,9 @@ function awaitTransaction(transactionResponse, options = {}) {
           resolveAwaitTransaction(resolve, timer, transactionResponse);
         }
         blockNumToCheck += 1;
+        inProgress = false;
       } catch (error) {
+        inProgress = false;
         const mappedError = mapChainError(error);
         if (mappedError.name === 'BlockDoesNotExist') {
           // Try to read the specific block - up to getBlockAttempts times
@@ -95,12 +106,10 @@ function awaitTransaction(transactionResponse, options = {}) {
           // re-throw error - not one we can handle here
           throw mappedError;
         }
-      } finally {
-        inProgress = false;
       }
       if (blockNumToCheck > startingBlockNumToCheck + blocksToCheck) {
+        inProgress = false;
         rejectAwaitTransaction(reject, timer, 'maxBlocksTimeout', `Await Transaction Timeout: Waited for ${blocksToCheck} blocks ~(${(checkInterval / 1000) * blocksToCheck} seconds) starting with block num: ${startingBlockNumToCheck}. This does not mean the transaction failed just that the transaction wasn't found in a block before timeout`);
-        return;
       }
     }, checkInterval);
   });
