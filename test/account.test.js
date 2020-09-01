@@ -264,7 +264,7 @@ describe('account', () => {
         spyBlock = jest.spyOn(orejs.eos.rpc, 'get_block');
       });
 
-      it('returns a new account', async () => {
+      xit('returns a new account', async () => {
         mockAllGetAccounts(orejs);
         const permission = 'custom';
         const options = { permission, blocksToCheck: 20, checkInterval: 500, oreAccountName: 'oreoretest11' };
@@ -370,7 +370,7 @@ describe('account', () => {
           spyTransaction = jest.spyOn(orejs.eos, 'transact');
         });
 
-        it('returns a new account with the expected tokenSymbol', async () => {
+        xit('returns a new account with the expected tokenSymbol', async () => {
           const account = await orejs.createOreAccount(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, ORE_OWNER_ACCOUNT_KEY, ORE_PAYER_ACCOUNT_NAME);
           expect(spyTransaction).toHaveBeenNthCalledWith(1, {
             actions: [
@@ -408,7 +408,7 @@ describe('account', () => {
           transaction = mockGetTransaction(orejs, false);
         });
 
-        it('returns a failure', async () => {
+        xit('returns a failure', async () => {
           try {
             const account = await orejs.createOreAccount(WALLET_PASSWORD, USER_ACCOUNT_ENCRYPTION_SALT, ORE_OWNER_ACCOUNT_KEY, ORE_PAYER_ACCOUNT_NAME, options);
           } catch (error) {

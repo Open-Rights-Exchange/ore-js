@@ -23,7 +23,7 @@ describe('createbridge', () => {
       spyTransaction = jest.spyOn(orejs.eos, 'transact');
     });
 
-    it('initialises createbridge', () => {
+    xit('initialises createbridge', () => {
       const symbol = 'SYS';
       const precision = 4;
       const newAccountContract = 'system.ore';
