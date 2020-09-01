@@ -427,6 +427,10 @@ async function createBridgeAccount(password, salt, authorizingAccount, options) 
       const awaitTransactionOptions = getAwaitTransactionOptions(options);
       transaction = await this.sendTransaction(async () => this.createNewAccount(authorizingAccount, keys, options), confirm, awaitTransactionOptions);
     } catch (error) {
+      if (error.name === 'maxBlocksTimeout') {
+        throw error;
+      }
+
       throw new Error(`Error creating bridge account: ${oreAccountName} ${error}`);
     }
   }
